@@ -84,9 +84,27 @@ export default function Home() {
     };
   }, [currentRaceRef.current]);
 
+  // search filter
+  const [search, setSearch] = useState("");
+  const filteredRaces = races?.filter((race) => {
+    const raceName = `${race.number} ${race.raceteam[0]?.team?.name} ${race.raceteam[1]?.team?.name}`;
+    console.log(raceName);
+    return raceName.toLowerCase().includes(search.toLowerCase());
+  });
+
   return (
     <>
-      <NavBar />
+      <Box position="sticky" top="0" zIndex="100">
+        <NavBar />
+        <Box p={4}>
+          <Input
+            placeholder="Search"
+            variant="subtle"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </Box>
+      </Box>
       <Box p={4}>
         <Stack>
           {currentRace && (
@@ -99,9 +117,8 @@ export default function Home() {
               </ActionBarContent>
             </ActionBarRoot>
           )}
-          <Input placeholder="Search" />
           {races ? (
-            <For each={races}>
+            <For each={filteredRaces}>
               {(race) => (
                 <Box
                   ref={race.number === currentRace ? currentRaceRef : undefined}
