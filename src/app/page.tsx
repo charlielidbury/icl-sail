@@ -82,7 +82,7 @@ export default function Home() {
     return () => {
       observer.disconnect();
     };
-  }, [currentRaceRef.current]);
+  }, []);
 
   // search filter
   const [search, setSearch] = useState("");

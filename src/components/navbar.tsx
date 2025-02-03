@@ -18,12 +18,7 @@ import {
   Image,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
-import {
-  HamburgerIcon,
-  CloseIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-} from "@chakra-ui/icons";
+import { TbMenu2, TbX, TbChevronDown, TbChevronRight } from "react-icons/tb";
 import { Auth } from "@supabase/auth-ui-react";
 import { Session } from "@supabase/auth-js";
 import supabase from "../supabase";
@@ -36,7 +31,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogRoot,
-  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { TbLogin, TbLogout } from "react-icons/tb";
@@ -83,7 +77,7 @@ export default function WithSubnavigation() {
             variant={"ghost"}
             aria-label={"Toggle Navigation"}
           >
-            {open ? <CloseIcon w={3} h={3} /> : <HamburgerIcon w={5} h={5} />}
+            {open ? <TbX /> : <TbMenu2 />}
           </IconButton>
         </Flex>
         <Flex flex={{ base: 1 }} justify={{ base: "center", md: "start" }}>
@@ -233,7 +227,7 @@ const DesktopSubNav = ({ label, href, subLabel }: NavItem) => {
             align={"center"}
             flex={1}
           >
-            <Icon color={"pink.400"} w={5} h={5} as={ChevronRightIcon} />
+            <Icon color={"pink.400"} w={5} h={5} as={TbChevronRight} />
           </Flex>
         </Stack>
       </Box>
@@ -278,7 +272,7 @@ const MobileNavItem = ({ label, children, href }: NavItem) => {
           </Text>
           {children && (
             <Icon
-              as={ChevronDownIcon}
+              as={TbChevronDown}
               transition={"all .25s ease-in-out"}
               transform={open ? "rotate(180deg)" : ""}
               w={6}
@@ -300,7 +294,7 @@ const MobileNavItem = ({ label, children, href }: NavItem) => {
           >
             {children &&
               children.map((child) => (
-                <Link href={child.href}>
+                <Link href={child.href} key={child.label}>
                   <Box as="a" key={child.label} py={2}>
                     {child.label}
                   </Box>
