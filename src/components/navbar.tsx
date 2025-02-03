@@ -8,7 +8,6 @@ import {
   Button,
   Stack,
   Icon,
-  Popover,
   PopoverTrigger,
   PopoverContent,
   useBreakpointValue,
@@ -25,9 +24,41 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
 } from "@chakra-ui/icons";
+import { Auth } from "@supabase/auth-ui-react";
+import { Session } from "@supabase/auth-js";
+import supabase from "../supabase";
+import { useState } from "react";
+import { useEffect } from "react";
+import {
+  DialogBody,
+  DialogCloseTrigger,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogRoot,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { TbLogin, TbLogout } from "react-icons/tb";
 
 export default function WithSubnavigation() {
   const { open, onToggle } = useDisclosure();
+
+  const [session, setSession] = useState<Session | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <Box>
@@ -75,29 +106,39 @@ export default function WithSubnavigation() {
           direction={"row"}
           //   spacing={6}
         >
-          <Button
-            as={"a"}
-            fontSize={"sm"}
-            fontWeight={400}
-            // variant={"link"}
-            // href={"#"}
-          >
-            Sign In
-          </Button>
-          <Button
-            as={"a"}
-            display={{ base: "none", md: "inline-flex" }}
-            fontSize={"sm"}
-            fontWeight={600}
-            color={"white"}
-            bg={"pink.400"}
-            // href={"#"}
-            _hover={{
-              bg: "pink.300",
-            }}
-          >
-            Sign Up
-          </Button>
+          {session ? (
+            <Button
+              as={"a"}
+              fontSize="sm"
+              fontWeight={400}
+              variant="subtle"
+              onClick={() => supabase.auth.signOut()}
+            >
+              Log out <TbLogout />
+            </Button>
+          ) : (
+            <DialogRoot size="full" motionPreset="slide-in-bottom">
+              <DialogTrigger asChild>
+                <Button
+                  as={"a"}
+                  fontSize={"sm"}
+                  fontWeight={400}
+                  // variant={"link"}
+                  // href={"#"}
+                >
+                  Log in <TbLogin />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader></DialogHeader>
+                <DialogBody>
+                  <Auth supabaseClient={supabase} />
+                </DialogBody>
+                <DialogFooter></DialogFooter>
+                <DialogCloseTrigger />
+              </DialogContent>
+            </DialogRoot>
+          )}
         </Stack>
       </Flex>
 
