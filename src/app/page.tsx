@@ -1,14 +1,30 @@
 "use client";
 
 import NavBar from "@/components/navbar";
-import { Box, Button, Input, IconButton, Skeleton, Stack } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Input,
+  IconButton,
+  Skeleton,
+  Stack
+} from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import Race from "@/components/race";
 import supabase from "@/supabase";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { RaceResult } from "@/shared";
 import { TbChevronsDown, TbChevronsUp, TbX } from "react-icons/tb";
 import { Session } from "@supabase/auth-js";
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState<T>(value);
+  useEffect(() => {
+    const handler = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+  return debounced;
+}
 
 export default function Home() {
   // State for admin checking
@@ -33,16 +49,12 @@ export default function Home() {
     // Check if the logged in user is an admin by looking up their uuid in the "admin" table.
     const checkAdminStatus = async () => {
       if (session && session.user) {
-        const { data, error } = await supabase
+        const { data } = await supabase
           .from("admin")
           .select("uuid")
           .eq("uuid", session.user.id)
           .single();
-        if (data) {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
-        }
+        setIsAdmin(!!data);
       } else {
         setIsAdmin(false);
       }
@@ -148,10 +160,19 @@ export default function Home() {
     localStorage.setItem("search", search);
   }, [search]);
 
-  const filteredRaces = races?.filter((race) => {
-    const raceName = `${race.number} ${race.raceteam[0]?.team?.name} ${race.raceteam[1]?.team?.name}`;
-    return raceName.toLowerCase().includes(search.toLowerCase());
-  });
+  // Optionally debounce the search input if needed.
+  const debouncedSearch = useDebounce(search, 1000);
+
+  const [filteredRaces, setFilteredRaces] = useState<RaceResult[] | null>()
+  useEffect(() => {
+    if (!races) return;
+    const lowerSearch = debouncedSearch.toLowerCase();
+    setFilteredRaces(races.filter((race) => {
+      const raceName = `${race.number} ${race.raceteam[0]?.team?.name} ${race.raceteam[1]?.team?.name}`;
+      return raceName.toLowerCase().includes(lowerSearch);
+    }));
+  }, [races, debouncedSearch]);
+
 
   // Define a subtle pulsing animation.
   const pulseAnimation = keyframes`
@@ -194,7 +215,10 @@ export default function Home() {
         <Stack>
           {races ? (
             filteredRaces?.map((race) => (
-              <Box key={race.id} ref={race.number === currentRace ? currentRaceRef : undefined}>
+              <Box
+                key={race.id}
+                ref={race.number === currentRace ? currentRaceRef : undefined}
+              >
                 <Race
                   race={race}
                   active={race.number === currentRace}
@@ -220,7 +244,13 @@ export default function Home() {
         </Stack>
       </Box>
       {!isCurrentRaceVisible && (
-        <Box position="fixed" bottom="20px" left="50%" transform="translateX(-50%)" zIndex="200">
+        <Box
+          position="fixed"
+          bottom="20px"
+          left="50%"
+          transform="translateX(-50%)"
+          zIndex="200"
+        >
           <Button
             onClick={scrollToCurrentRace}
             borderRadius="md"
