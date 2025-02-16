@@ -16,6 +16,7 @@ import { RaceResult } from "../shared";
 import { FaCrown } from "react-icons/fa";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import RaceDialog from "./race-dialog";
 
 // Extend Day.js with the relativeTime plugin.
 dayjs.extend(relativeTime);
@@ -47,10 +48,13 @@ function highlightText(text: string, search: string) {
   );
 }
 
+// Helper to compute a sum of numbers.
+const sumResult = (result: number[] | null): number =>
+  result ? result.reduce((acc, val) => acc + val, 0) : 0;
+
 // Helper to format finish time.
-// If the finish time is today or yesterday, show relative time ("Today, HH:mm:ss"/"Yesterday, HH:mm:ss").
-// Otherwise, show the full date/time in "DD/MM/YYYY, HH:mm:ss" format.
-// If the finish time is invalid, return an empty string.
+// If finish time is today or yesterday, show relative text;
+// Otherwise, show full date/time in "DD/MM/YYYY, HH:mm:ss" format.
 function formatFinishTime(finishTime: dayjs.Dayjs | null): string {
   if (!finishTime || !finishTime.isValid()) return "";
   const now = dayjs();
@@ -61,16 +65,13 @@ function formatFinishTime(finishTime: dayjs.Dayjs | null): string {
   return finishTime.format("DD/MM/YYYY, HH:mm:ss");
 }
 
-const sumResult = (result: number[] | null): number =>
-  result ? result.reduce((acc, val) => acc + val, 0) : 0;
-
 function RaceCard({ race, active, isStand, search }: RaceCardProps) {
-  // Hardcoded light mode styling.
+  // Styling for light mode.
   const bgColor = "white";
   const borderColor = active ? "green.500" : "gray.200";
   const shadow = active ? "lg" : "md";
 
-  // Prepare team names and results.
+  // Extract team names and result strings.
   const leftTeamName = race.raceteam[0]?.team.name || "";
   const rightTeamName = race.raceteam[1]?.team.name || "";
   const leftResultStr = race.raceteam[0]?.result?.join(", ") || "";
@@ -88,8 +89,17 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
   const rightIsWinner =
     leftScore !== null && rightScore !== null && rightScore < leftScore;
 
+  // Header badge:
+  // If there's a valid finish time, display its formatted version.
+  // Otherwise, display "Current Race" or "Go to Stand".
   let headerBadge = null;
-  if (active) {
+  if (race.finishtime) {
+    headerBadge = (
+      <Text fontSize="sm" px={2} py={1} borderRadius="md" color="gray.500">
+        {formatFinishTime(race.finishtime)}
+      </Text>
+    );
+  } else if (active) {
     headerBadge = (
       <Badge fontSize="sm" px={2} py={1} borderRadius="md" bg="green.500" color="white">
         Current Race
@@ -101,12 +111,6 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
         Go to Stand
       </Badge>
     );
-  } else {
-    headerBadge = (
-      <Text fontSize="sm" px={2} py={1} color="gray.500">
-        {formatFinishTime(race.finishtime)}
-      </Text>
-    )
   }
 
   return (
@@ -126,9 +130,7 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
         </Text>
         {headerBadge}
       </Flex>
-
       <Box height="1px" bg="gray.200" my={3} />
-
       <Flex justify="space-between" align="center">
         {race.raceteam[0] && (
           <Box flex="1" mr={2}>
@@ -138,7 +140,13 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
             <Text fontSize="sm" color="gray.600">
               {highlightText(leftResultStr, search || "")}
               {leftIsWinner && (
-                <Box as="span" ml={1} color="#B59410" display="inline-flex" verticalAlign="middle">
+                <Box
+                  as="span"
+                  ml={1}
+                  color="#B59410"
+                  display="inline-flex"
+                  verticalAlign="middle"
+                >
                   <FaCrown />
                 </Box>
               )}
@@ -155,7 +163,13 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
             </Text>
             <Text fontSize="sm" color="gray.600">
               {rightIsWinner && (
-                <Box as="span" mr={1} color="#B59410" display="inline-flex" verticalAlign="middle">
+                <Box
+                  as="span"
+                  mr={1}
+                  color="#B59410"
+                  display="inline-flex"
+                  verticalAlign="middle"
+                >
                   <FaCrown />
                 </Box>
               )}
@@ -189,6 +203,7 @@ export default function Race({ race, active, isStand, search }: RaceProps) {
         </DialogHeader>
         <DialogBody>
           <RaceCard race={race} active={active} isStand={isStand} search={search} />
+          <RaceDialog race={race} />
         </DialogBody>
         <DialogFooter>
           <DialogActionTrigger asChild>
