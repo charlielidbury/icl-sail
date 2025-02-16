@@ -148,19 +148,21 @@ export default function Home() {
     }
     return "";
   });
-  useEffect(() => {
-    localStorage.setItem("search", search);
-  }, [search]);
 
   // Optionally debounce the search input if needed.
   const [debouncedSearch, setDebouncedSearch] = useState<string>("");
   useEffect(() => {
-    const handler = setTimeout(() => setDebouncedSearch(search), 250);
+    const handler = setTimeout(() => setDebouncedSearch(search), 100);
     return () => clearTimeout(handler);
   }, [search]);
 
+  useEffect(() => {
+    localStorage.setItem("search", debouncedSearch);
+  }, [debouncedSearch]);
+
   const [filteredRaces, setFilteredRaces] = useState<RaceResult[] | null>(null);
   useEffect(() => {
+    console.log("UPDATEING FILTERED RACES");
     if (!races) return;
     const lowerSearch = debouncedSearch.toLowerCase();
     setFilteredRaces(
@@ -231,7 +233,7 @@ export default function Home() {
                     race.number > currentRace &&
                     race.number - currentRace <= goToStandOffset
                   }
-                  search={search} // pass search term for inline highlighting in RaceCard
+                  search={debouncedSearch} // pass search term for inline highlighting in RaceCard
                 />
               </Box>
             ))
