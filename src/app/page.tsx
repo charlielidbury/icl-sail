@@ -12,7 +12,7 @@ import {
 import { keyframes } from "@emotion/react";
 import Race from "@/components/race";
 import supabase from "@/supabase";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RaceResult } from "@/shared";
 import { TbChevronsDown, TbChevronsUp, TbX } from "react-icons/tb";
 import { Session } from "@supabase/auth-js";
@@ -20,26 +20,17 @@ import { useColorMode } from "@/components/ui/color-mode";
 import dayjs from "dayjs";
 
 export default function Home() {
-  // State for admin checking
+  // Admin/session state.
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   useEffect(() => {
-    // Get current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-    // Subscribe to auth state changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
+    supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => setSession(session));
     return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
-    // Check if the logged in user is an admin by looking up their uuid in the "admin" table.
     const checkAdminStatus = async () => {
       if (session && session.user) {
         const { data } = await supabase
@@ -55,7 +46,7 @@ export default function Home() {
     checkAdminStatus();
   }, [session]);
 
-  // Fetch all races
+  // Fetch all races (including finishtime) with raceteam.
   const [races, setRaces] = useState<RaceResult[] | null>(null);
   useEffect(() => {
     supabase
@@ -76,9 +67,8 @@ export default function Home() {
       )
       .order("number", { ascending: false })
       .then(({ data, error }) => {
-        if (data === null) {
-          return;
-        }
+        if (data === null) return;
+        // Transform finishtime into a Day.js object (or null if not present)
         setRaces(
           data.map((d) => ({
             id: d.id,
@@ -96,7 +86,7 @@ export default function Home() {
       });
   }, []);
 
-  // Fetch settings to get go_to_stand offset (a 2-byte signed int)
+  // Fetch settings (go_to_stand offset)
   const [goToStandOffset, setGoToStandOffset] = useState<number | null>(null);
   useEffect(() => {
     supabase
@@ -104,14 +94,12 @@ export default function Home() {
       .select("go_to_stand")
       .single()
       .then(({ data, error }) => {
-        if (data) {
-          setGoToStandOffset(data.go_to_stand);
-        }
+        if (data) setGoToStandOffset(data.go_to_stand);
         console.log({ data, error });
       });
   }, []);
 
-  // Determine the current race by iterating through races until a race with a result is found.
+  // Determine current race (first race with no result)
   const [currentRace, setCurrentRace] = useState<number | null>(null);
   useEffect(() => {
     if (!races) return;
@@ -125,7 +113,7 @@ export default function Home() {
     setCurrentRace(cr);
   }, [races]);
 
-  // We'll always scroll to the current race.
+  // Scroll to current race.
   const currentRaceRef = useRef<HTMLDivElement>(null);
   const scrollToCurrentRace = () => {
     currentRaceRef.current?.scrollIntoView({
@@ -133,12 +121,8 @@ export default function Home() {
       block: "center",
     });
   };
-
-  // Auto-scroll on load
   useEffect(() => {
-    if (currentRace !== null && races) {
-      scrollToCurrentRace();
-    }
+    if (currentRace !== null && races) scrollToCurrentRace();
   }, [currentRace, races]);
 
   // Observer to detect if the current race card is in view.
@@ -151,37 +135,31 @@ export default function Home() {
         setIsCurrentRaceVisible(entry.isIntersecting);
         setIsCurrentRaceAbove(entry.boundingClientRect.top < 0);
       },
-      {
-        root: null,
-        threshold: 0.5,
-      }
+      { root: null, threshold: 0.5 }
     );
     observer.observe(currentRaceRef.current);
     return () => observer.disconnect();
   }, [currentRace]);
 
-  // Persist the search filter in local storage.
+  // Search filter state.
   const [search, setSearch] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("search") || "";
-    }
+    if (typeof window !== "undefined") return localStorage.getItem("search") || "";
     return "";
   });
+  useEffect(() => {
+    localStorage.setItem("search", search);
+  }, [search]);
 
-  // Optionally debounce the search input if needed.
+  // Debounce search input.
   const [debouncedSearch, setDebouncedSearch] = useState<string>("");
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearch(search), 100);
     return () => clearTimeout(handler);
   }, [search]);
 
-  useEffect(() => {
-    localStorage.setItem("search", debouncedSearch);
-  }, [debouncedSearch]);
-
   const [filteredRaces, setFilteredRaces] = useState<RaceResult[] | null>(null);
   useEffect(() => {
-    console.log("UPDATEING FILTERED RACES");
+    console.log("Updating filtered races");
     if (!races) return;
     const lowerSearch = debouncedSearch.toLowerCase();
     setFilteredRaces(
@@ -192,7 +170,6 @@ export default function Home() {
     );
   }, [races, debouncedSearch]);
 
-  // Define a subtle pulsing animation.
   const pulseAnimation = keyframes`
     0% { transform: scale(1); }
     50% { transform: scale(1.01); }
@@ -252,7 +229,7 @@ export default function Home() {
                     race.number > currentRace &&
                     race.number - currentRace <= goToStandOffset
                   }
-                  search={debouncedSearch} // pass search term for inline highlighting in RaceCard
+                  search={debouncedSearch} // pass debounced search for inline highlighting in RaceCard
                 />
               </Box>
             ))
@@ -268,13 +245,7 @@ export default function Home() {
         </Stack>
       </Box>
       {!isCurrentRaceVisible && (
-        <Box
-          position="fixed"
-          bottom="20px"
-          left="50%"
-          transform="translateX(-50%)"
-          zIndex="200"
-        >
+        <Box position="fixed" bottom="20px" left="50%" transform="translateX(-50%)" zIndex="200">
           <Button
             onClick={scrollToCurrentRace}
             borderRadius="md"
