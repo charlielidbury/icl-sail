@@ -7,7 +7,7 @@ import {
   Input,
   IconButton,
   Skeleton,
-  Stack
+  Stack,
 } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import Race from "@/components/race";
@@ -16,15 +16,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { RaceResult } from "@/shared";
 import { TbChevronsDown, TbChevronsUp, TbX } from "react-icons/tb";
 import { Session } from "@supabase/auth-js";
-
-function useDebounce<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState<T>(value);
-  useEffect(() => {
-    const handler = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(handler);
-  }, [value, delay]);
-  return debounced;
-}
 
 export default function Home() {
   // State for admin checking
@@ -161,18 +152,24 @@ export default function Home() {
   }, [search]);
 
   // Optionally debounce the search input if needed.
-  const debouncedSearch = useDebounce(search, 1000);
+  const [debouncedSearch, setDebouncedSearch] = useState<string>("");
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedSearch(search), 250);
+    return () => clearTimeout(handler);
+  }, [search]);
 
-  const [filteredRaces, setFilteredRaces] = useState<RaceResult[] | null>()
+  const [filteredRaces, setFilteredRaces] = useState<RaceResult[] | null>(null);
+
   useEffect(() => {
     if (!races) return;
     const lowerSearch = debouncedSearch.toLowerCase();
-    setFilteredRaces(races.filter((race) => {
-      const raceName = `${race.number} ${race.raceteam[0]?.team?.name} ${race.raceteam[1]?.team?.name}`;
-      return raceName.toLowerCase().includes(lowerSearch);
-    }));
-  }, [races, debouncedSearch]);
-
+    setFilteredRaces(
+      races.filter((race) => {
+        const raceName = `${race.number} ${race.raceteam[0]?.team?.name} ${race.raceteam[1]?.team?.name}`;
+        return raceName.toLowerCase().includes(lowerSearch);
+      })
+    );
+  }, [debouncedSearch]);
 
   // Define a subtle pulsing animation.
   const pulseAnimation = keyframes`
