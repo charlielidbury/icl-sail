@@ -11,6 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { RaceResult } from "../shared";
+import { FaCrown } from "react-icons/fa";
 
 interface RaceCardProps {
   race: RaceResult;
@@ -21,19 +22,13 @@ interface RaceCardProps {
 
 function highlightText(text: string, search: string) {
   if (!search) return text;
-  // Create a case-insensitive regex for the search term.
   const regex = new RegExp(`(${search})`, "gi");
   const parts = text.split(regex);
   return (
     <>
       {parts.map((part, i) =>
         regex.test(part) ? (
-          <Box
-            key={i}
-            as="span"
-            textDecoration="underline"
-            fontWeight="bold"
-          >
+          <Box key={i} as="span" textDecoration="underline" fontWeight="bold">
             {part}
           </Box>
         ) : (
@@ -44,6 +39,9 @@ function highlightText(text: string, search: string) {
   );
 }
 
+const sumResult = (result: number[] | null): number =>
+  result ? result.reduce((acc, val) => acc + val, 0) : 0;
+
 function RaceCard({ race, active, isStand, search }: RaceCardProps) {
   // Hardcoded light mode values
   const bgColor = "white";
@@ -52,9 +50,26 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
 
   // Prepare team names and results.
   const leftTeamName = race.raceteam[0]?.team.name || "";
-  const leftResult = race.raceteam[0]?.result?.join(", ") || "Pending";
   const rightTeamName = race.raceteam[1]?.team.name || "";
-  const rightResult = race.raceteam[1]?.result?.join(", ") || "Pending";
+  const leftResultStr = race.raceteam[0]?.result?.join(", ") || "Pending";
+  const rightResultStr = race.raceteam[1]?.result?.join(", ") || "Pending";
+
+  // Compute scores if available.
+  const leftScore =
+    race.raceteam[0]?.result !== null ? sumResult(race.raceteam[0].result) : null;
+  const rightScore =
+    race.raceteam[1]?.result !== null ? sumResult(race.raceteam[1].result) : null;
+
+  // Determine winner if both scores are available.
+  // For this leaderboard, lower points wins.
+  const leftIsWinner =
+    leftScore !== null &&
+    rightScore !== null &&
+    leftScore < rightScore;
+  const rightIsWinner =
+    leftScore !== null &&
+    rightScore !== null &&
+    rightScore < leftScore;
 
   return (
     <Box
@@ -83,7 +98,6 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
         )}
       </Flex>
 
-      {/* Custom Divider */}
       <Box height="1px" bg="gray.200" my={3} />
 
       <Flex justify="space-between" align="center">
@@ -93,7 +107,12 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
               {highlightText(leftTeamName, search || "")}
             </Text>
             <Text fontSize="sm" color="gray.600">
-              {highlightText(leftResult, search || "")}
+              {highlightText(leftResultStr, search || "")}
+              {leftIsWinner && (
+                <Box as="span" ml={1} color="#B59410" display="inline-flex" verticalAlign="middle">
+                  <FaCrown />
+                </Box>
+              )}
             </Text>
           </Box>
         )}
@@ -106,7 +125,12 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
               {highlightText(rightTeamName, search || "")}
             </Text>
             <Text fontSize="sm" color="gray.600">
-              {highlightText(rightResult, search || "")}
+              {rightIsWinner && (
+                <Box as="span" mr={1} color="#B59410" display="inline-flex" verticalAlign="middle">
+                  <FaCrown />
+                </Box>
+              )}
+              {highlightText(rightResultStr, search || "")}
             </Text>
           </Box>
         )}
