@@ -67,14 +67,14 @@ const sumResult = (result: number[] | null): number =>
 function RaceCard({ race, active, isStand, search }: RaceCardProps) {
   // Hardcoded light mode styling.
   const bgColor = "white";
-  const borderColor = active ? "red.500" : "gray.200";
+  const borderColor = active ? "green.500" : "gray.200";
   const shadow = active ? "lg" : "md";
 
   // Prepare team names and results.
   const leftTeamName = race.raceteam[0]?.team.name || "";
   const rightTeamName = race.raceteam[1]?.team.name || "";
-  const leftResultStr = race.raceteam[0]?.result?.join(", ") || "Pending";
-  const rightResultStr = race.raceteam[1]?.result?.join(", ") || "Pending";
+  const leftResultStr = race.raceteam[0]?.result?.join(", ") || "";
+  const rightResultStr = race.raceteam[1]?.result?.join(", ") || "";
 
   // Compute scores if available.
   const leftScore =
@@ -145,7 +145,7 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
             </Text>
           </Box>
         )}
-        <Text fontSize="2xl" fontWeight="bold" color="gray.500" mx={2}>
+        <Text fontSize="2xl" color="gray.500" mx={2}>
           vs
         </Text>
         {race.raceteam[1] && (

@@ -191,7 +191,7 @@ export default function Home() {
             <Input
               placeholder="Search"
               variant="subtle"
-              bg="white"
+              bg="light-gray"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
