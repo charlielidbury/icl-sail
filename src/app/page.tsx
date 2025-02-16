@@ -16,6 +16,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { RaceResult } from "@/shared";
 import { TbChevronsDown, TbChevronsUp, TbX } from "react-icons/tb";
 import { Session } from "@supabase/auth-js";
+import { useColorMode } from "@/components/ui/color-mode";
 
 export default function Home() {
   // State for admin checking
@@ -159,7 +160,6 @@ export default function Home() {
   }, [search]);
 
   const [filteredRaces, setFilteredRaces] = useState<RaceResult[] | null>(null);
-
   useEffect(() => {
     if (!races) return;
     const lowerSearch = debouncedSearch.toLowerCase();
@@ -169,7 +169,7 @@ export default function Home() {
         return raceName.toLowerCase().includes(lowerSearch);
       })
     );
-  }, [debouncedSearch]);
+  }, [races, debouncedSearch]);
 
   // Define a subtle pulsing animation.
   const pulseAnimation = keyframes`
@@ -177,6 +177,12 @@ export default function Home() {
     50% { transform: scale(1.01); }
     100% { transform: scale(1); }
   `;
+
+  // Set color mode to light on load.
+  const { setColorMode } = useColorMode();
+  useEffect(() => {
+    setColorMode("light");
+  }, []);
 
   return (
     <>
