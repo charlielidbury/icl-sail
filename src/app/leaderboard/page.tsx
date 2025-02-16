@@ -3,33 +3,30 @@
 import NavBar from "@/components/navbar";
 import {
     Box,
-    Skeleton,
     Stack,
+    Skeleton,
     Text,
     Heading,
     Flex
 } from "@chakra-ui/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import supabase from "@/supabase";
 import { Session } from "@supabase/auth-js";
+import { useColorMode } from "@/components/ui/color-mode";
 
-// Define a helper type for leaderboard statistics.
-type LeaderboardStats = {
-    teamId: string;
-    teamName: string;
-    wins: number;
+type LeaderboardRow = {
+    avg_pts: number;
     losses: number;
-    totalPoints: number;
-    games: number;
-    avgPoints: number;
+    order: number;
+    wins: number;
+    team: {
+        id: string;
+        name: string;
+    };
 };
 
-// Helper function to sum an array of numbers (or return 0 if null).
-const sumResult = (result: number[] | null): number =>
-    result ? result.reduce((sum, num) => sum + num, 0) : 0;
-
 export default function Leaderboard() {
-    // Session and admin checking state (similar to page.tsx).
+    // Session and admin checking state.
     const [session, setSession] = useState<Session | null>(null);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
@@ -59,96 +56,39 @@ export default function Leaderboard() {
         checkAdminStatus();
     }, [session]);
 
-    // Fetch races with their related raceteam rows (including nested team info).
-    const [races, setRaces] = useState<any[] | null>(null);
+    // Fetch leaderboard data from the database.
+    const [leaderboard, setLeaderboard] = useState<LeaderboardRow[] | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     useEffect(() => {
         supabase
-            .from("race")
-            .select(
-                `
-          id,
-          number,
-          video,
-          raceteam (
-            team ( id, name ),
-            result,
-            halfflight
-          )
-        `
-            )
-            .order("number", { ascending: false })
+            .from("leaderboard")
+            // Using the relationship to join team data.
+            .select(`
+        avg_pts,
+        losses,
+        order,
+        wins,
+        team (
+          id, name
+        )
+      `)
+            // Order by the "order" field (or you could order by avg_pts if preferred).
+            .order("order", { ascending: true })
             .then(({ data, error }) => {
                 if (error) {
-                    console.error("Error fetching races:", error);
+                    console.error("Error fetching leaderboard:", error);
                 } else {
-                    setRaces(data);
+                    setLeaderboard(data as LeaderboardRow[]);
                 }
                 setLoading(false);
             });
     }, []);
 
-    // Aggregate leaderboard stats.
-    const leaderboardStats: LeaderboardStats[] = useMemo(() => {
-        const statsMap: { [teamId: string]: LeaderboardStats } = {};
-        if (!races) return [];
-
-        races.forEach((race) => {
-            // Process only races with exactly two raceteam rows.
-            if (!race.raceteam || race.raceteam.length < 2) return;
-            const [rtA, rtB] = race.raceteam;
-
-            // Only process if both teams have non-null results.
-            if (rtA.result === null || rtB.result === null) return;
-
-            const scoreA = sumResult(rtA.result);
-            const scoreB = sumResult(rtB.result);
-
-            // Skip tied races (or handle ties as desired).
-            if (scoreA === scoreB) return;
-
-            const winner = scoreA > scoreB ? rtA : rtB;
-            const loser = scoreA > scoreB ? rtB : rtA;
-            const winnerScore = scoreA > scoreB ? scoreA : scoreB;
-            const loserScore = scoreA > scoreB ? scoreB : scoreA;
-
-            // Helper to update team stats.
-            const updateStats = (teamRow: any, isWin: boolean, points: number) => {
-                const teamId = teamRow.team.id;
-                const teamName = teamRow.team.name;
-                if (!statsMap[teamId]) {
-                    statsMap[teamId] = {
-                        teamId,
-                        teamName,
-                        wins: 0,
-                        losses: 0,
-                        totalPoints: 0,
-                        games: 0,
-                        avgPoints: 0,
-                    };
-                }
-                statsMap[teamId].games += 1;
-                statsMap[teamId].totalPoints += points;
-                if (isWin) {
-                    statsMap[teamId].wins += 1;
-                } else {
-                    statsMap[teamId].losses += 1;
-                }
-            };
-
-            updateStats(winner, true, winnerScore);
-            updateStats(loser, false, loserScore);
-        });
-
-        const leaderboardArray = Object.values(statsMap).map((stats) => ({
-            ...stats,
-            avgPoints: stats.games > 0 ? stats.totalPoints / stats.games : 0,
-        }));
-
-        // Sort ascending: lowest average points at the top.
-        leaderboardArray.sort((a, b) => a.avgPoints - b.avgPoints);
-        return leaderboardArray;
-    }, [races]);
+    // Ensure the app is in light mode.
+    const { setColorMode } = useColorMode();
+    useEffect(() => {
+        setColorMode("light");
+    }, []);
 
     return (
         <>
@@ -167,10 +107,10 @@ export default function Leaderboard() {
                     </Stack>
                 ) : (
                     <Stack>
-                        {leaderboardStats.length > 0 ? (
-                            leaderboardStats.map((stats) => (
+                        {leaderboard && leaderboard.length > 0 ? (
+                            leaderboard.map((row) => (
                                 <Box
-                                    key={stats.teamId}
+                                    key={row.team.id}
                                     bg="white"
                                     borderWidth="1px"
                                     borderColor="gray.200"
@@ -180,7 +120,7 @@ export default function Leaderboard() {
                                 >
                                     <Flex justify="space-between" align="center" mb={2}>
                                         <Text fontSize="xl" fontWeight="bold">
-                                            {stats.teamName}
+                                            {row.team.name}
                                         </Text>
                                     </Flex>
                                     <Flex justify="space-around">
@@ -189,7 +129,7 @@ export default function Leaderboard() {
                                                 Wins
                                             </Text>
                                             <Text fontSize="lg" fontWeight="semibold">
-                                                {stats.wins}
+                                                {row.wins}
                                             </Text>
                                         </Box>
                                         <Box textAlign="center">
@@ -197,7 +137,7 @@ export default function Leaderboard() {
                                                 Losses
                                             </Text>
                                             <Text fontSize="lg" fontWeight="semibold">
-                                                {stats.losses}
+                                                {row.losses}
                                             </Text>
                                         </Box>
                                         <Box textAlign="center">
@@ -205,7 +145,7 @@ export default function Leaderboard() {
                                                 Avg. Points
                                             </Text>
                                             <Text fontSize="lg" fontWeight="semibold">
-                                                {stats.avgPoints.toFixed(1)}
+                                                {row.avg_pts.toFixed(1)}
                                             </Text>
                                         </Box>
                                     </Flex>
