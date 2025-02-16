@@ -1,7 +1,7 @@
 "use client";
 
 import NavBar from "@/components/navbar";
-import { Box, Button, For, Input, Skeleton, Stack } from "@chakra-ui/react";
+import { Box, Button, Input, Skeleton, Stack } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import Race from "@/components/race";
 import supabase from "@/supabase";
@@ -33,23 +33,37 @@ export default function Home() {
       });
   }, []);
 
-  const currentRaceRef = useRef<HTMLDivElement>(null);
+  // Fetch settings to get go_to_stand offset (a 2-byte signed int)
+  const [goToStandOffset, setGoToStandOffset] = useState<number | null>(null);
+  useEffect(() => {
+    supabase
+      .from("settings")
+      .select("go_to_stand")
+      .single()
+      .then(({ data, error }) => {
+        if (data) {
+          setGoToStandOffset(data.go_to_stand);
+        }
+        console.log({ data, error });
+      });
+  }, []);
+
+  // Determine the current race by iterating through races until a race with a result is found.
   const [currentRace, setCurrentRace] = useState<number | null>(null);
   useEffect(() => {
-    if (races == null) return;
-
-    // iterate through races in descending race number,
-    // once a race with results is found, the one before is the current race
+    if (!races) return;
     let cr: number | null = null;
     for (let i = 0; i < races.length; i++) {
       if (races[i].raceteam[0] && races[i].raceteam[0].result !== null) {
-        break; // hit a completed race
+        break;
       }
       cr = races[i].number;
     }
     setCurrentRace(cr);
   }, [races]);
 
+  // We'll always scroll to the current race.
+  const currentRaceRef = useRef<HTMLDivElement>(null);
   const scrollToCurrentRace = () => {
     currentRaceRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -57,50 +71,40 @@ export default function Home() {
     });
   };
 
-  // Automatically scroll on load when races and currentRace are set.
+  // Auto-scroll on load (comment out if you wish to test the floating button)
   useEffect(() => {
     if (currentRace !== null && races) {
       scrollToCurrentRace();
     }
   }, [currentRace, races]);
 
-  // State to control the floating button
+  // Observer to detect if the current race card is in view.
   const [isCurrentRaceVisible, setIsCurrentRaceVisible] = useState(true);
-  // New state to know whether current race is above the viewport
   const [isCurrentRaceAbove, setIsCurrentRaceAbove] = useState(false);
-
-  // Re-run the observer effect when the current race changes
   useEffect(() => {
     if (!currentRaceRef.current) return;
-
     const observer = new IntersectionObserver(
       ([entry]) => {
         setIsCurrentRaceVisible(entry.isIntersecting);
-        // if the element's top is less than 0, it is above the viewport.
         setIsCurrentRaceAbove(entry.boundingClientRect.top < 0);
       },
       {
-        root: null, // use the viewport
-        threshold: 0.5, // 50% visibility threshold
+        root: null,
+        threshold: 0.5,
       }
     );
-
     observer.observe(currentRaceRef.current);
-
-    return () => {
-      observer.disconnect();
-    };
+    return () => observer.disconnect();
   }, [currentRace]);
 
-  // search filter
+  // Search filter for races
   const [search, setSearch] = useState("");
   const filteredRaces = races?.filter((race) => {
     const raceName = `${race.number} ${race.raceteam[0]?.team?.name} ${race.raceteam[1]?.team?.name}`;
-    console.log(raceName);
     return raceName.toLowerCase().includes(search.toLowerCase());
   });
 
-  // Define a simple pulsing animation using Chakra's keyframes.
+  // Define a subtle pulsing animation.
   const pulseAnimation = keyframes`
     0% { transform: scale(1); }
     50% { transform: scale(1.01); }
@@ -123,13 +127,22 @@ export default function Home() {
       <Box p={4}>
         <Stack>
           {races ? (
-            <For each={filteredRaces}>
-              {(race) => (
-                <Box ref={race.number === currentRace ? currentRaceRef : undefined}>
-                  <Race key={race.id} race={race} active={race.number === currentRace} />
-                </Box>
-              )}
-            </For>
+            filteredRaces?.map((race) => (
+              <Box key={race.id} ref={race.number === currentRace ? currentRaceRef : undefined}>
+                <Race
+                  race={race}
+                  active={race.number === currentRace}
+                  isStand={
+                    currentRace !== null &&
+                    goToStandOffset !== null &&
+                    // Mark as "Go To Stand" if the race number comes before (i.e. higher than) the current race
+                    // and the difference is within the offset.
+                    race.number > currentRace &&
+                    race.number - currentRace <= goToStandOffset
+                  }
+                />
+              </Box>
+            ))
           ) : (
             <>
               <Skeleton height="80px" variant="shine" />
@@ -141,30 +154,30 @@ export default function Home() {
           )}
         </Stack>
       </Box>
-      {/* Floating button in bottom right */}
+      {/* Floating jump button at bottom center */}
       {!isCurrentRaceVisible && (
         <Box
-        position="fixed"
-        bottom="20px"
-        left="50%"
-        transform="translateX(-50%)"
-        zIndex="200"
-      >
-        <Button
-          onClick={scrollToCurrentRace}
-          borderRadius="md"
-          size="sm"
-          colorScheme="blue"
-          animation={`${pulseAnimation} 2s infinite`}
+          position="fixed"
+          bottom="20px"
+          left="50%"
+          transform="translateX(-50%)"
+          zIndex="200"
         >
-          <Box display="flex" alignItems="center">
-            <span>Jump to Current Race</span>
-            <Box ml={2}>
-              {isCurrentRaceAbove ? <TbChevronsUp /> : <TbChevronsDown />}
+          <Button
+            onClick={scrollToCurrentRace}
+            borderRadius="md"
+            size="sm"
+            colorScheme="blue"
+            animation={`${pulseAnimation} 2s infinite`}
+          >
+            <Box display="flex" alignItems="center">
+              <span>Jump to Current Race</span>
+              <Box ml={2}>
+                {isCurrentRaceAbove ? <TbChevronsUp /> : <TbChevronsDown />}
+              </Box>
             </Box>
-          </Box>
-        </Button>
-      </Box>    
+          </Button>
+        </Box>
       )}
     </>
   );
