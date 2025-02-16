@@ -103,7 +103,7 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
   } else if (race.finishtime) {
     headerBadge = (
       <Text fontSize="sm" px={2} py={1} borderRadius="md" color="gray.500">
-        {race.finishtime.isValid() ? race.finishtime.format("DD/MM/YYYY, HH:mm") : ""}
+        {race.finishtime.isValid() ? formatFinishTime(race.finishtime) : ""}
       </Text>
     );
   }

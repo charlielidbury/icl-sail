@@ -26,21 +26,21 @@ export type Database = {
           colour: string | null
           id: string
           name: string
-          numbers: number[] | null
+          numbers: number[]
           symbol: string | null
         }
         Insert: {
           colour?: string | null
           id?: string
           name: string
-          numbers?: number[] | null
+          numbers: number[]
           symbol?: string | null
         }
         Update: {
           colour?: string | null
           id?: string
           name?: string
-          numbers?: number[] | null
+          numbers?: number[]
           symbol?: string | null
         }
         Relationships: []
@@ -48,6 +48,7 @@ export type Database = {
       leaderboard: {
         Row: {
           avg_pts: number
+          league: string
           losses: number
           order: number
           team: string
@@ -55,6 +56,7 @@ export type Database = {
         }
         Insert: {
           avg_pts: number
+          league?: string
           losses: number
           order?: number
           team: string
@@ -62,6 +64,7 @@ export type Database = {
         }
         Update: {
           avg_pts?: number
+          league?: string
           losses?: number
           order?: number
           team?: string
