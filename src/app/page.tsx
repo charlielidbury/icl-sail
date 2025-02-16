@@ -1,13 +1,13 @@
 "use client";
 
 import NavBar from "@/components/navbar";
-import { Box, Button, Input, Skeleton, Stack } from "@chakra-ui/react";
+import { Box, Button, Input, IconButton, Skeleton, Stack } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import Race from "@/components/race";
 import supabase from "@/supabase";
 import { useEffect, useRef, useState } from "react";
 import { RaceResult } from "@/shared";
-import { TbChevronsDown, TbChevronsUp } from "react-icons/tb";
+import { TbChevronsDown, TbChevronsUp, TbX } from "react-icons/tb";
 import { Session } from "@supabase/auth-js";
 
 export default function Home() {
@@ -165,12 +165,29 @@ export default function Home() {
       <Box position="sticky" top="0" zIndex="100">
         <NavBar isAdmin={isAdmin} />
         <Box p={4} bg="white">
-          <Input
-            placeholder="Search"
-            variant="subtle"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <Box position="relative">
+            <Input
+              placeholder="Search"
+              variant="subtle"
+              bg="white"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            {search && (
+              <IconButton
+                aria-label="Clear search"
+                size="xs"
+                variant="ghost"
+                onClick={() => setSearch("")}
+                position="absolute"
+                right="0.5rem"
+                top="50%"
+                transform="translateY(-50%)"
+              >
+                <TbX />
+              </IconButton>
+            )}
+          </Box>
         </Box>
       </Box>
       <Box p={4}>
@@ -187,7 +204,7 @@ export default function Home() {
                     race.number > currentRace &&
                     race.number - currentRace <= goToStandOffset
                   }
-                  search={search} // filter underline
+                  search={search} // pass search term for inline highlighting in RaceCard
                 />
               </Box>
             ))
