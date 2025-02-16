@@ -182,12 +182,14 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
         </Flex>
       </Box>
       <Box>
-        {race.video && (
+        {race.video ? (
           <Box mt={3} borderRadius={"none"}>
             <Badge w="full" display="flex" justifyContent="center" textAlign="center" fontSize="xxs" pt="2" pb="2" fontWeight={"bold"} bg="#004a79" color="white" borderTopRadius="none" borderBottomLeftRadius="md" borderBottomRightRadius="md">
               DRONE FOOTAGE
             </Badge>
           </Box>
+        ) : (
+          <Box pb="4" />
         )}
       </Box>
     </Box>
