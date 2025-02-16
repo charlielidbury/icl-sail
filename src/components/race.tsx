@@ -48,21 +48,17 @@ function highlightText(text: string, search: string) {
   );
 }
 
-// Helper to compute a sum of numbers.
 const sumResult = (result: number[] | null): number =>
   result ? result.reduce((acc, val) => acc + val, 0) : 0;
 
-// Helper to format finish time.
-// If finish time is today or yesterday, show relative text;
-// Otherwise, show full date/time in "DD/MM/YYYY, HH:mm:ss" format.
 function formatFinishTime(finishTime: dayjs.Dayjs | null): string {
   if (!finishTime || !finishTime.isValid()) return "";
   const now = dayjs();
   const diffDays = now.diff(finishTime, "day");
-  const timeFormatted = finishTime.format("HH:mm:ss");
+  const timeFormatted = finishTime.format("HH:mm");
   if (diffDays === 0) return `Today, ${timeFormatted}`;
   if (diffDays === 1) return `Yesterday, ${timeFormatted}`;
-  return finishTime.format("DD/MM/YYYY, HH:mm:ss");
+  return finishTime.format("DD/MM/YYYY, HH:mm");
 }
 
 function RaceCard({ race, active, isStand, search }: RaceCardProps) {
@@ -71,7 +67,7 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
   const borderColor = active ? "green.500" : "gray.200";
   const shadow = active ? "lg" : "md";
 
-  // Extract team names and result strings.
+  // Prepare team names and result strings.
   const leftTeamName = race.raceteam[0]?.team.name || "";
   const rightTeamName = race.raceteam[1]?.team.name || "";
   const leftResultStr = race.raceteam[0]?.result?.join(", ") || "";
@@ -89,17 +85,10 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
   const rightIsWinner =
     leftScore !== null && rightScore !== null && rightScore < leftScore;
 
-  // Header badge:
-  // If there's a valid finish time, display its formatted version.
-  // Otherwise, display "Current Race" or "Go to Stand".
+  // Header badge: if finish time exists, display formatted finish time; otherwise "Current Race" or "Go to Stand".
   let headerBadge = null;
-  if (race.finishtime) {
-    headerBadge = (
-      <Text fontSize="sm" px={2} py={1} borderRadius="md" color="gray.500">
-        {formatFinishTime(race.finishtime)}
-      </Text>
-    );
-  } else if (active) {
+
+  if (active) {
     headerBadge = (
       <Badge fontSize="sm" px={2} py={1} borderRadius="md" bg="green.500" color="white">
         Current Race
@@ -111,6 +100,12 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
         Go to Stand
       </Badge>
     );
+  } else if (race.finishtime) {
+    headerBadge = (
+      <Text fontSize="sm" px={2} py={1} borderRadius="md" color="gray.500">
+        {race.finishtime.isValid() ? race.finishtime.format("DD/MM/YYYY, HH:mm") : ""}
+      </Text>
+    );
   }
 
   return (
@@ -118,66 +113,83 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
       bg={bgColor}
       borderWidth="1px"
       borderColor={borderColor}
-      borderRadius="md"
-      p={4}
       boxShadow={shadow}
+      borderTopRadius="none"
+      borderBottomLeftRadius="md"
+      borderBottomRightRadius="md"
       _hover={{ boxShadow: "xl" }}
       position="relative"
     >
-      <Flex justify="space-between" align="center" mb={3}>
-        <Text fontSize="lg" fontWeight="bold">
-          Race {race.number}
-        </Text>
-        {headerBadge}
-      </Flex>
-      <Box height="1px" bg="gray.200" my={3} />
-      <Flex justify="space-between" align="center">
-        {race.raceteam[0] && (
-          <Box flex="1" mr={2}>
-            <Text fontSize="xl" fontWeight="semibold">
-              {highlightText(leftTeamName, search || "")}
-            </Text>
-            <Text fontSize="sm" color="gray.600">
-              {highlightText(leftResultStr, search || "")}
-              {leftIsWinner && (
-                <Box
-                  as="span"
-                  ml={1}
-                  color="#B59410"
-                  display="inline-flex"
-                  verticalAlign="middle"
-                >
-                  <FaCrown />
-                </Box>
-              )}
-            </Text>
+      <Box
+        pt={4}
+        px={4}
+      >
+        <Flex justify="space-between" align="center" mb={3}>
+          <Text fontSize="lg" fontWeight="bold">
+            Race {race.number}
+          </Text>
+          {headerBadge}
+        </Flex>
+
+        <Box height="1px" bg="gray.200" my={3} />
+
+        <Flex justify="space-between" align="center">
+          {race.raceteam[0] && (
+            <Box flex="1" mr={2}>
+              <Text fontSize="xl" fontWeight="semibold">
+                {highlightText(leftTeamName, search || "")}
+              </Text>
+              <Text fontSize="sm" color="gray.600">
+                {highlightText(leftResultStr, search || "")}
+                {leftIsWinner && (
+                  <Box
+                    as="span"
+                    ml={1}
+                    color="#B59410"
+                    display="inline-flex"
+                    verticalAlign="middle"
+                  >
+                    <FaCrown />
+                  </Box>
+                )}
+              </Text>
+            </Box>
+          )}
+          <Text fontSize="2xl" color="gray.500" mx={2}>
+            vs
+          </Text>
+          {race.raceteam[1] && (
+            <Box flex="1" ml={2} textAlign="right">
+              <Text fontSize="xl" fontWeight="semibold">
+                {highlightText(rightTeamName, search || "")}
+              </Text>
+              <Text fontSize="sm" color="gray.600">
+                {rightIsWinner && (
+                  <Box
+                    as="span"
+                    mr={1}
+                    color="#B59410"
+                    display="inline-flex"
+                    verticalAlign="middle"
+                  >
+                    <FaCrown />
+                  </Box>
+                )}
+                {highlightText(rightResultStr, search || "")}
+              </Text>
+            </Box>
+          )}
+        </Flex>
+      </Box>
+      <Box>
+        {race.video && (
+          <Box mt={3} borderRadius={"none"}>
+            <Badge w="full" display="flex" justifyContent="center" textAlign="center" fontSize="xxs" pt="2" pb="2" fontWeight={"bold"} bg="#004a79" color="white" borderTopRadius="none" borderBottomLeftRadius="md" borderBottomRightRadius="md">
+              DRONE FOOTAGE
+            </Badge>
           </Box>
         )}
-        <Text fontSize="2xl" color="gray.500" mx={2}>
-          vs
-        </Text>
-        {race.raceteam[1] && (
-          <Box flex="1" ml={2} textAlign="right">
-            <Text fontSize="xl" fontWeight="semibold">
-              {highlightText(rightTeamName, search || "")}
-            </Text>
-            <Text fontSize="sm" color="gray.600">
-              {rightIsWinner && (
-                <Box
-                  as="span"
-                  mr={1}
-                  color="#B59410"
-                  display="inline-flex"
-                  verticalAlign="middle"
-                >
-                  <FaCrown />
-                </Box>
-              )}
-              {highlightText(rightResultStr, search || "")}
-            </Text>
-          </Box>
-        )}
-      </Flex>
+      </Box>
     </Box>
   );
 }

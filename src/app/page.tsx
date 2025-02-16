@@ -186,7 +186,7 @@ export default function Home() {
     <>
       <Box position="sticky" top="0" zIndex="100">
         <NavBar isAdmin={isAdmin} />
-        <Box p={4} bg="white">
+        <Box p={4} bg="white" boxShadow="md">
           <Box position="relative">
             <Input
               placeholder="Search"
