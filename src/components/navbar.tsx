@@ -8,22 +8,20 @@ import {
   Button,
   Stack,
   Icon,
-  PopoverTrigger,
-  PopoverContent,
+  Link,
+  Image,
   useBreakpointValue,
   useDisclosure,
-  Link,
-  PopoverRoot,
   Collapsible,
-  Image,
+  PopoverContent,
+  PopoverRoot,
+  PopoverTrigger,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
-import { TbMenu2, TbX, TbChevronDown, TbChevronRight } from "react-icons/tb";
+import { TbMenu2, TbX, TbChevronDown, TbChevronRight, TbLogin, TbLogout } from "react-icons/tb";
 import { Auth } from "@supabase/auth-ui-react";
-import { Session } from "@supabase/auth-js";
 import supabase from "../supabase";
-import { useState } from "react";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   DialogBody,
   DialogCloseTrigger,
@@ -31,14 +29,35 @@ import {
   DialogFooter,
   DialogHeader,
   DialogRoot,
+  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { TbLogin, TbLogout } from "react-icons/tb";
 
-export default function WithSubnavigation() {
+interface NavBarProps {
+  isAdmin: boolean;
+}
+
+interface NavItem {
+  label: string;
+  subLabel?: string;
+  children?: Array<NavItem>;
+  href?: string;
+}
+
+const BASE_NAV_ITEMS: Array<NavItem> = [
+  {
+    label: "Home",
+    href: "/",
+  },
+  {
+    label: "Leaderboard",
+    href: "/leaderboard",
+  },
+];
+
+export default function NavBar({ isAdmin }: NavBarProps) {
   const { open, onToggle } = useDisclosure();
-
-  const [session, setSession] = useState<Session | null>(null);
+  const [session, setSession] = useState<any>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -53,6 +72,12 @@ export default function WithSubnavigation() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Build nav items array and add Settings if isAdmin is true.
+  const navItems: Array<NavItem> = [...BASE_NAV_ITEMS];
+  if (isAdmin) {
+    navItems.push({ label: "Settings", href: "/settings" });
+  }
 
   return (
     <Box>
@@ -72,11 +97,7 @@ export default function WithSubnavigation() {
           ml={{ base: -2 }}
           display={{ base: "flex", md: "none" }}
         >
-          <IconButton
-            onClick={onToggle}
-            variant={"ghost"}
-            aria-label={"Toggle Navigation"}
-          >
+          <IconButton onClick={onToggle} variant={"ghost"} aria-label={"Toggle Navigation"}>
             {open ? <TbX /> : <TbMenu2 />}
           </IconButton>
         </Flex>
@@ -88,18 +109,11 @@ export default function WithSubnavigation() {
           >
             <Image src="/logo.png" alt="Logo" width={100} height={50} />
           </Text>
-
           <Flex display={{ base: "none", md: "flex" }} ml={10}>
-            <DesktopNav />
+            <DesktopNav navItems={navItems} />
           </Flex>
         </Flex>
-
-        <Stack
-          flex={{ base: 1, md: 0 }}
-          justify={"flex-end"}
-          direction={"row"}
-          //   spacing={6}
-        >
+        <Stack flex={{ base: 1, md: 0 }} justify={"flex-end"} direction={"row"}>
           {session ? (
             <Button
               as={"a"}
@@ -113,46 +127,43 @@ export default function WithSubnavigation() {
           ) : (
             <DialogRoot size="full" motionPreset="slide-in-bottom">
               <DialogTrigger asChild>
-                <Button
-                  as={"a"}
-                  fontSize={"sm"}
-                  fontWeight={400}
-                  // variant={"link"}
-                  // href={"#"}
-                >
+                <Button as={"a"} fontSize={"sm"} fontWeight={400}>
                   Log in <TbLogin />
                 </Button>
               </DialogTrigger>
               <DialogContent>
-                <DialogHeader></DialogHeader>
+                <DialogHeader />
                 <DialogBody>
                   <Auth supabaseClient={supabase} />
                 </DialogBody>
-                <DialogFooter></DialogFooter>
+                <DialogFooter />
                 <DialogCloseTrigger />
               </DialogContent>
             </DialogRoot>
           )}
         </Stack>
       </Flex>
-
       <Collapsible.Root open={open}>
         <Collapsible.Content>
-          <MobileNav />
+          <MobileNav navItems={navItems} />
         </Collapsible.Content>
       </Collapsible.Root>
     </Box>
   );
 }
 
-const DesktopNav = () => {
+interface DesktopNavProps {
+  navItems: Array<NavItem>;
+}
+
+const DesktopNav = ({ navItems }: DesktopNavProps) => {
   const linkColor = useColorModeValue("gray.600", "gray.200");
   const linkHoverColor = useColorModeValue("gray.800", "white");
   const popoverContentBgColor = useColorModeValue("white", "gray.800");
 
   return (
     <Stack direction={"row"}>
-      {NAV_ITEMS.map((navItem) => (
+      {navItems.map((navItem) => (
         <Box key={navItem.label}>
           <PopoverRoot>
             <PopoverTrigger>
@@ -172,7 +183,6 @@ const DesktopNav = () => {
                 </Box>
               </Link>
             </PopoverTrigger>
-
             {navItem.children && (
               <PopoverContent
                 border={0}
@@ -196,7 +206,8 @@ const DesktopNav = () => {
   );
 };
 
-const DesktopSubNav = ({ label, href, subLabel }: NavItem) => {
+interface DesktopSubNavProps extends NavItem { }
+const DesktopSubNav = ({ label, href, subLabel }: DesktopSubNavProps) => {
   return (
     <Link href={href}>
       <Box
@@ -209,11 +220,7 @@ const DesktopSubNav = ({ label, href, subLabel }: NavItem) => {
       >
         <Stack direction={"row"} align={"center"}>
           <Box>
-            <Text
-              transition={"all .3s ease"}
-              _groupHover={{ color: "pink.400" }}
-              fontWeight={500}
-            >
+            <Text transition={"all .3s ease"} _groupHover={{ color: "pink.400" }} fontWeight={500}>
               {label}
             </Text>
             <Text fontSize={"sm"}>{subLabel}</Text>
@@ -235,14 +242,13 @@ const DesktopSubNav = ({ label, href, subLabel }: NavItem) => {
   );
 };
 
-const MobileNav = () => {
+interface MobileNavProps {
+  navItems: Array<NavItem>;
+}
+const MobileNav = ({ navItems }: MobileNavProps) => {
   return (
-    <Stack
-      bg={useColorModeValue("white", "gray.800")}
-      p={4}
-      display={{ md: "none" }}
-    >
-      {NAV_ITEMS.map((navItem) => (
+    <Stack bg={useColorModeValue("white", "gray.800")} p={4} display={{ md: "none" }}>
+      {navItems.map((navItem) => (
         <MobileNavItem key={navItem.label} {...navItem} />
       ))}
     </Stack>
@@ -251,7 +257,6 @@ const MobileNav = () => {
 
 const MobileNavItem = ({ label, children, href }: NavItem) => {
   const { open, onToggle } = useDisclosure();
-
   return (
     <Stack onClick={children && onToggle}>
       <Link href={href ?? "#"}>
@@ -264,10 +269,7 @@ const MobileNavItem = ({ label, children, href }: NavItem) => {
             textDecoration: "none",
           }}
         >
-          <Text
-            fontWeight={600}
-            color={useColorModeValue("gray.600", "gray.200")}
-          >
+          <Text fontWeight={600} color={useColorModeValue("gray.600", "gray.200")}>
             {label}
           </Text>
           {children && (
@@ -281,7 +283,6 @@ const MobileNavItem = ({ label, children, href }: NavItem) => {
           )}
         </Box>
       </Link>
-
       <Collapsible.Root open={open}>
         <Collapsible.Content>
           <Stack
@@ -295,7 +296,7 @@ const MobileNavItem = ({ label, children, href }: NavItem) => {
             {children &&
               children.map((child) => (
                 <Link href={child.href} key={child.label}>
-                  <Box as="a" key={child.label} py={2}>
+                  <Box as="a" py={2}>
                     {child.label}
                   </Box>
                 </Link>
@@ -306,21 +307,3 @@ const MobileNavItem = ({ label, children, href }: NavItem) => {
     </Stack>
   );
 };
-
-interface NavItem {
-  label: string;
-  subLabel?: string;
-  children?: Array<NavItem>;
-  href?: string;
-}
-
-const NAV_ITEMS: Array<NavItem> = [
-  {
-    label: "Home",
-    href: "/",
-  },
-  {
-    label: "Leaderboard",
-    href: "/leaderboard",
-  },
-];

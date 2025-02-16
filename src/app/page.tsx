@@ -8,8 +8,48 @@ import supabase from "@/supabase";
 import { useEffect, useRef, useState } from "react";
 import { RaceResult } from "@/shared";
 import { TbChevronsDown, TbChevronsUp } from "react-icons/tb";
+import { Session } from "@supabase/auth-js";
 
 export default function Home() {
+  // State for admin checking
+  const [session, setSession] = useState<Session | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Get current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+    // Subscribe to auth state changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    // Check if the logged in user is an admin by looking up their uuid in the "admin" table.
+    const checkAdminStatus = async () => {
+      if (session && session.user) {
+        const { data, error } = await supabase
+          .from("admin")
+          .select("uuid")
+          .eq("uuid", session.user.id)
+          .single();
+        if (data) {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+        }
+      } else {
+        setIsAdmin(false);
+      }
+    };
+    checkAdminStatus();
+  }, [session]);
+
   // Fetch all races
   const [races, setRaces] = useState<RaceResult[] | null>(null);
   useEffect(() => {
@@ -114,7 +154,7 @@ export default function Home() {
   return (
     <>
       <Box position="sticky" top="0" zIndex="100">
-        <NavBar />
+        <NavBar isAdmin={isAdmin} />
         <Box p={4}>
           <Input
             placeholder="Search"
@@ -128,7 +168,10 @@ export default function Home() {
         <Stack>
           {races ? (
             filteredRaces?.map((race) => (
-              <Box key={race.id} ref={race.number === currentRace ? currentRaceRef : undefined}>
+              <Box
+                key={race.id}
+                ref={race.number === currentRace ? currentRaceRef : undefined}
+              >
                 <Race
                   race={race}
                   active={race.number === currentRace}

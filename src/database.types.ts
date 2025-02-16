@@ -9,6 +9,18 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin: {
+        Row: {
+          uuid: string
+        }
+        Insert: {
+          uuid?: string
+        }
+        Update: {
+          uuid?: string
+        }
+        Relationships: []
+      }
       flight: {
         Row: {
           colour: string | null
