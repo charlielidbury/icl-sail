@@ -111,7 +111,7 @@ export default function Home() {
     });
   };
 
-  // Auto-scroll on load (comment out if you wish to test the floating button)
+  // Auto-scroll on load
   useEffect(() => {
     if (currentRace !== null && races) {
       scrollToCurrentRace();
@@ -137,8 +137,17 @@ export default function Home() {
     return () => observer.disconnect();
   }, [currentRace]);
 
-  // Search filter for races
-  const [search, setSearch] = useState("");
+  // Persist the search filter in local storage.
+  const [search, setSearch] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("search") || "";
+    }
+    return "";
+  });
+  useEffect(() => {
+    localStorage.setItem("search", search);
+  }, [search]);
+
   const filteredRaces = races?.filter((race) => {
     const raceName = `${race.number} ${race.raceteam[0]?.team?.name} ${race.raceteam[1]?.team?.name}`;
     return raceName.toLowerCase().includes(search.toLowerCase());
@@ -155,7 +164,7 @@ export default function Home() {
     <>
       <Box position="sticky" top="0" zIndex="100">
         <NavBar isAdmin={isAdmin} />
-        <Box p={4}>
+        <Box p={4} bg="white">
           <Input
             placeholder="Search"
             variant="subtle"
@@ -168,21 +177,17 @@ export default function Home() {
         <Stack>
           {races ? (
             filteredRaces?.map((race) => (
-              <Box
-                key={race.id}
-                ref={race.number === currentRace ? currentRaceRef : undefined}
-              >
+              <Box key={race.id} ref={race.number === currentRace ? currentRaceRef : undefined}>
                 <Race
                   race={race}
                   active={race.number === currentRace}
                   isStand={
                     currentRace !== null &&
                     goToStandOffset !== null &&
-                    // Mark as "Go To Stand" if the race number comes before (i.e. higher than) the current race
-                    // and the difference is within the offset.
                     race.number > currentRace &&
                     race.number - currentRace <= goToStandOffset
                   }
+                  search={search} // filter underline
                 />
               </Box>
             ))
@@ -197,15 +202,8 @@ export default function Home() {
           )}
         </Stack>
       </Box>
-      {/* Floating jump button at bottom center */}
       {!isCurrentRaceVisible && (
-        <Box
-          position="fixed"
-          bottom="20px"
-          left="50%"
-          transform="translateX(-50%)"
-          zIndex="200"
-        >
+        <Box position="fixed" bottom="20px" left="50%" transform="translateX(-50%)" zIndex="200">
           <Button
             onClick={scrollToCurrentRace}
             borderRadius="md"

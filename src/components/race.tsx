@@ -16,13 +16,45 @@ interface RaceCardProps {
   race: RaceResult;
   active: boolean;
   isStand?: boolean;
+  search?: string;
 }
 
-function RaceCard({ race, active, isStand }: RaceCardProps) {
+function highlightText(text: string, search: string) {
+  if (!search) return text;
+  // Create a case-insensitive regex for the search term.
+  const regex = new RegExp(`(${search})`, "gi");
+  const parts = text.split(regex);
+  return (
+    <>
+      {parts.map((part, i) =>
+        regex.test(part) ? (
+          <Box
+            key={i}
+            as="span"
+            textDecoration="underline"
+            fontWeight="bold"
+          >
+            {part}
+          </Box>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  );
+}
+
+function RaceCard({ race, active, isStand, search }: RaceCardProps) {
   // Hardcoded light mode values
   const bgColor = "white";
   const borderColor = active ? "red.500" : "gray.200";
   const shadow = active ? "lg" : "md";
+
+  // Prepare team names and results.
+  const leftTeamName = race.raceteam[0]?.team.name || "";
+  const leftResult = race.raceteam[0]?.result?.join(", ") || "Pending";
+  const rightTeamName = race.raceteam[1]?.team.name || "";
+  const rightResult = race.raceteam[1]?.result?.join(", ") || "Pending";
 
   return (
     <Box
@@ -40,26 +72,12 @@ function RaceCard({ race, active, isStand }: RaceCardProps) {
           Race {race.number}
         </Text>
         {active && (
-          <Badge
-            fontSize="sm"
-            px={2}
-            py={1}
-            borderRadius="md"
-            bg="green.500"
-            color="white"
-          >
+          <Badge fontSize="sm" px={2} py={1} borderRadius="md" bg="green.500" color="white">
             Current Race
           </Badge>
         )}
         {!active && isStand && (
-          <Badge
-            fontSize="sm"
-            px={2}
-            py={1}
-            borderRadius="md"
-            bg="red.500"
-            color="white"
-          >
+          <Badge fontSize="sm" px={2} py={1} borderRadius="md" bg="red.500" color="white">
             Go to Stand
           </Badge>
         )}
@@ -72,10 +90,10 @@ function RaceCard({ race, active, isStand }: RaceCardProps) {
         {race.raceteam[0] && (
           <Box flex="1" mr={2}>
             <Text fontSize="xl" fontWeight="semibold">
-              {race.raceteam[0].team.name}
+              {highlightText(leftTeamName, search || "")}
             </Text>
             <Text fontSize="sm" color="gray.600">
-              {race.raceteam[0].result?.join(", ") || "Pending"}
+              {highlightText(leftResult, search || "")}
             </Text>
           </Box>
         )}
@@ -85,10 +103,10 @@ function RaceCard({ race, active, isStand }: RaceCardProps) {
         {race.raceteam[1] && (
           <Box flex="1" ml={2} textAlign="right">
             <Text fontSize="xl" fontWeight="semibold">
-              {race.raceteam[1].team.name}
+              {highlightText(rightTeamName, search || "")}
             </Text>
             <Text fontSize="sm" color="gray.600">
-              {race.raceteam[1].result?.join(", ") || "Pending"}
+              {highlightText(rightResult, search || "")}
             </Text>
           </Box>
         )}
@@ -101,14 +119,15 @@ interface RaceProps {
   race: RaceResult;
   active: boolean;
   isStand?: boolean;
+  search?: string;
 }
 
-export default function Race({ race, active, isStand }: RaceProps) {
+export default function Race({ race, active, isStand, search }: RaceProps) {
   return (
     <DialogRoot size="full" motionPreset="slide-in-bottom">
       <DialogTrigger asChild>
         <Box mb={4}>
-          <RaceCard race={race} active={active} isStand={isStand} />
+          <RaceCard race={race} active={active} isStand={isStand} search={search} />
         </Box>
       </DialogTrigger>
       <DialogContent>
@@ -116,7 +135,7 @@ export default function Race({ race, active, isStand }: RaceProps) {
           <DialogTitle>Race {race.number}</DialogTitle>
         </DialogHeader>
         <DialogBody>
-          <RaceCard race={race} active={active} isStand={isStand} />
+          <RaceCard race={race} active={active} isStand={isStand} search={search} />
         </DialogBody>
         <DialogFooter>
           <DialogActionTrigger asChild>
