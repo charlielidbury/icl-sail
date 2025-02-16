@@ -21,39 +21,45 @@ export type Database = {
         }
         Relationships: []
       }
-      flight: {
+      halfflight: {
         Row: {
           colour: string | null
           id: string
           name: string
+          numbers: number[] | null
           symbol: string | null
         }
         Insert: {
           colour?: string | null
           id?: string
           name: string
+          numbers?: number[] | null
           symbol?: string | null
         }
         Update: {
           colour?: string | null
           id?: string
           name?: string
+          numbers?: number[] | null
           symbol?: string | null
         }
         Relationships: []
       }
       race: {
         Row: {
+          finishtime: string | null
           id: string
           number: number
           video: string | null
         }
         Insert: {
+          finishtime?: string | null
           id?: string
           number: number
           video?: string | null
         }
         Update: {
+          finishtime?: string | null
           id?: string
           number?: number
           video?: string | null
@@ -62,19 +68,19 @@ export type Database = {
       }
       raceteam: {
         Row: {
-          flight: string | null
+          halfflight: string
           race: string
           result: number[] | null
           team: string
         }
         Insert: {
-          flight?: string | null
+          halfflight: string
           race: string
           result?: number[] | null
           team: string
         }
         Update: {
-          flight?: string | null
+          halfflight?: string
           race?: string
           result?: number[] | null
           team?: string
@@ -82,9 +88,9 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "raceteam_flight_fkey"
-            columns: ["flight"]
+            columns: ["halfflight"]
             isOneToOne: false
-            referencedRelation: "flight"
+            referencedRelation: "halfflight"
             referencedColumns: ["id"]
           },
           {

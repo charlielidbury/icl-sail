@@ -17,6 +17,7 @@ import { RaceResult } from "@/shared";
 import { TbChevronsDown, TbChevronsUp, TbX } from "react-icons/tb";
 import { Session } from "@supabase/auth-js";
 import { useColorMode } from "@/components/ui/color-mode";
+import dayjs from "dayjs";
 
 export default function Home() {
   // State for admin checking
@@ -64,15 +65,33 @@ export default function Home() {
           id,
           number,
           video,
+          finishtime,
           raceteam (
+            race,
             team ( id, name ),
-            result
+            result,
+            halfflight ( id, name, symbol, colour, numbers )
           )
         `
       )
       .order("number", { ascending: false })
       .then(({ data, error }) => {
-        setRaces(data);
+        if (data === null) {
+          return;
+        }
+        setRaces(
+          data.map((d) => ({
+            id: d.id,
+            number: d.number,
+            video: d.video,
+            finishtime: dayjs(d.finishtime),
+            raceteam: d.raceteam.map((raceteam) => ({
+              team: raceteam.team,
+              result: raceteam.result,
+              halfflight: raceteam.halfflight,
+            })),
+          }))
+        );
         console.log({ data, error });
       });
   }, []);

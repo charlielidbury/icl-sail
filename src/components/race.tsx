@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { RaceResult } from "../shared";
 import { FaCrown } from "react-icons/fa";
+import RaceEdit from "./race-edit";
 
 interface RaceCardProps {
   race: RaceResult;
@@ -56,20 +57,20 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
 
   // Compute scores if available.
   const leftScore =
-    race.raceteam[0]?.result !== null ? sumResult(race.raceteam[0].result) : null;
+    race.raceteam[0]?.result !== null
+      ? sumResult(race.raceteam[0].result)
+      : null;
   const rightScore =
-    race.raceteam[1]?.result !== null ? sumResult(race.raceteam[1].result) : null;
+    race.raceteam[1]?.result !== null
+      ? sumResult(race.raceteam[1].result)
+      : null;
 
   // Determine winner if both scores are available.
   // For this leaderboard, lower points wins.
   const leftIsWinner =
-    leftScore !== null &&
-    rightScore !== null &&
-    leftScore < rightScore;
+    leftScore !== null && rightScore !== null && leftScore < rightScore;
   const rightIsWinner =
-    leftScore !== null &&
-    rightScore !== null &&
-    rightScore < leftScore;
+    leftScore !== null && rightScore !== null && rightScore < leftScore;
 
   return (
     <Box
@@ -87,12 +88,26 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
           Race {race.number}
         </Text>
         {active && (
-          <Badge fontSize="sm" px={2} py={1} borderRadius="md" bg="green.500" color="white">
+          <Badge
+            fontSize="sm"
+            px={2}
+            py={1}
+            borderRadius="md"
+            bg="green.500"
+            color="white"
+          >
             Current Race
           </Badge>
         )}
         {!active && isStand && (
-          <Badge fontSize="sm" px={2} py={1} borderRadius="md" bg="red.500" color="white">
+          <Badge
+            fontSize="sm"
+            px={2}
+            py={1}
+            borderRadius="md"
+            bg="red.500"
+            color="white"
+          >
             Go to Stand
           </Badge>
         )}
@@ -109,7 +124,13 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
             <Text fontSize="sm" color="gray.600">
               {highlightText(leftResultStr, search || "")}
               {leftIsWinner && (
-                <Box as="span" ml={1} color="#B59410" display="inline-flex" verticalAlign="middle">
+                <Box
+                  as="span"
+                  ml={1}
+                  color="#B59410"
+                  display="inline-flex"
+                  verticalAlign="middle"
+                >
                   <FaCrown />
                 </Box>
               )}
@@ -126,7 +147,13 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
             </Text>
             <Text fontSize="sm" color="gray.600">
               {rightIsWinner && (
-                <Box as="span" mr={1} color="#B59410" display="inline-flex" verticalAlign="middle">
+                <Box
+                  as="span"
+                  mr={1}
+                  color="#B59410"
+                  display="inline-flex"
+                  verticalAlign="middle"
+                >
                   <FaCrown />
                 </Box>
               )}
@@ -151,7 +178,12 @@ export default function Race({ race, active, isStand, search }: RaceProps) {
     <DialogRoot size="full" motionPreset="slide-in-bottom">
       <DialogTrigger asChild>
         <Box mb={4}>
-          <RaceCard race={race} active={active} isStand={isStand} search={search} />
+          <RaceCard
+            race={race}
+            active={active}
+            isStand={isStand}
+            search={search}
+          />
         </Box>
       </DialogTrigger>
       <DialogContent>
@@ -159,7 +191,14 @@ export default function Race({ race, active, isStand, search }: RaceProps) {
           <DialogTitle>Race {race.number}</DialogTitle>
         </DialogHeader>
         <DialogBody>
-          <RaceCard race={race} active={active} isStand={isStand} search={search} />
+          <RaceCard
+            race={race}
+            active={active}
+            isStand={isStand}
+            search={search}
+          />
+
+          <RaceEdit race={race} />
         </DialogBody>
         <DialogFooter>
           <DialogActionTrigger asChild>
