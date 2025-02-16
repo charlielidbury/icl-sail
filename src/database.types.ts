@@ -45,6 +45,38 @@ export type Database = {
         }
         Relationships: []
       }
+      leaderboard: {
+        Row: {
+          avg_pts: number
+          losses: number
+          order: number
+          team: string
+          wins: number
+        }
+        Insert: {
+          avg_pts: number
+          losses: number
+          order?: number
+          team: string
+          wins: number
+        }
+        Update: {
+          avg_pts?: number
+          losses?: number
+          order?: number
+          team?: string
+          wins?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_team_fkey"
+            columns: ["team"]
+            isOneToOne: false
+            referencedRelation: "team"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       race: {
         Row: {
           finishtime: string | null
