@@ -9,13 +9,15 @@ import {
   Grid,
   GridItem,
   Button,
+  ButtonGroup,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   NumberInputField,
   NumberInputRoot,
 } from "@/components/ui/number-input";
 import supabase from "@/supabase";
+import dayjs from "dayjs";
 
 export default function RaceEdit({
   race,
@@ -31,6 +33,17 @@ export default function RaceEdit({
     race.raceteam[1].result ?? [null, null, null],
   ]);
 
+  const fullResults = useMemo(() => {
+    for (let i = 0; i < 2; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (teamResults[i][j] === null) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }, [teamResults]);
+
   // Update the result for a given team and boat.
   const handleChange = (
     teamIndex: number,
@@ -44,55 +57,61 @@ export default function RaceEdit({
     });
   };
 
+  const modifyResult = async (
+    team1Results: number[] | null,
+    team2Results: number[] | null
+  ) => {
+    // Make sure both teams have results or neither do.
+    if ((team1Results === null) !== (team2Results === null)) {
+      return;
+    }
+
+    await Promise.all([
+      supabase
+        .from("raceteam")
+        .update({ result: team1Results })
+        .eq("team", race.raceteam[0].team.id)
+        .eq("race", race.id)
+        .select(),
+
+      supabase
+        .from("raceteam")
+        .update({ result: team2Results })
+        .eq("team", race.raceteam[1].team.id)
+        .eq("race", race.id)
+        .select(),
+
+      supabase
+        .from("race")
+        .update({ finishtime: team1Results ? dayjs().format() : null })
+        .eq("id", race.id)
+        .select(),
+    ]);
+  };
+
   const [isUpdating, setIsUpdating] = useState(false);
-
   const updateResults = async () => {
-    setIsUpdating(true);
-
     // Make sure all results are filled in
-    for (let i = 0; i < 2; i++) {
-      for (let j = 0; j < 3; j++) {
-        if (teamResults[i][j] === null) {
-          return;
-        }
-      }
+    if (!fullResults) {
+      return;
     }
     const [team1Results, team2Results] = teamResults as number[][];
-    console.log({ team1Results, team2Results });
 
-    const update1 = supabase
-      .from("raceteam")
-      .update({ result: team1Results })
-      .eq("team", race.raceteam[0].team.id)
-      .eq("race", race.id)
-      .select();
+    setIsUpdating(true);
+    await modifyResult(team1Results, team2Results);
+    setIsUpdating(false);
+  };
 
-    const update2 = supabase
-      .from("raceteam")
-      .update({ result: team2Results })
-      .eq("team", race.raceteam[1].team.id)
-      .eq("race", race.id)
-      .select();
-
-    const { data: update1Data, error: update1Error } = await update1;
-    const { data: update2Data, error: update2Error } = await update2;
-
-    if (update1Error) {
-      console.error({ update1Error });
-    } else {
-      console.log({ update1Data });
-    }
-
-    if (update2Error) {
-      console.error({ update2Error });
-    } else {
-      console.log({ update2Data });
-    }
+  const [isRemoving, setIsRemoving] = useState(false);
+  const removeResults = async () => {
+    setIsRemoving(true);
+    await modifyResult(null, null);
+    setIsRemoving(false);
   };
 
   return (
     <>
-      <Heading size="2xl">Results</Heading>
+      <Heading size="xl">Results</Heading>
       <Box mb={4} borderWidth="1px" borderRadius="md" bg="gray.50">
         <Grid templateColumns="1fr auto 1fr" gap={2} m={4}>
           <GridItem textAlign="center">
@@ -157,14 +176,26 @@ export default function RaceEdit({
           </For>
         </Grid>
 
-        <Button
-          variant="solid"
-          width="100%"
-          onClick={() => updateResults()}
-          loading={isUpdating}
-        >
-          Update
-        </Button>
+        <ButtonGroup attached width="100%" variant="outline">
+          <Button
+            width="50%"
+            onClick={() => updateResults()}
+            loading={isUpdating}
+            disabled={!fullResults}
+            mr={0.25}
+          >
+            Update
+          </Button>
+          <Button
+            width="50%"
+            onClick={() => removeResults()}
+            loading={isRemoving}
+            colorPalette="red"
+            disabled={race.raceteam[0].result === null}
+          >
+            Remove Result
+          </Button>
+        </ButtonGroup>
       </Box>
     </>
   );

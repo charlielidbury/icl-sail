@@ -2,7 +2,6 @@
 
 import { Box, Flex, Text, Badge, Grid, GridItem } from "@chakra-ui/react";
 import {
-  DialogActionTrigger,
   DialogBody,
   DialogCloseTrigger,
   DialogContent,
@@ -17,7 +16,6 @@ import { FaCrown } from "react-icons/fa";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import RaceDialog from "./race-dialog";
-import RaceEdit from "./race-edit";
 
 // Extend Day.js with the relativeTime plugin.
 dayjs.extend(relativeTime);
@@ -185,7 +183,7 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
           {/* Row 2: Flight A       Flight B or 1,2,3      4,5,6 */}
           <GridItem textAlign="left">
             <Text fontSize="sm" color="gray.600">
-              {highlightText(leftSubStr, search || "")}
+              {leftSubStr}
               {leftIsWinner && (
                 <Box
                   as="span"
@@ -212,7 +210,7 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
                   <FaCrown />
                 </Box>
               )}
-              {highlightText(rightSubStr, search || "")}
+              {rightSubStr}
             </Text>
           </GridItem>
         </Grid>
@@ -260,7 +258,14 @@ interface RaceProps {
 }
 
 export default function Race({ race, active, isStand, search }: RaceProps) {
+  // const showRace =
+  //   !search ||
+  //   `${race.number} ${race.raceteam[0]?.team?.name} ${race.raceteam[1]?.team?.name}`
+  //     .toLowerCase()
+  //     .includes(search.toLowerCase());
+
   return (
+    // <Box display={showRace ? "block" : "none"}>
     <DialogRoot size="full" motionPreset="slide-in-bottom">
       <DialogTrigger asChild>
         <Box mb={4}>
@@ -283,22 +288,12 @@ export default function Race({ race, active, isStand, search }: RaceProps) {
             isStand={isStand}
             search={search}
           />
-          <RaceDialog race={race} />
-
-          <RaceEdit race={race} active={active} />
+          <RaceDialog race={race} active={active} />
         </DialogBody>
-        <DialogFooter>
-          <DialogActionTrigger asChild>
-            <Box as="button" p={2} borderWidth="1px" borderRadius="md">
-              Cancel
-            </Box>
-          </DialogActionTrigger>
-          <Box as="button" p={2} borderWidth="1px" borderRadius="md" ml={2}>
-            Save
-          </Box>
-        </DialogFooter>
+        <DialogFooter></DialogFooter>
         <DialogCloseTrigger />
       </DialogContent>
     </DialogRoot>
+    // </Box>
   );
 }

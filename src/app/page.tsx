@@ -8,23 +8,26 @@ import {
   IconButton,
   Skeleton,
   Stack,
+  Text,
 } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import Race from "@/components/race";
 import supabase from "@/supabase";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RaceResult, useAuth } from "@/shared";
 import { TbChevronsDown, TbChevronsUp, TbX } from "react-icons/tb";
 import { useColorMode } from "@/components/ui/color-mode";
 import dayjs from "dayjs";
+import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
 
+// Memoize your Race component to avoid unnecessary re-renders
 const MemoizedRace = memo(Race);
 
 export default function Home() {
-  // Admin/session state.
+  // Admin/session state
   const { isAdmin } = useAuth();
 
-  // Fetch all races (including finishtime) with raceteam.
+  // Fetch all races
   const [races, setRaces] = useState<RaceResult[] | null>(null);
   useEffect(() => {
     supabase
@@ -45,18 +48,17 @@ export default function Home() {
       )
       .order("number", { ascending: false })
       .then(({ data, error }) => {
-        if (data === null) return;
-        // Transform finishtime into a Day.js object (or null if not present)
+        if (!data) return;
         setRaces(
           data.map((d) => ({
             id: d.id,
             number: d.number,
             video: d.video,
             finishtime: dayjs(d.finishtime),
-            raceteam: d.raceteam.map((raceteam) => ({
-              team: raceteam.team,
-              result: raceteam.result,
-              halfflight: raceteam.halfflight,
+            raceteam: d.raceteam.map((rt: any) => ({
+              team: rt.team,
+              result: rt.result,
+              halfflight: rt.halfflight,
             })),
           }))
         );
@@ -83,7 +85,8 @@ export default function Home() {
     if (!races) return;
     let cr: number | null = null;
     for (let i = 0; i < races.length; i++) {
-      if (races[i].raceteam[0] && races[i].raceteam[0].result !== null) {
+      // If the first team in this race has a result, it means the race is done.
+      if (races[i].raceteam[0]?.result !== null) {
         break;
       }
       cr = races[i].number;
@@ -91,74 +94,93 @@ export default function Home() {
     setCurrentRace(cr);
   }, [races]);
 
-  // Scroll to current race.
-  const currentRaceRef = useRef<HTMLDivElement>(null);
-  const scrollToCurrentRace = () => {
-    currentRaceRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "center",
-    });
-  };
-  useEffect(() => {
-    if (currentRace !== null && races) scrollToCurrentRace();
-  }, [currentRace, races]);
-
-  // Observer to detect if the current race card is in view.
+  // State to track if the current race is visible and if it is above the viewport.
   const [isCurrentRaceVisible, setIsCurrentRaceVisible] = useState(true);
   const [isCurrentRaceAbove, setIsCurrentRaceAbove] = useState(false);
-  useEffect(() => {
-    if (!currentRaceRef.current) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsCurrentRaceVisible(entry.isIntersecting);
-        setIsCurrentRaceAbove(entry.boundingClientRect.top < 0);
-      },
-      { root: null, threshold: 0.5 }
-    );
-    observer.observe(currentRaceRef.current);
-    return () => observer.disconnect();
-  }, [currentRace]);
 
-  // Search filter state.
+  // Search filter state with localStorage
   const [search, setSearch] = useState(() => {
-    if (typeof window !== "undefined")
+    if (typeof window !== "undefined") {
       return localStorage.getItem("search") || "";
+    }
     return "";
   });
   useEffect(() => {
     localStorage.setItem("search", search);
   }, [search]);
 
-  // Debounce search input.
+  // Debounce search input
   const [debouncedSearch, setDebouncedSearch] = useState<string>("");
   useEffect(() => {
-    const handler = setTimeout(() => setDebouncedSearch(search), 100);
+    const handler = setTimeout(() => setDebouncedSearch(search), 20);
     return () => clearTimeout(handler);
   }, [search]);
 
+  // Filtered races
   const filteredRaces = useMemo(() => {
-    if (!races) return;
+    if (!races) return [];
     const lowerSearch = debouncedSearch.toLowerCase();
     return races.filter((race) => {
-      const raceName = `${race.number} ${race.raceteam[0]?.team?.name} ${race.raceteam[1]?.team?.name}`;
+      const raceName = `${race.number} ${race.raceteam
+        .map((rt) => rt.team?.name ?? "")
+        .join(" ")}`;
       return raceName.toLowerCase().includes(lowerSearch);
     });
   }, [races, debouncedSearch]);
 
+  // Button pulse animation
   const pulseAnimation = keyframes`
     0% { transform: scale(1); }
-    50% { transform: scale(1.01); }
+    50% { transform: scale(1.02); }
     100% { transform: scale(1); }
   `;
 
-  // Set color mode to light on load.
+  // Force light color mode on load
   const { setColorMode } = useColorMode();
   useEffect(() => {
     setColorMode("light");
-  }, []);
+  }, [setColorMode]);
+
+  // Reference for the Virtuoso component so we can scroll to an item
+  const virtuosoRef = useRef<VirtuosoHandle>(null);
+
+  // Scroll to the current race
+  const scrollToCurrentRace = useCallback(() => {
+    if (!filteredRaces || currentRace === null) return;
+    const index = filteredRaces.findIndex((r) => r.number === currentRace);
+    if (index >= 0 && virtuosoRef.current) {
+      virtuosoRef.current.scrollToIndex({
+        index,
+        align: "center",
+        behavior: "smooth",
+      });
+    }
+  }, [filteredRaces, currentRace]);
+
+  // Use the rangeChanged callback to detect if the current race is visible.
+  const handleRangeChanged = useCallback(
+    (range: { startIndex: number; endIndex: number }) => {
+      if (!filteredRaces || currentRace === null) return;
+      const currentRaceIndex = filteredRaces.findIndex(
+        (r) => r.number === currentRace
+      );
+      if (currentRaceIndex === -1) return;
+      if (
+        currentRaceIndex >= range.startIndex &&
+        currentRaceIndex <= range.endIndex
+      ) {
+        setIsCurrentRaceVisible(true);
+      } else {
+        setIsCurrentRaceVisible(false);
+        setIsCurrentRaceAbove(currentRaceIndex < range.startIndex);
+      }
+    },
+    [filteredRaces, currentRace]
+  );
 
   return (
     <>
+      {/* Sticky navbar and search bar */}
       <Box position="sticky" top="0" zIndex="100">
         <NavBar isAdmin={isAdmin} />
         <Box p={4} bg="white" boxShadow="md">
@@ -187,38 +209,52 @@ export default function Home() {
           </Box>
         </Box>
       </Box>
-      <Box p={4}>
-        <Stack>
-          {races ? (
-            filteredRaces?.map((race) => (
-              <Box
-                key={race.id}
-                ref={race.number === currentRace ? currentRaceRef : undefined}
-              >
-                <MemoizedRace
-                  race={race}
-                  active={race.number === currentRace}
-                  isStand={
-                    currentRace !== null &&
-                    goToStandOffset !== null &&
-                    race.number > currentRace &&
-                    race.number - currentRace <= goToStandOffset
-                  }
-                  search={debouncedSearch} // pass debounced search for inline highlighting in RaceCard
-                />
-              </Box>
-            ))
+
+      {/* Main content area */}
+      <Box p={4} height="calc(100vh - 100px)">
+        {races ? (
+          filteredRaces.length > 0 ? (
+            <Virtuoso
+              ref={virtuosoRef}
+              data={filteredRaces}
+              style={{ height: "100%", width: "100%" }}
+              itemContent={(index, race) => {
+                // Determine if the race is active or in stand based on currentRace & settings.
+                const isActive = race.number === currentRace;
+                const isStand =
+                  currentRace !== null &&
+                  goToStandOffset !== null &&
+                  race.number > currentRace &&
+                  race.number - currentRace <= goToStandOffset;
+                return (
+                  // <Box key={race.id} py={2} px={4} width="100%">
+                  <MemoizedRace
+                    race={race}
+                    active={isActive}
+                    isStand={isStand}
+                    search={debouncedSearch}
+                    key={race.id}
+                  />
+                  // </Box>
+                );
+              }}
+              rangeChanged={handleRangeChanged}
+            />
           ) : (
-            <>
-              <Skeleton height="80px" variant="shine" />
-              <Skeleton height="80px" variant="shine" />
-              <Skeleton height="80px" variant="shine" />
-              <Skeleton height="80px" variant="shine" />
-              <Skeleton height="80px" variant="shine" />
-            </>
-          )}
-        </Stack>
+            <Text>No races found.</Text>
+          )
+        ) : (
+          <Stack>
+            <Skeleton height="80px" />
+            <Skeleton height="80px" />
+            <Skeleton height="80px" />
+            <Skeleton height="80px" />
+            <Skeleton height="80px" />
+          </Stack>
+        )}
       </Box>
+
+      {/* Jump button if current race is off-screen */}
       {!isCurrentRaceVisible && (
         <Box
           position="fixed"

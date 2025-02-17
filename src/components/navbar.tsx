@@ -18,7 +18,14 @@ import {
   PopoverTrigger,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
-import { TbMenu2, TbX, TbChevronDown, TbChevronRight, TbLogin, TbLogout } from "react-icons/tb";
+import {
+  TbMenu2,
+  TbX,
+  TbChevronDown,
+  TbChevronRight,
+  TbLogin,
+  TbLogout,
+} from "react-icons/tb";
 import { Auth } from "@supabase/auth-ui-react";
 import supabase from "../supabase";
 import { useState, useEffect } from "react";
@@ -46,7 +53,7 @@ interface NavItem {
 
 const BASE_NAV_ITEMS: Array<NavItem> = [
   {
-    label: "Home",
+    label: "Schedule",
     href: "/",
   },
   {
@@ -97,7 +104,11 @@ export default function NavBar({ isAdmin }: NavBarProps) {
           ml={{ base: -2 }}
           display={{ base: "flex", md: "none" }}
         >
-          <IconButton onClick={onToggle} variant={"ghost"} aria-label={"Toggle Navigation"}>
+          <IconButton
+            onClick={onToggle}
+            variant={"ghost"}
+            aria-label={"Toggle Navigation"}
+          >
             {open ? <TbX /> : <TbMenu2 />}
           </IconButton>
         </Flex>
@@ -206,7 +217,7 @@ const DesktopNav = ({ navItems }: DesktopNavProps) => {
   );
 };
 
-interface DesktopSubNavProps extends NavItem { }
+interface DesktopSubNavProps extends NavItem {}
 const DesktopSubNav = ({ label, href, subLabel }: DesktopSubNavProps) => {
   return (
     <Link href={href}>
@@ -220,7 +231,11 @@ const DesktopSubNav = ({ label, href, subLabel }: DesktopSubNavProps) => {
       >
         <Stack direction={"row"} align={"center"}>
           <Box>
-            <Text transition={"all .3s ease"} _groupHover={{ color: "pink.400" }} fontWeight={500}>
+            <Text
+              transition={"all .3s ease"}
+              _groupHover={{ color: "pink.400" }}
+              fontWeight={500}
+            >
               {label}
             </Text>
             <Text fontSize={"sm"}>{subLabel}</Text>
@@ -247,7 +262,11 @@ interface MobileNavProps {
 }
 const MobileNav = ({ navItems }: MobileNavProps) => {
   return (
-    <Stack bg={useColorModeValue("white", "gray.800")} p={4} display={{ md: "none" }}>
+    <Stack
+      bg={useColorModeValue("white", "gray.800")}
+      p={4}
+      display={{ md: "none" }}
+    >
       {navItems.map((navItem) => (
         <MobileNavItem key={navItem.label} {...navItem} />
       ))}
@@ -269,7 +288,10 @@ const MobileNavItem = ({ label, children, href }: NavItem) => {
             textDecoration: "none",
           }}
         >
-          <Text fontWeight={600} color={useColorModeValue("gray.600", "gray.200")}>
+          <Text
+            fontWeight={600}
+            color={useColorModeValue("gray.600", "gray.200")}
+          >
             {label}
           </Text>
           {children && (
