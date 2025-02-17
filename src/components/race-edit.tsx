@@ -1,9 +1,7 @@
 import { RaceResult } from "@/shared";
 import {
   Box,
-  Flex,
   Text,
-  Input,
   For,
   Heading,
   Grid,
@@ -87,6 +85,8 @@ export default function RaceEdit({
         .eq("id", race.id)
         .select(),
     ]);
+
+    await supabase.rpc("leaderboard_update");
   };
 
   const [isUpdating, setIsUpdating] = useState(false);

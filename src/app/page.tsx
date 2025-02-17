@@ -14,82 +14,46 @@ import { keyframes } from "@emotion/react";
 import Race from "@/components/race";
 import supabase from "@/supabase";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { RaceResult, useAuth } from "@/shared";
+import { racesQuery, useAuth, queryClient } from "@/shared";
 import { TbChevronsDown, TbChevronsUp, TbX } from "react-icons/tb";
 import { useColorMode } from "@/components/ui/color-mode";
-import dayjs from "dayjs";
 import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
+import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 
 // Memoize your Race component to avoid unnecessary re-renders
 const MemoizedRace = memo(Race);
 
-export default function Home() {
+function Page() {
   // Admin/session state
   const { isAdmin } = useAuth();
 
   // Fetch all races
-  const [races, setRaces] = useState<RaceResult[] | null>(null);
-  useEffect(() => {
-    supabase
-      .from("race")
-      .select(
-        `
-          id,
-          number,
-          video,
-          finishtime,
-          raceteam (
-            race,
-            team ( id, name ),
-            result,
-            halfflight ( id, name, symbol, colour, numbers )
-          )
-        `
-      )
-      .order("number", { ascending: false })
-      .then(({ data, error }) => {
-        if (!data) return;
-        setRaces(
-          data.map((d) => ({
-            id: d.id,
-            number: d.number,
-            video: d.video,
-            finishtime: dayjs(d.finishtime),
-            raceteam: d.raceteam.map((rt: any) => ({
-              team: rt.team,
-              result: rt.result,
-              halfflight: rt.halfflight,
-            })),
-          }))
-        );
-        console.log({ data, error });
-      });
-  }, []);
+  const races = useQuery(racesQuery);
 
   // Fetch settings (go_to_stand offset)
-  const [goToStandOffset, setGoToStandOffset] = useState<number | null>(null);
-  useEffect(() => {
-    supabase
-      .from("settings")
-      .select("go_to_stand")
-      .single()
-      .then(({ data, error }) => {
-        if (data) setGoToStandOffset(data.go_to_stand);
-        console.log({ data, error });
-      });
-  }, []);
+  let { data: goToStandOffset } = useQuery({
+    queryKey: ["settings", "go_to_stand"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("settings")
+        .select("go_to_stand")
+        .single();
+      return data?.go_to_stand;
+    },
+  });
+  if (!goToStandOffset) goToStandOffset = 3;
 
   // Determine current race (first race with no result)
   const [currentRace, setCurrentRace] = useState<number | null>(null);
   useEffect(() => {
-    if (!races) return;
+    if (!races.data) return;
     let cr: number | null = null;
-    for (let i = 0; i < races.length; i++) {
+    for (let i = 0; i < races.data.length; i++) {
       // If the first team in this race has a result, it means the race is done.
-      if (races[i].raceteam[0]?.result !== null) {
+      if (races.data[i].raceteam[0]?.result !== null) {
         break;
       }
-      cr = races[i].number;
+      cr = races.data[i].number;
     }
     setCurrentRace(cr);
   }, [races]);
@@ -118,9 +82,9 @@ export default function Home() {
 
   // Filtered races
   const filteredRaces = useMemo(() => {
-    if (!races) return [];
+    if (!races.data) return [];
     const lowerSearch = debouncedSearch.toLowerCase();
-    return races.filter((race) => {
+    return races.data.filter((race) => {
       const raceName = `${race.number} ${race.raceteam
         .map((rt) => rt.team?.name ?? "")
         .join(" ")}`;
@@ -280,5 +244,13 @@ export default function Home() {
         </Box>
       )}
     </>
+  );
+}
+
+export default function Home() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Page />
+    </QueryClientProvider>
   );
 }

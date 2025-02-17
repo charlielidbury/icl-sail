@@ -39,6 +39,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useQueryClient } from "@tanstack/react-query";
+import { SharedLogic } from "@/shared";
 
 interface NavBarProps {
   isAdmin: boolean;
@@ -88,6 +90,7 @@ export default function NavBar({ isAdmin }: NavBarProps) {
 
   return (
     <Box>
+      <SharedLogic />
       <Flex
         bg={useColorModeValue("white", "gray.800")}
         color={useColorModeValue("gray.600", "white")}
@@ -118,7 +121,12 @@ export default function NavBar({ isAdmin }: NavBarProps) {
             fontFamily={"heading"}
             color={useColorModeValue("gray.800", "white")}
           >
-            <Image src="/logo.png" alt="Logo" width={100} height={50} />
+            <Image
+              src="/logo_transparent.png"
+              alt="Logo"
+              width={100}
+              height={50}
+            />
           </Text>
           <Flex display={{ base: "none", md: "flex" }} ml={10}>
             <DesktopNav navItems={navItems} />
@@ -138,7 +146,12 @@ export default function NavBar({ isAdmin }: NavBarProps) {
           ) : (
             <DialogRoot size="full" motionPreset="slide-in-bottom">
               <DialogTrigger asChild>
-                <Button as={"a"} fontSize={"sm"} fontWeight={400}>
+                <Button
+                  as={"a"}
+                  fontSize={"sm"}
+                  fontWeight={400}
+                  variant="outline"
+                >
                   Log in <TbLogin />
                 </Button>
               </DialogTrigger>
@@ -284,9 +297,7 @@ const MobileNavItem = ({ label, children, href }: NavItem) => {
           as="a"
           justifyContent="space-between"
           alignItems="center"
-          _hover={{
-            textDecoration: "none",
-          }}
+          _hover={{ textDecoration: "none" }}
         >
           <Text
             fontWeight={600}

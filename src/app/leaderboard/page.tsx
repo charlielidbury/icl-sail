@@ -16,7 +16,8 @@ import { useEffect, useState } from "react";
 import supabase from "@/supabase";
 import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
 import ordinal from "ordinal";
-import { useAuth } from "@/shared";
+import { queryClient, useAuth } from "@/shared";
+import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 
 type LeaderboardRow = {
   avg_pts: number;
@@ -30,7 +31,7 @@ type LeaderboardRow = {
   };
 };
 
-export default function Leaderboard() {
+function Page() {
   // Session and admin state.
   const { isAdmin } = useAuth();
 
@@ -38,14 +39,13 @@ export default function Leaderboard() {
   const [selectedLeague, setSelectedLeague] = useState<string>("quali");
 
   // Fetch leaderboard data filtered by the selected league.
-  const [leaderboard, setLeaderboard] = useState<LeaderboardRow[] | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  useEffect(() => {
-    setLoading(true);
-    supabase
-      .from("leaderboard")
-      .select(
-        `
+  const { data: leaderboard } = useQuery({
+    queryKey: ["leaderboard", selectedLeague],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("leaderboard")
+        .select(
+          `
         avg_pts,
         losses,
         order,
@@ -55,18 +55,17 @@ export default function Leaderboard() {
           id, name
         )
       `
-      )
-      .eq("league", selectedLeague)
-      .order("order", { ascending: true })
-      .then(({ data, error }) => {
-        if (error) {
-          console.error("Error fetching leaderboard:", error);
-        } else {
-          setLeaderboard(data as LeaderboardRow[]);
-        }
-        setLoading(false);
-      });
-  }, [selectedLeague]);
+        )
+        .eq("league", selectedLeague)
+        .order("order", { ascending: true });
+
+      if (error) {
+        console.error("Error fetching leaderboard:", error);
+      } else {
+        return data;
+      }
+    },
+  });
 
   // Ensure light mode.
   const { setColorMode } = useColorMode();
@@ -141,7 +140,7 @@ export default function Leaderboard() {
             </Button>
           </ButtonGroup>
         </Flex>
-        {loading ? (
+        {leaderboard === undefined ? (
           <Stack>
             <Skeleton height="80px" />
             <Skeleton height="80px" />
@@ -226,5 +225,13 @@ export default function Leaderboard() {
         )}
       </Box>
     </>
+  );
+}
+
+export default function Leaderboard() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Page />
+    </QueryClientProvider>
   );
 }

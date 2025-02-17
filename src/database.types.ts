@@ -84,18 +84,21 @@ export type Database = {
         Row: {
           finishtime: string | null
           id: string
+          league: string
           number: number
           video: string | null
         }
         Insert: {
           finishtime?: string | null
           id?: string
+          league?: string
           number: number
           video?: string | null
         }
         Update: {
           finishtime?: string | null
           id?: string
+          league?: string
           number?: number
           video?: string | null
         }
@@ -179,7 +182,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      leaderboard_update: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

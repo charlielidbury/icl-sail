@@ -20,6 +20,7 @@ import supabase from "@/supabase";
 import { RaceResult, useAuth } from "../shared";
 import RaceEdit from "./race-edit";
 import { TbChevronLeft } from "react-icons/tb";
+import { useQuery } from "@tanstack/react-query";
 
 // Define a type for a leaderboard row.
 type LeaderboardRow = {
@@ -52,34 +53,28 @@ function TeamComparison({
   leftTeamId: string;
   rightTeamId: string;
 }) {
-  const [stats, setStats] = useState<LeaderboardRow[] | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const { data: stats } = useQuery({
+    queryKey: ["leaderboard", leftTeamId, rightTeamId],
+    queryFn: async () => {
+      if (!leftTeamId || !rightTeamId) {
+        return;
+      }
+      const { data, error } = await supabase
+        .from("leaderboard")
+        .select(
+          `
+            avg_pts,
+            losses,
+            wins,
+            team (id, name)
+          `
+        )
+        .in("team", [leftTeamId, rightTeamId]);
 
-  useEffect(() => {
-    if (!leftTeamId || !rightTeamId) {
-      setLoading(false);
-      return;
-    }
-    supabase
-      .from("leaderboard")
-      .select(
-        `
-          avg_pts,
-          losses,
-          wins,
-          team (id, name)
-        `
-      )
-      .in("team", [leftTeamId, rightTeamId])
-      .then(({ data, error }) => {
-        if (error) {
-          console.error("Error fetching head-to-head data:", error);
-        } else {
-          setStats(data as LeaderboardRow[]);
-        }
-        setLoading(false);
-      });
-  }, [leftTeamId, rightTeamId]);
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const leftStats = stats?.find((s) => s.team.id === leftTeamId);
   const rightStats = stats?.find((s) => s.team.id === rightTeamId);
@@ -87,7 +82,7 @@ function TeamComparison({
   return (
     <>
       <Heading size="xl">Team Comparison</Heading>
-      {loading ? (
+      {!stats ? (
         <Skeleton height="80px" variant="shine" />
       ) : (
         <Box mb={4} p={3} borderWidth="1px" borderRadius="md" bg="gray.50">
