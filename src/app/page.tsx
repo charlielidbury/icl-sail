@@ -12,11 +12,13 @@ import {
 import { keyframes } from "@emotion/react";
 import Race from "@/components/race";
 import supabase from "@/supabase";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { RaceResult, useAuth } from "@/shared";
 import { TbChevronsDown, TbChevronsUp, TbX } from "react-icons/tb";
 import { useColorMode } from "@/components/ui/color-mode";
 import dayjs from "dayjs";
+
+const MemoizedRace = memo(Race);
 
 export default function Home() {
   // Admin/session state.
@@ -134,17 +136,13 @@ export default function Home() {
     return () => clearTimeout(handler);
   }, [search]);
 
-  const [filteredRaces, setFilteredRaces] = useState<RaceResult[] | null>(null);
-  useEffect(() => {
-    console.log("Updating filtered races");
+  const filteredRaces = useMemo(() => {
     if (!races) return;
     const lowerSearch = debouncedSearch.toLowerCase();
-    setFilteredRaces(
-      races.filter((race) => {
-        const raceName = `${race.number} ${race.raceteam[0]?.team?.name} ${race.raceteam[1]?.team?.name}`;
-        return raceName.toLowerCase().includes(lowerSearch);
-      })
-    );
+    return races.filter((race) => {
+      const raceName = `${race.number} ${race.raceteam[0]?.team?.name} ${race.raceteam[1]?.team?.name}`;
+      return raceName.toLowerCase().includes(lowerSearch);
+    });
   }, [races, debouncedSearch]);
 
   const pulseAnimation = keyframes`
@@ -166,7 +164,7 @@ export default function Home() {
         <Box p={4} bg="white" boxShadow="md">
           <Box position="relative">
             <Input
-              placeholder="Search"
+              placeholder="Search by team name or race #"
               variant="subtle"
               bg="light-gray"
               value={search}
@@ -197,7 +195,7 @@ export default function Home() {
                 key={race.id}
                 ref={race.number === currentRace ? currentRaceRef : undefined}
               >
-                <Race
+                <MemoizedRace
                   race={race}
                   active={race.number === currentRace}
                   isStand={
