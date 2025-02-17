@@ -14,9 +14,9 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import supabase from "@/supabase";
-import { Session } from "@supabase/auth-js";
 import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
 import ordinal from "ordinal";
+import { useAuth } from "@/shared";
 
 type LeaderboardRow = {
   avg_pts: number;
@@ -32,39 +32,10 @@ type LeaderboardRow = {
 
 export default function Leaderboard() {
   // Session and admin state.
-  const [session, setSession] = useState<Session | null>(null);
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const { isAdmin } = useAuth();
 
   // League selection state.
   const [selectedLeague, setSelectedLeague] = useState<string>("quali");
-
-  useEffect(() => {
-    supabase.auth
-      .getSession()
-      .then(({ data: { session } }) => setSession(session));
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) =>
-      setSession(session)
-    );
-    return () => subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (session && session.user) {
-        const { data } = await supabase
-          .from("admin")
-          .select("uuid")
-          .eq("uuid", session.user.id)
-          .maybeSingle();
-        setIsAdmin(!!data);
-      } else {
-        setIsAdmin(false);
-      }
-    };
-    checkAdminStatus();
-  }, [session]);
 
   // Fetch leaderboard data filtered by the selected league.
   const [leaderboard, setLeaderboard] = useState<LeaderboardRow[] | null>(null);
@@ -211,7 +182,7 @@ export default function Leaderboard() {
                         {row.team.name}
                       </Text>
                       <Badge
-                        bg={ordinalBg}
+                        bg={badgeBg}
                         color="black"
                         fontSize="xs"
                         fontWeight="semibold"

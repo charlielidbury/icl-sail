@@ -13,44 +13,14 @@ import { keyframes } from "@emotion/react";
 import Race from "@/components/race";
 import supabase from "@/supabase";
 import { useEffect, useRef, useState } from "react";
-import { RaceResult } from "@/shared";
+import { RaceResult, useAuth } from "@/shared";
 import { TbChevronsDown, TbChevronsUp, TbX } from "react-icons/tb";
-import { Session } from "@supabase/auth-js";
 import { useColorMode } from "@/components/ui/color-mode";
 import dayjs from "dayjs";
 
 export default function Home() {
   // Admin/session state.
-  const [session, setSession] = useState<Session | null>(null);
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
-
-  useEffect(() => {
-    supabase.auth
-      .getSession()
-      .then(({ data: { session } }) => setSession(session));
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) =>
-      setSession(session)
-    );
-    return () => subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (session && session.user) {
-        const { data } = await supabase
-          .from("admin")
-          .select("uuid")
-          .eq("uuid", session.user.id)
-          .maybeSingle();
-        setIsAdmin(!!data);
-      } else {
-        setIsAdmin(false);
-      }
-    };
-    checkAdminStatus();
-  }, [session]);
+  const { isAdmin } = useAuth();
 
   // Fetch all races (including finishtime) with raceteam.
   const [races, setRaces] = useState<RaceResult[] | null>(null);

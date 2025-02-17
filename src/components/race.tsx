@@ -143,13 +143,11 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
       borderWidth="1px"
       borderColor={borderColor}
       boxShadow={shadow}
-      borderTopRadius="none"
-      borderBottomLeftRadius="md"
-      borderBottomRightRadius="md"
-      _hover={{ boxShadow: "xl" }}
+      borderRadius="md"
+      _hover={{ boxShadow: "lg" }}
       position="relative"
     >
-      <Box>
+      <Box m={4}>
         {/* HEADER */}
         <Flex justify="space-between" align="center" mb={3}>
           <Text fontSize="lg" fontWeight="bold">
@@ -243,11 +241,11 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
               borderBottomLeftRadius="md"
               borderBottomRightRadius="md"
             >
-              DRONE FOOTAGE
+              DRONE FOOTAGE AVAILABLE
             </Badge>
           </Box>
         ) : (
-          <Box pb="4" />
+          <Box pb="2" />
         )}
       </Box>
     </Box>

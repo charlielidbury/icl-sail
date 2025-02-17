@@ -166,15 +166,6 @@ export default function RaceEdit({
           Update
         </Button>
       </Box>
-      <Heading size="2xl">Drone Recording</Heading>
-      <Flex>
-        <Box>
-          <Input placeholder="Vimeo link" />
-        </Box>
-        <Box>
-          <Button variant="solid">Upload</Button>
-        </Box>
-      </Flex>
     </>
   );
 }
