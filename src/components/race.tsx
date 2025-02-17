@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Flex, Text, Badge } from "@chakra-ui/react";
+import { Box, Flex, Text, Badge, Grid, GridItem } from "@chakra-ui/react";
 import {
   DialogActionTrigger,
   DialogBody,
@@ -17,6 +17,7 @@ import { FaCrown } from "react-icons/fa";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import RaceDialog from "./race-dialog";
+import RaceEdit from "./race-edit";
 
 // Extend Day.js with the relativeTime plugin.
 dayjs.extend(relativeTime);
@@ -67,17 +68,31 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
   const borderColor = active ? "green.500" : "gray.200";
   const shadow = active ? "lg" : "md";
 
-  // Prepare team names and result strings.
-  const leftTeamName = race.raceteam[0]?.team.name || "";
-  const rightTeamName = race.raceteam[1]?.team.name || "";
-  const leftResultStr = race.raceteam[0]?.result?.join(", ") || "";
-  const rightResultStr = race.raceteam[1]?.result?.join(", ") || "";
+  if (!race.raceteam[0] || !race.raceteam[1]) return <></>;
+
+  // Extract team names and result strings.
+  const leftTeamName = race.raceteam[0].team.name || "";
+  const rightTeamName = race.raceteam[1].team.name || "";
+  const leftSubStr =
+    race.raceteam[0].result?.join(", ") ||
+    `in ${
+      race.raceteam[0].halfflight.name
+    } (${race.raceteam[0].halfflight.numbers.join(",")})`;
+  const rightSubStr =
+    race.raceteam[1].result?.join(", ") ||
+    `in ${
+      race.raceteam[1].halfflight.name
+    } (${race.raceteam[1].halfflight.numbers.join(",")})`;
 
   // Compute scores if available.
   const leftScore =
-    race.raceteam[0]?.result !== null ? sumResult(race.raceteam[0].result) : null;
+    race.raceteam[0]?.result !== null
+      ? sumResult(race.raceteam[0].result)
+      : null;
   const rightScore =
-    race.raceteam[1]?.result !== null ? sumResult(race.raceteam[1].result) : null;
+    race.raceteam[1]?.result !== null
+      ? sumResult(race.raceteam[1].result)
+      : null;
 
   // Determine winners (lower score wins).
   const leftIsWinner =
@@ -90,13 +105,27 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
 
   if (active) {
     headerBadge = (
-      <Badge fontSize="sm" px={2} py={1} borderRadius="md" bg="green.500" color="white">
+      <Badge
+        fontSize="sm"
+        px={2}
+        py={1}
+        borderRadius="md"
+        bg="green.500"
+        color="white"
+      >
         Current Race
       </Badge>
     );
   } else if (isStand) {
     headerBadge = (
-      <Badge fontSize="sm" px={2} py={1} borderRadius="md" bg="red.500" color="white">
+      <Badge
+        fontSize="sm"
+        px={2}
+        py={1}
+        borderRadius="md"
+        bg="red.500"
+        color="white"
+      >
         Go to Stand
       </Badge>
     );
@@ -120,71 +149,100 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
       _hover={{ boxShadow: "xl" }}
       position="relative"
     >
-      <Box
-        pt={4}
-        px={4}
-      >
+      <Box>
+        {/* HEADER */}
         <Flex justify="space-between" align="center" mb={3}>
           <Text fontSize="lg" fontWeight="bold">
             Race {race.number}
           </Text>
           {headerBadge}
         </Flex>
-
+        {/* DIVIDER */}
         <Box height="1px" bg="gray.200" my={3} />
+        {/* RACE DETAILS */}
+
+        <Grid templateColumns="1fr auto 1fr" gap={2}>
+          {/* Row 1: Team A vs Team B */}
+          <GridItem textAlign="left" alignSelf="center">
+            <Text fontSize="xl" fontWeight="semibold">
+              {highlightText(leftTeamName, search || "")}
+            </Text>
+          </GridItem>
+          <GridItem
+            rowSpan={2}
+            alignSelf="center"
+            display="flex"
+            alignItems="center"
+            mx={2}
+          >
+            <Text fontSize="2xl" color="gray.500">
+              vs
+            </Text>
+          </GridItem>
+          <GridItem textAlign="right" alignSelf="center">
+            <Text fontSize="xl" fontWeight="semibold">
+              {highlightText(rightTeamName, search || "")}
+            </Text>
+          </GridItem>
+          {/* Row 2: Flight A       Flight B or 1,2,3      4,5,6 */}
+          <GridItem textAlign="left">
+            <Text fontSize="sm" color="gray.600">
+              {highlightText(leftSubStr, search || "")}
+              {leftIsWinner && (
+                <Box
+                  as="span"
+                  ml={1}
+                  color="#B59410"
+                  display="inline-flex"
+                  verticalAlign="middle"
+                >
+                  <FaCrown />
+                </Box>
+              )}
+            </Text>
+          </GridItem>
+          <GridItem textAlign="right">
+            <Text fontSize="sm" color="gray.600">
+              {rightIsWinner && (
+                <Box
+                  as="span"
+                  mr={1}
+                  color="#B59410"
+                  display="inline-flex"
+                  verticalAlign="middle"
+                >
+                  <FaCrown />
+                </Box>
+              )}
+              {highlightText(rightSubStr, search || "")}
+            </Text>
+          </GridItem>
+        </Grid>
 
         <Flex justify="space-between" align="center">
-          {race.raceteam[0] && (
-            <Box flex="1" mr={2}>
-              <Text fontSize="xl" fontWeight="semibold">
-                {highlightText(leftTeamName, search || "")}
-              </Text>
-              <Text fontSize="sm" color="gray.600">
-                {highlightText(leftResultStr, search || "")}
-                {leftIsWinner && (
-                  <Box
-                    as="span"
-                    ml={1}
-                    color="#B59410"
-                    display="inline-flex"
-                    verticalAlign="middle"
-                  >
-                    <FaCrown />
-                  </Box>
-                )}
-              </Text>
-            </Box>
-          )}
-          <Text fontSize="2xl" color="gray.500" mx={2}>
-            vs
-          </Text>
-          {race.raceteam[1] && (
-            <Box flex="1" ml={2} textAlign="right">
-              <Text fontSize="xl" fontWeight="semibold">
-                {highlightText(rightTeamName, search || "")}
-              </Text>
-              <Text fontSize="sm" color="gray.600">
-                {rightIsWinner && (
-                  <Box
-                    as="span"
-                    mr={1}
-                    color="#B59410"
-                    display="inline-flex"
-                    verticalAlign="middle"
-                  >
-                    <FaCrown />
-                  </Box>
-                )}
-                {highlightText(rightResultStr, search || "")}
-              </Text>
-            </Box>
-          )}
+          <Box flex="1" mr={2}></Box>
+          <Box flex="1" ml={2} textAlign="right"></Box>
         </Flex>
       </Box>
+
       <Box>
         {race.video ? (
           <Box mt={3} borderRadius={"none"}>
-            <Badge w="full" display="flex" justifyContent="center" textAlign="center" fontSize="xxs" pt="2" pb="2" fontWeight={"bold"} bg="#004a79" color="white" borderTopRadius="none" borderBottomLeftRadius="md" borderBottomRightRadius="md">
+            <Badge
+              w="full"
+              display="flex"
+              justifyContent="center"
+              textAlign="center"
+              fontSize="xxs"
+              pt="2"
+              pb="2"
+              fontWeight={"bold"}
+              bg="#004a79"
+              color="white"
+              borderTopRadius="none"
+              borderBottomLeftRadius="md"
+              borderBottomRightRadius="md"
+            >
               DRONE FOOTAGE
             </Badge>
           </Box>
@@ -208,7 +266,12 @@ export default function Race({ race, active, isStand, search }: RaceProps) {
     <DialogRoot size="full" motionPreset="slide-in-bottom">
       <DialogTrigger asChild>
         <Box mb={4}>
-          <RaceCard race={race} active={active} isStand={isStand} search={search} />
+          <RaceCard
+            race={race}
+            active={active}
+            isStand={isStand}
+            search={search}
+          />
         </Box>
       </DialogTrigger>
       <DialogContent>
@@ -216,8 +279,15 @@ export default function Race({ race, active, isStand, search }: RaceProps) {
           <DialogTitle>Race {race.number}</DialogTitle>
         </DialogHeader>
         <DialogBody>
-          <RaceCard race={race} active={active} isStand={isStand} search={search} />
+          <RaceCard
+            race={race}
+            active={active}
+            isStand={isStand}
+            search={search}
+          />
           <RaceDialog race={race} />
+
+          <RaceEdit race={race} active={active} />
         </DialogBody>
         <DialogFooter>
           <DialogActionTrigger asChild>

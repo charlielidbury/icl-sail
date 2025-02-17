@@ -25,8 +25,14 @@ export default function Home() {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => setSession(session));
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => setSession(session));
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) =>
+      setSession(session)
+    );
     return () => subscription.unsubscribe();
   }, []);
 
@@ -37,7 +43,7 @@ export default function Home() {
           .from("admin")
           .select("uuid")
           .eq("uuid", session.user.id)
-          .single();
+          .maybeSingle();
         setIsAdmin(!!data);
       } else {
         setIsAdmin(false);
@@ -143,7 +149,8 @@ export default function Home() {
 
   // Search filter state.
   const [search, setSearch] = useState(() => {
-    if (typeof window !== "undefined") return localStorage.getItem("search") || "";
+    if (typeof window !== "undefined")
+      return localStorage.getItem("search") || "";
     return "";
   });
   useEffect(() => {
@@ -245,7 +252,13 @@ export default function Home() {
         </Stack>
       </Box>
       {!isCurrentRaceVisible && (
-        <Box position="fixed" bottom="20px" left="50%" transform="translateX(-50%)" zIndex="200">
+        <Box
+          position="fixed"
+          bottom="20px"
+          left="50%"
+          transform="translateX(-50%)"
+          zIndex="200"
+        >
           <Button
             onClick={scrollToCurrentRace}
             borderRadius="md"

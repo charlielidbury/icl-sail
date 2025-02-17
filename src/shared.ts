@@ -15,7 +15,7 @@ export interface RaceResult {
       name: string;
       symbol: string | null;
       colour: string | null;
-      numbers: number[] | null;
+      numbers: number[];
     };
     result: number[] | null;
   }[];
