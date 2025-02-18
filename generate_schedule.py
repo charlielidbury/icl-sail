@@ -272,9 +272,12 @@ def generate_rounds(teams: List[str]) -> Iterator[List[Tuple[str, str]]]:
         # odd number of teams
         benched = team2s.pop()  # makes sure len(team1s) == len(team2s)
 
-        for _ in range((ts - 1) // 2):
-            mini_round_1 = list(zip(team1s, team2s))
-            remainder_1 = benched
+        # make mini rounds
+        mini_rounds = {}
+        for _ in range(ts):
+            mini_round = list(zip(team1s, team2s))
+            remainder = benched
+            mini_rounds[remainder] = mini_round
 
             # rotate according to custom logic
             team1s[0], team1s[1:], benched, team2s[-1], team2s[:-1] = (
@@ -285,19 +288,13 @@ def generate_rounds(teams: List[str]) -> Iterator[List[Tuple[str, str]]]:
                 team2s[1:],
             )
 
-            mini_round_2 = list(zip(team1s, team2s))
-            remainder_2 = benched
-
-            # rotate according to custom logic
-            team1s[0], team1s[1:], benched, team2s[-1], team2s[:-1] = (
-                team2s[0],
-                team1s[:-1],
-                team1s[-1],
-                benched,
-                team2s[1:],
-            )
-
-            yield [*mini_round_1, *mini_round_2, (remainder_1, remainder_2)]
+        # there should be ts mini rounds
+        # take the first mini round, and use it to pair off the other rounds
+        # ARBITRARILY CHOOSE THE FIRST MINI ROUND
+        _, mr = next(iter(mini_rounds.items()))
+        for l, r in mr:
+            # pair the l mini round with the r mini round
+            yield [(l, r), *mini_rounds[l], *mini_rounds[r]]
 
 
 def rr_with_breakpoints(
@@ -453,14 +450,21 @@ def tsv_schedule(teams: List[str], flights: List[Flight], races: List[Race]) -> 
     # body
     total_raced = {t: 0 for t in teams}
     for race in races:
+        total_raced[race.team1] += 1
+        total_raced[race.team2] += 1
+
         output += f"{race.race_num}\t"
         flight_num = (race.race_num - 1) % len(flights)
         output += "\t" * (flight_num * 2)
-        output += f"{race.team1}\t{race.team2}\n"
+        output += f"{race.team1}\t{race.team2}"
+        min_raced = min(total_raced.values())
+        max_raced = max(total_raced.values())
+        output += (
+            "\t" * ((len(flights) - flight_num - 1) * 2)
+            + f"\t{min_raced}\t{max_raced}\t{max_raced - min_raced}\n"
+        )
 
         # keep track of how many races each team has raced
-        total_raced[race.team1] += 1
-        total_raced[race.team2] += 1
 
         # if all teams have raced the same number of times, add a divider
         if all(total_raced[t] == total_raced[teams[0]] for t in teams):
@@ -470,14 +474,44 @@ def tsv_schedule(teams: List[str], flights: List[Flight], races: List[Race]) -> 
     return output
 
 
+def block_extend(
+    races: List[Race],
+    teams: List[str],
+    flights: List[Flight],
+    rounds: Dict[int, List[Tuple[str, str]]],
+) -> List[Race]:
+    pass
+
+
+def greedy_blocks(teams: List[str], flights: List[Flight]) -> List[Race]:
+    """
+    strategy: at each stage, pick the block which can be built with the least double handovers
+    """
+
+    races = []
+
+    rounds = dict(enumerate(list(generate_rounds(teams))))
+
+    block_extend(races, teams, flights, rounds)
+
+    for round in range(len(rounds)):
+        pass
+
+
 if __name__ == "__main__":
-    for league, teams, flights, breakpoints in [
-        ("quali", TEAMS, FLIGHTS, {50, 75, 100, 125, 150, 175}),  # Qualifying
-        ("gold", TEAMS[:11], FLIGHTS[:2], {40, 60, 80}),  # Gold
-        ("silver", TEAMS[11:], FLIGHTS[2:], {40, 60, 80}),  # Silver
-    ]:
-        schedule = rr_breakpoints_retry(teams, flights, breakpoints, seed=None)
-        with open(f"schedule/{league}.tsv", "w") as f:
-            f.write(tsv_schedule(teams, flights, schedule))
-        with open(f"schedule/{league}.sql", "w") as f:
-            f.write(sql_schedule(teams, flights, schedule, league))
+    # for league, teams, flights, breakpoints in [
+    #     ("quali", TEAMS, FLIGHTS, {50, 75, 100, 125, 150, 175}),  # Qualifying
+    #     ("gold", TEAMS[:11], FLIGHTS[:2], {40, 60, 80}),  # Gold
+    #     ("silver", TEAMS[11:], FLIGHTS[2:], {40, 60, 80}),  # Silver
+    # ]:
+    #     schedule = rr_breakpoints_retry(teams, flights, breakpoints, seed=None)
+    #     with open(f"schedule/{league}.tsv", "w") as f:
+    #         f.write(tsv_schedule(teams, flights, schedule))
+    #     with open(f"schedule/{league}.sql", "w") as f:
+    #         f.write(sql_schedule(teams, flights, schedule, league))
+
+    schedule = rr_breakpoints_retry(
+        TEAMS, FLIGHTS, {21 * (i + 1) for i in range(10)}, seed=None
+    )
+    with open(f"schedule/test.tsv", "w") as f:
+        f.write(tsv_schedule(TEAMS, FLIGHTS, schedule))
