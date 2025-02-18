@@ -140,10 +140,10 @@ export default function NavBar({ isAdmin }: NavBarProps) {
               as={"a"}
               fontSize="sm"
               fontWeight={400}
-              variant="subtle"
+              variant="outline"
               onClick={() => supabase.auth.signOut()}
             >
-              Log out <TbLogout />
+              Logout
             </Button>
           ) : (
             <DialogRoot size="full" motionPreset="slide-in-bottom">
@@ -154,7 +154,7 @@ export default function NavBar({ isAdmin }: NavBarProps) {
                   fontWeight={400}
                   variant="outline"
                 >
-                  Log in <TbLogin />
+                  Login
                 </Button>
               </DialogTrigger>
               <DialogContent>
