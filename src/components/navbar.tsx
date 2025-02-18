@@ -55,7 +55,7 @@ interface NavItem {
 
 const BASE_NAV_ITEMS: Array<NavItem> = [
   {
-    label: "Schedule",
+    label: "Races",
     href: "/",
   },
   {
@@ -121,12 +121,14 @@ export default function NavBar({ isAdmin }: NavBarProps) {
             fontFamily={"heading"}
             color={useColorModeValue("gray.800", "white")}
           >
-            <Image
-              src="/logo_transparent.png"
-              alt="Logo"
-              width={100}
-              height={50}
-            />
+            <Link href="/">
+              <Image
+                src="/logo_transparent.png"
+                alt="Logo"
+                width={100}
+                height={50}
+              />
+            </Link>
           </Text>
           <Flex display={{ base: "none", md: "flex" }} ml={10}>
             <DesktopNav navItems={navItems} />
