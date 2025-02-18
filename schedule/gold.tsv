@@ -1,0 +1,55 @@
+race	Pink and Black Stripe(7, 8, 9)	Pink and Black Stripe(10, 11, 12)	Green Circle(7, 8, 9)	Black Diamond(10, 11, 12)
+1	Solent Black	Sevenoaks Pirate Hawks
+2			Plymouth Black	UCD
+3	Bath Glossy White	Bath Matte Black
+4			Rutland Rockets	Portsmouth Brown
+5	Solent Black	Portsmouth Blue
+6			Plymouth Black	TCD
+7	Bath Glossy White	Warwick Blue
+8			Rutland Rockets	Sevenoaks Pirate Hawks
+9	Portsmouth Brown	Portsmouth Blue
+10			Bath Matte Black	TCD
+11	UCD	Warwick Blue
+breakpoint
+12			Solent Black	Plymouth Black
+13	Portsmouth Brown	Bath Glossy White
+14			Bath Matte Black	Rutland Rockets
+15	UCD	Sevenoaks Pirate Hawks
+16			Solent Black	Warwick Blue
+17	Plymouth Black	Bath Glossy White
+18			Portsmouth Brown	TCD
+19	Portsmouth Blue	Sevenoaks Pirate Hawks
+20			Rutland Rockets	Warwick Blue
+21	Plymouth Black	Bath Matte Black
+22			Portsmouth Brown	UCD
+23	Bath Glossy White	TCD
+24			Rutland Rockets	Solent Black
+25	Portsmouth Blue	Bath Matte Black
+26			Plymouth Black	Warwick Blue
+27	Bath Glossy White	Sevenoaks Pirate Hawks
+28			TCD	UCD
+29	Portsmouth Blue	Rutland Rockets
+30			Portsmouth Brown	Warwick Blue
+31	Bath Matte Black	Solent Black
+32			Bath Glossy White	UCD
+33	TCD	Sevenoaks Pirate Hawks
+34			Plymouth Black	Rutland Rockets
+35	Portsmouth Blue	Warwick Blue
+36			Portsmouth Brown	Solent Black
+37	Bath Matte Black	UCD
+38			TCD	Rutland Rockets
+39	Portsmouth Blue	Plymouth Black
+40			Portsmouth Brown	Sevenoaks Pirate Hawks
+41	Solent Black	UCD
+42			TCD	Warwick Blue
+43	Bath Glossy White	Rutland Rockets
+44			Bath Matte Black	Sevenoaks Pirate Hawks
+45	Portsmouth Brown	Plymouth Black
+46			UCD	Warwick Blue
+47	Bath Glossy White	Portsmouth Blue
+48			Solent Black	TCD
+49	Sevenoaks Pirate Hawks	Plymouth Black
+50			UCD	Rutland Rockets
+51	Bath Matte Black	Warwick Blue
+52			Solent Black	Portsmouth Brown
+53	Portsmouth Blue	TCD

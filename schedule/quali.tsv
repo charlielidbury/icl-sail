@@ -1,0 +1,218 @@
+race	Pink and Black Stripe(7, 8, 9)	Pink and Black Stripe(10, 11, 12)	Green Circle(7, 8, 9)	Black Diamond(10, 11, 12)	Red and Blue striped jibs(1, 2, 3)	Red and Blue striped jibs(4, 5, 6)	Red and Blue stripe(1, 2, 3)	Red and Blue stripe(4, 5, 6)
+1	Plymouth Black	Sevenoaks Pirate Hawks
+2			TCD	Imperial White
+3					Bath Glossy White	UCD
+4							Rutland Rockets	Durham White
+5	Plymouth Black	UCLove
+6			TCD	Cambridge Green
+7					Bath Glossy White	Bath Matte Black
+8							Rutland Rockets	Portsmouth Brown
+9	Portsmouth Blue	UCLove
+10			Northern RoyalT	Emirates Team Kickflip
+11					Durham White	Sevenoaks Pirate Hawks
+12							Imperial White	Portsmouth Brown
+13	Portsmouth Blue	Warwick Blue
+14			Northern RoyalT	Brunel Blue
+15					Durham White	UCD
+16							Imperial White	UCLove
+17	UCL Purple	TCD
+18			Oxford	Solent Black
+19					Bath Matte Black	Durham Bubblegum Pink
+20							Cambridge Green	Bath Glossy White
+21	UCL Purple	Emirates Team Kickflip
+22			Oxford	Plymouth Black
+23					Bath Matte Black	Portsmouth Blue
+24							Cambridge Green	Sevenoaks Pirate Hawks
+25	Warwick Blue	UCD
+26			Northern RoyalT	UCLove
+27					Emirates Team Kickflip	Imperial White
+28							Durham White	Portsmouth Brown
+29	Warwick Blue	Solent Black
+30			Northern RoyalT	TCD
+31					Emirates Team Kickflip	Plymouth Black
+32							Durham White	Bath Glossy White
+33	Imperial White	Brunel Blue
+34			Portsmouth Blue	Durham Bubblegum Pink
+35					Bath Matte Black	Oxford
+36							UCL Purple	Bath Glossy White
+37	Imperial White	Sevenoaks Pirate Hawks
+38			Portsmouth Blue	Brunel Blue
+39					Bath Matte Black	UCLove
+40							UCL Purple	Portsmouth Brown
+41	Warwick Blue	Durham Bubblegum Pink
+42			TCD	Rutland Rockets
+43					Portsmouth Blue	Oxford
+44							Plymouth Black	Brunel Blue
+45	Warwick Blue	Bath Matte Black
+46			TCD	Durham White
+47					Portsmouth Brown	Cambridge Green
+48							Plymouth Black	Durham Bubblegum Pink
+49	Solent Black	Emirates Team Kickflip
+50			UCL Purple	Sevenoaks Pirate Hawks
+51					Portsmouth Brown	UCD
+52							Bath Glossy White	Rutland Rockets
+53	Solent Black	UCLove
+54			UCL Purple	Brunel Blue
+55					Oxford	Northern RoyalT
+56							Durham Bubblegum Pink	Rutland Rockets
+57	UCD	Cambridge Green
+58			Solent Black	Brunel Blue
+59					Oxford	Warwick Blue
+60							Northern RoyalT	Sevenoaks Pirate Hawks
+61	UCD	Rutland Rockets
+62			Solent Black	Durham Bubblegum Pink
+63					Emirates Team Kickflip	Cambridge Green
+breakpoint
+64							Northern RoyalT	Warwick Blue
+65	UCLove	UCL Purple
+66			Portsmouth Blue	Portsmouth Brown
+67					Emirates Team Kickflip	Durham White
+68							Cambridge Green	Brunel Blue
+69	Bath Matte Black	Plymouth Black
+70			Portsmouth Blue	Solent Black
+71					TCD	Bath Glossy White
+72							Cambridge Green	UCLove
+73	Brunel Blue	Durham White
+74			Sevenoaks Pirate Hawks	UCD
+75					Emirates Team Kickflip	Rutland Rockets
+76							Solent Black	Bath Matte Black
+77	Imperial White	Oxford
+78			Portsmouth Brown	Bath Glossy White
+79					Sevenoaks Pirate Hawks	Rutland Rockets
+80							Durham Bubblegum Pink	Northern RoyalT
+81	Warwick Blue	Plymouth Black
+82			UCD	TCD
+83					Oxford	UCL Purple
+84							Durham Bubblegum Pink	Imperial White
+breakpoint
+85	Bath Matte Black	Northern RoyalT
+86			UCD	Brunel Blue
+87					Oxford	Cambridge Green
+88							UCLove	Durham White
+89	Bath Matte Black	Imperial White
+90			Durham Bubblegum Pink	UCL Purple
+91					Portsmouth Blue	Plymouth Black
+92							UCLove	Rutland Rockets
+93	Oxford	Durham White
+94			Durham Bubblegum Pink	Cambridge Green
+95					Portsmouth Blue	Northern RoyalT
+96							Solent Black	TCD
+97	Emirates Team Kickflip	Bath Glossy White
+98			Brunel Blue	Rutland Rockets
+99					Warwick Blue	Imperial White
+100							Sevenoaks Pirate Hawks	Portsmouth Brown
+101	Emirates Team Kickflip	UCD
+102			Solent Black	Plymouth Black
+103					Warwick Blue	UCL Purple
+104							Sevenoaks Pirate Hawks	Bath Glossy White
+105	TCD	Portsmouth Brown
+breakpoint
+106			Solent Black	Northern RoyalT
+107					Rutland Rockets	Oxford
+108							Imperial White	Portsmouth Blue
+109	TCD	Emirates Team Kickflip
+110			UCLove	UCD
+111					Rutland Rockets	Durham Bubblegum Pink
+112							Imperial White	Solent Black
+113	Portsmouth Brown	Emirates Team Kickflip
+114			UCLove	Bath Glossy White
+115					Cambridge Green	Bath Matte Black
+116							Sevenoaks Pirate Hawks	Plymouth Black
+117	Portsmouth Brown	Brunel Blue
+118			UCL Purple	Portsmouth Blue
+119					Cambridge Green	Warwick Blue
+120							Sevenoaks Pirate Hawks	TCD
+121	Bath Glossy White	Brunel Blue
+122			Durham Bubblegum Pink	Durham White
+123					Bath Matte Black	UCL Purple
+124							Northern RoyalT	Plymouth Black
+125	Oxford	UCD
+126			Warwick Blue	Durham White
+breakpoint
+127					Bath Matte Black	Rutland Rockets
+128							Northern RoyalT	Imperial White
+129	Oxford	Portsmouth Brown
+130			Warwick Blue	Bath Glossy White
+131					Durham Bubblegum Pink	TCD
+132							Plymouth Black	Imperial White
+133	Rutland Rockets	Solent Black
+134			Portsmouth Brown	UCLove
+135					Durham Bubblegum Pink	UCD
+136							Plymouth Black	Cambridge Green
+137	Rutland Rockets	Portsmouth Blue
+138			Portsmouth Brown	Warwick Blue
+139					Brunel Blue	Emirates Team Kickflip
+140							UCLove	Sevenoaks Pirate Hawks
+141	UCD	Portsmouth Blue
+142			Imperial White	UCL Purple
+143					Brunel Blue	TCD
+144							UCLove	Emirates Team Kickflip
+145	UCD	Bath Matte Black
+146			Warwick Blue	Rutland Rockets
+147					Bath Glossy White	Oxford
+148							UCL Purple	Northern RoyalT
+149	Durham White	Bath Matte Black
+150			Warwick Blue	UCD
+151					Bath Glossy White	Durham Bubblegum Pink
+152							UCL Purple	Solent Black
+153	Durham White	Plymouth Black
+154			Emirates Team Kickflip	Sevenoaks Pirate Hawks
+155					TCD	UCLove
+156							Northern RoyalT	Cambridge Green
+157	Brunel Blue	Imperial White
+158			UCL Purple	Plymouth Black
+159					TCD	Oxford
+160							Northern RoyalT	Emirates Team Kickflip
+161	Brunel Blue	Sevenoaks Pirate Hawks
+162			Portsmouth Blue	Durham White
+163					Solent Black	Cambridge Green
+164							Bath Matte Black	Bath Glossy White
+165	Portsmouth Brown	Durham Bubblegum Pink
+166			Sevenoaks Pirate Hawks	Oxford
+167					Solent Black	Durham White
+168							Portsmouth Blue	Cambridge Green
+breakpoint
+169	Portsmouth Brown	Bath Matte Black
+170			Sevenoaks Pirate Hawks	Warwick Blue
+171					Rutland Rockets	Plymouth Black
+172							Portsmouth Blue	Bath Glossy White
+173	UCD	Solent Black
+174			Durham Bubblegum Pink	Emirates Team Kickflip
+175					Rutland Rockets	Northern RoyalT
+176							TCD	Bath Matte Black
+177	UCD	Plymouth Black
+178			Durham Bubblegum Pink	Sevenoaks Pirate Hawks
+179					Emirates Team Kickflip	Oxford
+180							TCD	Warwick Blue
+181	Durham White	Imperial White
+182			UCLove	UCL Purple
+183					Portsmouth Brown	Portsmouth Blue
+184							Oxford	Brunel Blue
+185	Cambridge Green	Imperial White
+186			Northern RoyalT	Durham White
+187					Bath Glossy White	Solent Black
+188							UCLove	Brunel Blue
+189	Cambridge Green	UCL Purple
+breakpoint
+190			Northern RoyalT	UCD
+191					Bath Glossy White	Plymouth Black
+192							UCLove	Durham Bubblegum Pink
+193	Portsmouth Blue	Sevenoaks Pirate Hawks
+194			Brunel Blue	Warwick Blue
+195					Bath Matte Black	Emirates Team Kickflip
+196							UCD	Imperial White
+197	Portsmouth Blue	TCD
+198			Brunel Blue	Durham Bubblegum Pink
+199					Bath Matte Black	Sevenoaks Pirate Hawks
+200							Bath Glossy White	Northern RoyalT
+201	UCLove	Oxford
+202			Durham White	Cambridge Green
+203					Portsmouth Brown	Solent Black
+204							UCL Purple	Rutland Rockets
+205	Warwick Blue	Emirates Team Kickflip
+206			Oxford	Cambridge Green
+207					Portsmouth Brown	Plymouth Black
+208							UCL Purple	Durham White
+209	Imperial White	Rutland Rockets
+210			Solent Black	TCD
+breakpoint

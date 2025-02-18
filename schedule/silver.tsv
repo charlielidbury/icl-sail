@@ -1,0 +1,51 @@
+race	Red and Blue striped jibs(1, 2, 3)	Red and Blue striped jibs(4, 5, 6)	Red and Blue stripe(1, 2, 3)	Red and Blue stripe(4, 5, 6)
+1	Northern RoyalT	Imperial White
+2			UCL Purple	UCLove
+3	Cambridge Green	Emirates Team Kickflip
+4			Durham White	Brunel Blue
+5	Northern RoyalT	Oxford
+6			UCL Purple	Durham Bubblegum Pink
+7	Cambridge Green	Imperial White
+8			Durham White	UCLove
+9	Brunel Blue	Oxford
+10			Emirates Team Kickflip	Durham Bubblegum Pink
+breakpoint
+11	Northern RoyalT	UCL Purple
+12			Cambridge Green	UCLove
+13	Brunel Blue	Imperial White
+14			Emirates Team Kickflip	Durham White
+15	Durham Bubblegum Pink	Oxford
+breakpoint
+16			Cambridge Green	Northern RoyalT
+17	UCL Purple	Imperial White
+18			Brunel Blue	UCLove
+19	Emirates Team Kickflip	Oxford
+20			Durham White	Northern RoyalT
+21	UCL Purple	Cambridge Green
+22			Brunel Blue	Durham Bubblegum Pink
+23	Emirates Team Kickflip	UCLove
+24			Durham White	Imperial White
+25	Oxford	Cambridge Green
+26			Northern RoyalT	Durham Bubblegum Pink
+27	UCL Purple	Brunel Blue
+28			Emirates Team Kickflip	Imperial White
+29	Oxford	Durham White
+30			Northern RoyalT	UCLove
+31	Cambridge Green	Durham Bubblegum Pink
+32			Emirates Team Kickflip	Brunel Blue
+33	UCL Purple	Durham White
+34			Oxford	UCLove
+35	Imperial White	Durham Bubblegum Pink
+breakpoint
+36			Northern RoyalT	Brunel Blue
+37	UCL Purple	Emirates Team Kickflip
+38			Durham White	Cambridge Green
+39	Imperial White	Oxford
+40			UCLove	Durham Bubblegum Pink
+breakpoint
+41	Northern RoyalT	Emirates Team Kickflip
+42			Brunel Blue	Cambridge Green
+43	UCL Purple	Oxford
+44			UCLove	Imperial White
+45	Durham Bubblegum Pink	Durham White
+breakpoint
