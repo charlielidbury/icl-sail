@@ -48,7 +48,7 @@ Flight = Tuple[HalfFlight, HalfFlight]
 # number of flights
 F = len(FLIGHTS)
 
-COLUMN_WIDTH = 40
+COLUMN_WIDTH = 2
 
 
 # team1, flight1, team2, flight2, race#
@@ -59,7 +59,7 @@ class Race:
         self.race_num = race_num
 
     def __str__(self):
-        indent = " " * COLUMN_WIDTH * ((self.race_num - 1) % len(FLIGHTS))
+        indent = 0  # "\t" * COLUMN_WIDTH * ((self.race_num - 1) % len(FLIGHTS))
         flight1, flight2 = FLIGHTS[(self.race_num - 1) % len(FLIGHTS)]
         return f"{indent}{self.race_num}: {self.team1} vs {self.team2}"
 
@@ -251,50 +251,148 @@ def rr_schedule(
 # if odd number of teams, each team plays two other teams
 def generate_rounds(teams: List[str]) -> Iterator[List[Tuple[str, str]]]:
     ts = len(teams)
-    team1s = teams[: ts // 2]
-    team2s = teams[ts // 2 :]
 
     if ts % 2 == 0:
+        n = ts // 2
+        team1s = teams[:n]
+        team2s = teams[n:]
         # even number of teams
         print("even")
-        for _ in range(ts - 1):
-            # pair off teams
-            yield list(zip(team1s, team2s))
+        for _ in range(n - 1):
+            pairings = {t: set() for t in teams}
+            for _ in range(2):
+                for t1, t2 in zip(team1s, team2s):
+                    pairings[t1].add(t2)
+                    pairings[t2].add(t1)
 
-            # rotate according to https://en.wikipedia.org/wiki/Round-robin_tournament
-            team1s[1], team1s[2:], team2s[:-1], team2s[-1] = (
-                team2s[0],
-                team1s[1:-1],
-                team2s[1:],
-                team1s[-1],
-            )
+                # rotate according to https://en.wikipedia.org/wiki/Round-robin_tournament
+                team1s[1], team1s[2:], team2s[:-1], team2s[-1] = (
+                    team2s[0],
+                    team1s[1:-1],
+                    team2s[1:],
+                    team1s[-1],
+                )
+
+            # make these pairings into a full round
+            # form a chain starting with l
+            current = teams[0]
+            round = []
+            for i in range(ts):
+                # get another team which matches with current
+                other = pairings[current].pop()
+                pairings[other].discard(current)
+                # add to round
+                race = (current, other) if i % 2 == 0 else (other, current)
+                round.append(race)
+                current = other
+            yield round
+
+        # add leftover round
+        yield list(zip(team1s, team2s))
     else:
-        # odd number of teams
-        benched = team2s.pop()  # makes sure len(team1s) == len(team2s)
+        # # Walecki's algorithm
+        # for k in range(1, (ts // 2) + 1):
+        #     order = []
+        #     current = 1
+        #     for _ in range(ts):
+        #         order.append(current - 1)
+        #         current = ((current + k - 1) % (ts - 1)) + 2
+        #     # order.pop()
+        #     print("ts", ts, "k", k, "order", order)
+        #     round = []
+        #     for i in range(ts):
+        #         t1, t2 = teams[order[i] % ts], teams[order[(i + 1) % ts] % ts]
+        #         round.append((t1, t2) if i % 2 == 0 else (t2, t1))
+        #     yield round
 
-        # make mini rounds
-        mini_rounds = {}
-        for _ in range(ts):
-            mini_round = list(zip(team1s, team2s))
-            remainder = benched
-            mini_rounds[remainder] = mini_round
+        # reorder teams
+        n = ts // 2
+        team1s = teams[:n]  # first half rounded down
+        team2s = teams[n:]  # second half rounded up
+        team2s[:-1] = team2s[:-1][::-1]
 
-            # rotate according to custom logic
-            team1s[0], team1s[1:], benched, team2s[-1], team2s[:-1] = (
+        for _ in range(n):
+            # print("====")
+            # print(team1s)
+            # print(team2s)
+            races = [(team2s[-1], team2s[0])]
+            for t1, t2a, t2b in zip(team1s, team2s[:-1], team2s[1:]):
+                races.append((t1, t2a))
+                races.append((t1, t2b))
+            yield races
+
+            # rotates first n of each list, but keeps last team2s uneffected
+            team1s[0], team1s[1:], team2s[-2], team2s[:-2] = (
                 team2s[0],
                 team1s[:-1],
                 team1s[-1],
-                benched,
-                team2s[1:],
+                team2s[1:-1],
             )
 
-        # there should be ts mini rounds
-        # take the first mini round, and use it to pair off the other rounds
-        # ARBITRARILY CHOOSE THE FIRST MINI ROUND
-        _, mr = next(iter(mini_rounds.items()))
-        for l, r in mr:
-            # pair the l mini round with the r mini round
-            yield [(l, r), *mini_rounds[l], *mini_rounds[r]]
+        #     # rotate according to https://en.wikipedia.org/wiki/Round-robin_tournament
+        #     team1s[1], team1s[2:], team2s[:-1], team2s[-1] = (
+        #         team2s[0],
+        #         team1s[1:-1],
+        #         team2s[1:],
+        #         team1s[-1],
+        #     )
+
+        # make mini rounds
+
+        # odd number of teams
+        # benched = team2s.pop()  # makes sure len(team1s) == len(team2s)
+
+        # # make mini rounds
+        # mini_rounds = {}
+        # for _ in range(ts):
+        #     mini_round = list(zip(team1s, team2s))
+        #     remainder = benched
+        #     mini_rounds[remainder] = mini_round
+
+        #     # clockwise rotate with remainder on the right
+        #     team1s[0], team1s[1:], benched, team2s[-1], team2s[:-1] = (
+        #         team2s[0],
+        #         team1s[:-1],
+        #         team1s[-1],
+        #         benched,
+        #         team2s[1:],
+        #     )
+
+        # # there should be ts mini rounds
+        # # take the first mini round, and use it to pair off the other rounds
+        # # ARBITRARILY CHOOSE THE FIRST MINI ROUND
+        # mr = next(iter(mini_rounds.values()))
+        # for l, r in mr:
+        #     # pair the l mini round with the r mini round
+        #     pairings = {t: set() for t in teams}
+        #     pairings[l].add(r)
+        #     pairings[r].add(l)
+        #     for t1, t2 in mini_rounds[l]:
+        #         pairings[t1].add(t2)
+        #         pairings[t2].add(t1)
+        #     for t1, t2 in mini_rounds[r]:
+        #         pairings[t1].add(t2)
+        #         pairings[t2].add(t1)
+        #     # pairings should specify everyone playing everyone twice
+
+        #     print("making round")
+        #     print((l, r))
+        #     print(mini_rounds[l])
+        #     print(mini_rounds[r])
+
+        #     # form a chain starting with l
+        #     current = l
+        #     round = []
+        #     for i in range(ts):
+        #         # get another team which matches with current
+        #         other = pairings[current].pop()
+        #         pairings[other].discard(current)
+        #         # add to round
+        #         race = (current, other) if i % 2 == 0 else (other, current)
+        #         round.append(race)
+        #         print("adding race", race)
+        #         current = other
+        #     yield round
 
 
 def rr_with_breakpoints(
@@ -336,19 +434,25 @@ def rr_with_breakpoints(
             pairings[t2].add(t1)
             race_number += 1
 
-        # if we have passed a breakpoint
-        min_breakpoint = min(breakpoints)
-        if race_number >= min_breakpoint:
-            print("breakpoint", min_breakpoint)
-            breakpoints.remove(min_breakpoint)
-            # return []
-            # run round robin
-            if not extend(races, pairings, last_race, fuel):
-                return None
-            # print_schedule(teams, races)
+        if not extend(races, pairings, last_race, fuel):
+            return None
+        pairings = {t: set() for t in teams}
 
-            # reset pairings
-            pairings = {t: set() for t in teams}
+        break
+
+        # if we have passed a breakpoint
+        # min_breakpoint = min(breakpoints)
+        # if race_number >= min_breakpoint:
+        #     print("breakpoint", min_breakpoint)
+        #     breakpoints.remove(min_breakpoint)
+        #     # return []
+        #     # run round robin
+        #     if not extend(races, pairings, last_race, fuel):
+        #         return None
+        #     # print_schedule(teams, races)
+
+        #     # reset pairings
+        #     pairings = {t: set() for t in teams}
 
     print("succeeded after using", max_fuel - fuel[0], "fuel")
 
@@ -483,19 +587,174 @@ def block_extend(
     pass
 
 
+def check_schedule(races: List[Race], teams: List[str], flights: List[Flight]):
+    """
+    criteria:
+    - every team plays every other team exactly once
+    - no team races more than 2 times in a row
+    - races[i] is disjoint from races[i-1], ..., races[i-F] (otherwise they'd be busy)
+    """
+    f = len(flights)
+    problems = []
+
+    # - every team plays every other team exactly once
+    pairings = {t: set(teams).difference(set([t])) for t in teams}
+    for race in races:
+        if (
+            race.team2 not in pairings[race.team1]
+            or race.team1 not in pairings[race.team2]
+        ):
+            problems.append(f"Team {race.team1} and {race.team2} raced more than once")
+
+        pairings[race.team1].discard(race.team2)
+        pairings[race.team2].discard(race.team1)
+    if not all(len(p) == 0 for p in pairings.values()):
+        problems.append(f"Pairings remain: {pairings}")
+
+    # - no team races more than 2 times in a row
+    for i, race in enumerate(races):
+        if i >= f + f:
+            if (
+                races[i - f].team1 == race.team1
+                and races[i - f - f].team1 == race.team1
+            ):
+                # team1 raced in the two races before this one
+                problems.append(f"Team {race.team1} has raced three times in a row")
+
+            if (
+                races[i - f].team2 == race.team2
+                and races[i - f - f].team2 == race.team2
+            ):
+                # team2 raced in the two races before this one
+                problems.append(f"Team {race.team2} has raced three times in a row")
+
+    # - people aren't required to be in a boat too soon after being in another boat
+    for i, race in enumerate(races):
+        last_row = races[i - len(flights) : i]
+        if len(last_row) > 0:
+            busy_teams = {r.team1 for r in last_row}.union({r.team2 for r in last_row})
+            if last_row[0].team1 == race.team1:
+                busy_teams.remove(
+                    race.team1
+                )  # they're not preoccupied because already in correct boat
+            if last_row[0].team2 == race.team2:
+                busy_teams.remove(
+                    race.team2
+                )  # they're not preoccupied because already in correct boat
+
+            if race.team1 in busy_teams:
+                problems.append(
+                    f"Team {race.team1} can't race on race {race.race_num} because they're busy"
+                )
+            if race.team2 in busy_teams:
+                problems.append(
+                    f"Team {race.team2} can't race on race {race.race_num} because they're busy"
+                )
+
+    if len(problems) > 0:
+        print("problems:")
+        print("\n".join(problems))
+        raise ValueError(f"Schedule is invalid {len(problems)} problems")
+
+
+def block_extend(
+    races: List[Race],
+    teams: List[str],
+    flights: List[Flight],
+    rounds: Dict[int, List[Tuple[str, str]]],
+    best_schedule: List[Race],
+) -> bool:
+    """
+    Trys to make a block which can be put on the end of races
+    Returns True iff successful
+    If unsuccessful, resets datastructures
+    """
+    if len(rounds) == 0:
+        return True
+
+    # try every block
+    for round_num, r in list(rounds.items()):
+
+        valid_block_found = False
+        print("new block")
+        for _ in range(2 * len(r)):
+            # form block
+            block = [None] * len(r)
+            i = 0
+            flight = 0
+            for lt, rt in r:
+                block[i] = (lt, rt)
+                i += len(flights)
+                if i >= len(block):
+                    flight += 1
+                    i = flight
+
+            print("trying block rotation", block)
+            # check if this rotation works
+            # CHECK: of the first F races, neither team has participated in one of the last F races
+            last_row = races[-len(flights) :]
+            busy_teams = {r.team1 for r in last_row}.union({r.team2 for r in last_row})
+            clash = False
+            for flight in range(len(flights)):
+                t1, t2 = block[flight]
+                if t1 in busy_teams or t2 in busy_teams:
+                    clash = True
+                    break
+                else:
+                    pass
+
+                if len(races) > len(flights) - flight - 1:
+                    busy_teams.discard(races[flight - len(flights)].team1)
+                    busy_teams.discard(races[flight - len(flights)].team2)
+
+            if clash:
+                # this block clashes with the previous races
+                # rotate races so different block is tried
+                first_race = r[-1]
+                if len(r) % 2 == 1:
+                    first_race = (first_race[1], first_race[0])
+                r[0], r[1:] = first_race, r[:-1]
+            else:
+                # valid block was found
+                valid_block_found = True
+                break
+
+        if valid_block_found:
+            # valid block was found
+            print("valid block found")
+            for lt, rt in block:
+                races.append(Race(lt, rt, len(races) + 1))
+            r = rounds.pop(round_num)
+
+            if len(races) > len(best_schedule):
+                best_schedule[:] = races
+
+            if block_extend(races, teams, flights, rounds, best_schedule):
+                return True
+            rounds[round_num] = r
+            for _ in block:
+                races.pop()
+
+    return False
+
+
 def greedy_blocks(teams: List[str], flights: List[Flight]) -> List[Race]:
     """
     strategy: at each stage, pick the block which can be built with the least double handovers
     """
 
     races = []
+    best_schedule = []
+    rounds = dict(enumerate(generate_rounds(teams)))
+    for round_num, r in rounds.items():
+        print("round", round_num)
+        print(r)
 
-    rounds = dict(enumerate(list(generate_rounds(teams))))
-
-    block_extend(races, teams, flights, rounds)
-
-    for round in range(len(rounds)):
-        pass
+    if block_extend(races, teams, flights, rounds, best_schedule):
+        return races
+    else:
+        print("failed to form blocks")
+        return best_schedule
 
 
 if __name__ == "__main__":
@@ -510,8 +769,48 @@ if __name__ == "__main__":
     #     with open(f"schedule/{league}.sql", "w") as f:
     #         f.write(sql_schedule(teams, flights, schedule, league))
 
-    schedule = rr_breakpoints_retry(
-        TEAMS, FLIGHTS, {21 * (i + 1) for i in range(10)}, seed=None
-    )
+    teams = TEAMS[10:]  # [f"T{n}" for n in range(1, 8 + 1)]
+    flights = FLIGHTS[2:]  # [(f"F{n}", (n, n, n)) for n in range(1, 1 + 1)]
+
+    # num_raced = {t: set(teams).difference(set([t])) for t in teams}
+    # for r in generate_rounds(teams):
+    #     print(r)
+    #     for t1, t2 in r:
+    #         num_raced[t1].remove(t2)
+    #         num_raced[t2].remove(t1)
+    # print(num_raced)
+    schedule = greedy_blocks(teams, flights)
     with open(f"schedule/test.tsv", "w") as f:
-        f.write(tsv_schedule(TEAMS, FLIGHTS, schedule))
+        f.write(tsv_schedule(teams, flights, schedule))
+
+    for i, race in enumerate(schedule):
+        if i % len(teams) == 0:
+            print("breakpoint")
+        print("\t" * (4 * (i % len(flights))) + str(race))
+
+    if len(schedule) > 0:
+        check_schedule(schedule, teams, flights)
+
+    # r = next(generate_rounds([f"T{i + 1}" for i in range(7)]))
+    # pairings = {t: set() for t in teams}
+    # for t1, t2 in r:
+    #     pairings[t1].add(t2)
+    #     pairings[t2].add(t1)
+
+    # races = []
+
+    # for round in generate_rounds([f"T{i + 1}" for i in range(7)]):
+    #     print(round)
+
+    # team1s = ["T1", "T2", "T3", "T4"]
+    # team2s = ["T7", "T6", "T5"]
+
+    # team1s[1], team1s[2:], team2s[:-1], team2s[-1] = (
+    #     team2s[0],
+    #     team1s[1:-1],
+    #     team2s[1:],
+    #     team1s[-1],
+    # )
+
+    # print(team1s)
+    # print(team2s)

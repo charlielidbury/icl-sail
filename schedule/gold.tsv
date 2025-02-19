@@ -1,55 +1,59 @@
 race	Pink and Black Stripe(7, 8, 9)	Pink and Black Stripe(10, 11, 12)	Green Circle(7, 8, 9)	Black Diamond(10, 11, 12)
-1	Solent Black	Sevenoaks Pirate Hawks
-2			Plymouth Black	UCD
-3	Bath Glossy White	Bath Matte Black
-4			Rutland Rockets	Portsmouth Brown
-5	Solent Black	Portsmouth Blue
-6			Plymouth Black	TCD
-7	Bath Glossy White	Warwick Blue
-8			Rutland Rockets	Sevenoaks Pirate Hawks
-9	Portsmouth Brown	Portsmouth Blue
-10			Bath Matte Black	TCD
-11	UCD	Warwick Blue
+1	Plymouth Black	Portsmouth Blue			0	1	1
+2			Bath Glossy White	Warwick Blue	0	1	1
+3	Portsmouth Brown	Rutland Rockets			0	1	1
+4			Bath Matte Black	Solent Black	0	1	1
+5	Plymouth Black	Sevenoaks Pirate Hawks			0	2	2
+6			Bath Glossy White	TCD	0	2	2
+7	Portsmouth Brown	UCD			1	2	1
+8			Bath Matte Black	Portsmouth Blue	1	2	1
+9	Rutland Rockets	Sevenoaks Pirate Hawks			1	2	1
+10			Solent Black	TCD	1	2	1
+11	Warwick Blue	UCD			2	2	0
 breakpoint
-12			Solent Black	Plymouth Black
-13	Portsmouth Brown	Bath Glossy White
-14			Bath Matte Black	Rutland Rockets
-15	UCD	Sevenoaks Pirate Hawks
-16			Solent Black	Warwick Blue
-17	Plymouth Black	Bath Glossy White
-18			Portsmouth Brown	TCD
-19	Portsmouth Blue	Sevenoaks Pirate Hawks
-20			Rutland Rockets	Warwick Blue
-21	Plymouth Black	Bath Matte Black
-22			Portsmouth Brown	UCD
-23	Bath Glossy White	TCD
-24			Rutland Rockets	Solent Black
-25	Portsmouth Blue	Bath Matte Black
-26			Plymouth Black	Warwick Blue
-27	Bath Glossy White	Sevenoaks Pirate Hawks
-28			TCD	UCD
-29	Portsmouth Blue	Rutland Rockets
-30			Portsmouth Brown	Warwick Blue
-31	Bath Matte Black	Solent Black
-32			Bath Glossy White	UCD
-33	TCD	Sevenoaks Pirate Hawks
-34			Plymouth Black	Rutland Rockets
-35	Portsmouth Blue	Warwick Blue
-36			Portsmouth Brown	Solent Black
-37	Bath Matte Black	UCD
-38			TCD	Rutland Rockets
-39	Portsmouth Blue	Plymouth Black
-40			Portsmouth Brown	Sevenoaks Pirate Hawks
-41	Solent Black	UCD
-42			TCD	Warwick Blue
-43	Bath Glossy White	Rutland Rockets
-44			Bath Matte Black	Sevenoaks Pirate Hawks
-45	Portsmouth Brown	Plymouth Black
-46			UCD	Warwick Blue
-47	Bath Glossy White	Portsmouth Blue
-48			Solent Black	TCD
-49	Sevenoaks Pirate Hawks	Plymouth Black
-50			UCD	Rutland Rockets
-51	Bath Matte Black	Warwick Blue
-52			Solent Black	Portsmouth Brown
-53	Portsmouth Blue	TCD
+12			Bath Glossy White	Portsmouth Blue	2	3	1
+13	Rutland Rockets	Plymouth Black			2	3	1
+14			Solent Black	Portsmouth Brown	2	3	1
+15	Warwick Blue	Bath Matte Black			2	3	1
+16			Bath Glossy White	Sevenoaks Pirate Hawks	2	4	2
+17	UCD	TCD			3	4	1
+18			Plymouth Black	Portsmouth Brown	3	4	1
+19	Portsmouth Blue	Solent Black			3	4	1
+20			Rutland Rockets	Bath Matte Black	3	4	1
+21	UCD	Bath Glossy White			3	5	2
+22			Plymouth Black	Warwick Blue	3	5	2
+23	Portsmouth Blue	Sevenoaks Pirate Hawks			3	5	2
+24			Rutland Rockets	TCD	4	5	1
+25	Portsmouth Brown	Bath Glossy White			4	6	2
+26			UCD	Solent Black	4	6	2
+27	Bath Matte Black	Sevenoaks Pirate Hawks			4	6	2
+28			Portsmouth Blue	TCD	4	6	2
+29	Portsmouth Brown	Warwick Blue			5	6	1
+30			UCD	Rutland Rockets	5	6	1
+31	Bath Matte Black	Plymouth Black			5	6	1
+32			Sevenoaks Pirate Hawks	Solent Black	5	6	1
+33	Portsmouth Blue	Warwick Blue			5	7	2
+34			Portsmouth Brown	TCD	6	7	1
+35	Bath Glossy White	Rutland Rockets			6	7	1
+36			Sevenoaks Pirate Hawks	UCD	6	7	1
+37	Solent Black	Plymouth Black			6	7	1
+38			Bath Matte Black	TCD	6	7	1
+39	Portsmouth Brown	Portsmouth Blue			6	8	2
+40			Warwick Blue	Rutland Rockets	7	8	1
+41	Bath Glossy White	Plymouth Black			7	8	1
+42			Bath Matte Black	UCD	7	8	1
+43	TCD	Sevenoaks Pirate Hawks			7	8	1
+44			Warwick Blue	Solent Black	8	8	0
+breakpoint
+45	Portsmouth Blue	Rutland Rockets			8	9	1
+46			Plymouth Black	UCD	8	9	1
+47	Portsmouth Brown	Sevenoaks Pirate Hawks			8	9	1
+48			Bath Glossy White	Bath Matte Black	8	9	1
+49	TCD	Warwick Blue			8	9	1
+50			Rutland Rockets	Solent Black	9	10	1
+51	Portsmouth Blue	UCD			9	10	1
+52			Portsmouth Brown	Bath Matte Black	9	10	1
+53	TCD	Plymouth Black			9	10	1
+54			Bath Glossy White	Solent Black	9	10	1
+55	Warwick Blue	Sevenoaks Pirate Hawks			10	10	0
+breakpoint
