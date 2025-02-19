@@ -124,7 +124,7 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
         bg="red.500"
         color="white"
       >
-        Go to Stand
+        Go to Pontoon
       </Badge>
     );
   } else if (race.finishtime) {
