@@ -16,7 +16,7 @@ import { useEffect, useState } from "react";
 import supabase from "@/supabase";
 import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
 import ordinal from "ordinal";
-import { queryClient, SharedLogic, useAuth } from "@/shared";
+import { queryClient, sailingColour, SharedLogic, useAuth } from "@/shared";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 
 type LeaderboardRow = {
@@ -101,10 +101,10 @@ function Page() {
           <ButtonGroup attached variant="solid" w="full">
             <Button
               flex="1"
-              bg={selectedLeague === "quali" ? "#004a79" : "gray.300"}
+              bg={selectedLeague === "quali" ? sailingColour : "gray.300"}
               color={selectedLeague === "quali" ? "white" : "gray.800"}
               _hover={{
-                bg: selectedLeague === "quali" ? "#004a79" : "gray.400",
+                bg: selectedLeague === "quali" ? sailingColour : "gray.400",
               }}
               onClick={() => setSelectedLeague("quali")}
               fontSize="xs"
@@ -114,10 +114,10 @@ function Page() {
             </Button>
             <Button
               flex="1"
-              bg={selectedLeague === "silver" ? "#004a79" : "gray.300"}
+              bg={selectedLeague === "silver" ? sailingColour : "gray.300"}
               color={selectedLeague === "silver" ? "white" : "gray.800"}
               _hover={{
-                bg: selectedLeague === "silver" ? "#004a79" : "gray.400",
+                bg: selectedLeague === "silver" ? sailingColour : "gray.400",
               }}
               onClick={() => setSelectedLeague("silver")}
               fontSize="xs"
@@ -127,10 +127,10 @@ function Page() {
             </Button>
             <Button
               flex="1"
-              bg={selectedLeague === "gold" ? "#004a79" : "gray.300"}
+              bg={selectedLeague === "gold" ? sailingColour : "gray.300"}
               color={selectedLeague === "gold" ? "white" : "gray.800"}
               _hover={{
-                bg: selectedLeague === "gold" ? "#004a79" : "gray.400",
+                bg: selectedLeague === "gold" ? sailingColour : "gray.400",
               }}
               onClick={() => setSelectedLeague("gold")}
               fontSize="xs"

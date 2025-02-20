@@ -198,12 +198,14 @@ function Page() {
           filteredRaces.length > 0 && currentRace ? (
             <>
               <Virtuoso
+                overscan={1000}
                 initialTopMostItemIndex={
                   filteredRaces.findIndex((r) => r.number === currentRace) - 1
                 }
                 ref={virtuosoRef}
                 data={filteredRaces}
                 style={{ height: "100%", width: "100%" }}
+                defaultItemHeight={200}
                 itemContent={(index, race) => {
                   // Determine if the race is active or in stand based on currentRace & settings.
                   const isActive = race.number === currentRace;

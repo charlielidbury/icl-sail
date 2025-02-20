@@ -40,6 +40,9 @@ import {
   DialogRoot,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ThemeSupa } from "@supabase/auth-ui-shared";
+import { MadeWithLove } from "@/components/ui/made-with-love";
+import { sailingColour } from "@/shared";
 
 interface NavBarProps {
   isAdmin: boolean;
@@ -162,7 +165,10 @@ export default function NavBar({ isAdmin }: NavBarProps) {
               <DialogContent>
                 <DialogHeader />
                 <DialogBody>
-                  <Auth supabaseClient={supabase} />
+                  <Auth
+                    supabaseClient={supabase}
+                    appearance={{ theme: ThemeSupa }}
+                  />
                 </DialogBody>
                 <DialogFooter />
                 <DialogCloseTrigger />
@@ -186,18 +192,8 @@ export default function NavBar({ isAdmin }: NavBarProps) {
           <Box flex="1" overflowY="auto">
             <MobileNav navItems={navItems} />
           </Box>
-          <Box py="2">
-            <Text
-              textAlign="center"
-              fontSize="xs"
-              fontStyle="italic"
-              color="gray.500"
-              whiteSpace="pre-wrap"
-            >
-              {
-                "Made (with love) by\nCharlie Lidbury, Henry Hollingworth\nand Rushil Patel"
-              }
-            </Text>
+          <Box>
+            <MadeWithLove />
           </Box>
         </Box>
       )}
@@ -351,16 +347,16 @@ const MobileNavItem = ({ label, children, href }: NavItem) => {
         >
           <Flex align="center" gap={3}>
             {label === "Home" && (
-              <Icon as={TbHome} boxSize={5} color="blue.500" />
+              <Icon as={TbHome} boxSize={5} color={sailingColour} />
             )}
             {label === "Races" && (
-              <Icon as={TbClock} boxSize={5} color="blue.500" />
+              <Icon as={TbClock} boxSize={5} color={sailingColour} />
             )}
             {label === "Leaderboard" && (
-              <Icon as={TbMedal} boxSize={5} color="blue.500" />
+              <Icon as={TbMedal} boxSize={5} color={sailingColour} />
             )}
             {label === "Settings" && (
-              <Icon as={TbSettings} boxSize={5} color="blue.500" />
+              <Icon as={TbSettings} boxSize={5} color={sailingColour} />
             )}
             <Text
               fontSize="lg"

@@ -8,6 +8,8 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 
+export const sailingColour = "#004a79";
+
 export function useAuth(): { session: Session | null; isAdmin: boolean } {
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);

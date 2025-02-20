@@ -12,8 +12,9 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import NavBar from "@/components/navbar";
-import { useAuth } from "@/shared";
+import { sailingColour, useAuth } from "@/shared";
 import { TbDownload, TbChevronRight, TbClock, TbMedal } from "react-icons/tb";
+import { MadeWithLove } from "@/components/ui/made-with-love";
 
 const documents = [
   {
@@ -55,10 +56,11 @@ export default function Info() {
             size="4xl"
             textAlign="center"
             width="100%"
-            color="blue.600"
+            color={sailingColour}
             textTransform="uppercase"
             letterSpacing="0.1em"
             fontWeight="bold"
+            fontFamily="'Roboto Mono', monospace"
           >
             Imperial Icicle
           </Heading>
@@ -82,7 +84,7 @@ export default function Info() {
               _hover={{
                 transform: "translateY(-2px)",
                 shadow: "lg",
-                color: "blue.500",
+                color: sailingColour,
                 "& svg.chevron": { transform: "translateX(2px)" },
               }}
               transition="all 0.2s"
@@ -96,7 +98,7 @@ export default function Info() {
                   boxSize={4}
                   className="chevron"
                   transition="transform 0.2s"
-                  color="blue.400"
+                  color={sailingColour}
                 />
               </Flex>
               <Text fontSize="sm" color="gray.500">
@@ -116,7 +118,7 @@ export default function Info() {
               _hover={{
                 transform: "translateY(-2px)",
                 shadow: "lg",
-                color: "blue.500",
+                color: sailingColour,
                 "& svg.chevron": { transform: "translateX(2px)" },
               }}
               transition="all 0.2s"
@@ -130,7 +132,7 @@ export default function Info() {
                   boxSize={4}
                   className="chevron"
                   transition="transform 0.2s"
-                  color="blue.400"
+                  color={sailingColour}
                 />
               </Flex>
               <Text fontSize="sm" color="gray.500">
@@ -151,6 +153,7 @@ export default function Info() {
                 key={doc.href}
                 href={doc.href}
                 p={4}
+                target="_blank"
                 bg="white"
                 rounded="lg"
                 shadow="md"
@@ -163,7 +166,7 @@ export default function Info() {
                   top={4}
                   right={4}
                   fontSize="xs"
-                  color="blue.500"
+                  color={sailingColour}
                   fontWeight="medium"
                 >
                   PDF
@@ -181,7 +184,28 @@ export default function Info() {
             ))}
           </SimpleGrid>
         </Box>
+
+        {/* Advert */}
+        <Box mt={10}>
+          <Heading as="h2" size="lg" mb={4} textAlign="center" color="gray.700">
+            Host Competition With Us
+          </Heading>
+          <Text textAlign="center" color="gray.600" maxW="600px" mx="auto">
+            If you would like to use this software for your university's team
+            racing competitions, leave me an email at{" "}
+            <Link href="mailto:personal@charlielidbury.com">
+              personal@charlielidbury.com
+            </Link>
+            . In the future we will likely charge for its usage, but for now
+            we're offering it for free so we can get as much practice running
+            competitions as possible.
+          </Text>
+        </Box>
       </Container>
+
+      <Box mt="auto" pb={4}>
+        <MadeWithLove />
+      </Box>
     </Box>
   );
 }
