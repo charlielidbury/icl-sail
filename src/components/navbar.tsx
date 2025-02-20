@@ -23,8 +23,10 @@ import {
   TbX,
   TbChevronDown,
   TbChevronRight,
-  TbLogin,
-  TbLogout,
+  TbHome,
+  TbClock,
+  TbMedal,
+  TbSettings,
 } from "react-icons/tb";
 import { Auth } from "@supabase/auth-ui-react";
 import supabase from "../supabase";
@@ -36,11 +38,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogRoot,
-  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useQueryClient } from "@tanstack/react-query";
-import { SharedLogic } from "@/shared";
 
 interface NavBarProps {
   isAdmin: boolean;
@@ -55,12 +54,12 @@ interface NavItem {
 
 const BASE_NAV_ITEMS: Array<NavItem> = [
   {
-    label: "Tournament Info",
-    href: "/info",
+    label: "Home",
+    href: "/",
   },
   {
     label: "Races",
-    href: "/",
+    href: "/races",
   },
   {
     label: "Leaderboard",
@@ -307,11 +306,22 @@ const MobileNav = ({ navItems }: MobileNavProps) => {
   return (
     <Stack
       bg={useColorModeValue("white", "gray.800")}
-      p={4}
+      p={6}
       display={{ md: "none" }}
+      gap={0}
     >
-      {navItems.map((navItem) => (
-        <MobileNavItem key={navItem.label} {...navItem} />
+      {navItems.map((navItem, index) => (
+        <Box key={navItem.label}>
+          <MobileNavItem {...navItem} />
+          {index < navItems.length - 1 && (
+            <Box
+              borderBottom="1px"
+              borderColor={useColorModeValue("gray.100", "gray.700")}
+              mx={-6}
+              my={1}
+            />
+          )}
+        </Box>
       ))}
     </Stack>
   );
@@ -319,49 +329,92 @@ const MobileNav = ({ navItems }: MobileNavProps) => {
 
 const MobileNavItem = ({ label, children, href }: NavItem) => {
   const { open, onToggle } = useDisclosure();
+  const bgHover = useColorModeValue("gray.50", "gray.700");
+
   return (
-    <Stack onClick={children && onToggle}>
-      <Link href={href ?? "#"}>
-        <Box
-          py={2}
-          as="a"
-          justifyContent="space-between"
-          alignItems="center"
-          _hover={{ textDecoration: "none" }}
+    <Stack gap={0}>
+      <Link
+        href={href ?? "#"}
+        _hover={{ textDecoration: "none" }}
+        onClick={children ? onToggle : undefined}
+      >
+        <Flex
+          py={4}
+          px={4}
+          as="button"
+          width="full"
+          justify="space-between"
+          align="center"
+          rounded="lg"
+          _hover={{ bg: bgHover }}
+          transition="all 0.2s"
         >
-          <Text
-            fontWeight={600}
-            color={useColorModeValue("gray.600", "gray.200")}
-          >
-            {label}
-          </Text>
+          <Flex align="center" gap={3}>
+            {label === "Home" && (
+              <Icon as={TbHome} boxSize={5} color="blue.500" />
+            )}
+            {label === "Races" && (
+              <Icon as={TbClock} boxSize={5} color="blue.500" />
+            )}
+            {label === "Leaderboard" && (
+              <Icon as={TbMedal} boxSize={5} color="blue.500" />
+            )}
+            {label === "Settings" && (
+              <Icon as={TbSettings} boxSize={5} color="blue.500" />
+            )}
+            <Text
+              fontSize="lg"
+              fontWeight={500}
+              color={useColorModeValue("gray.700", "gray.200")}
+            >
+              {label}
+            </Text>
+          </Flex>
           {children && (
             <Icon
               as={TbChevronDown}
-              transition={"all .25s ease-in-out"}
+              transition="transform 0.2s"
               transform={open ? "rotate(180deg)" : ""}
-              w={6}
-              h={6}
+              boxSize={5}
+              color="blue.500"
             />
           )}
-        </Box>
+        </Flex>
       </Link>
+
       <Collapsible.Root open={open}>
         <Collapsible.Content>
           <Stack
             mt={2}
-            pl={4}
-            borderLeft={1}
-            borderStyle={"solid"}
-            borderColor={useColorModeValue("gray.200", "gray.700")}
-            align={"start"}
+            ml={12}
+            gap={2}
+            borderLeft="2px"
+            borderColor={useColorModeValue("blue.100", "blue.900")}
           >
             {children &&
               children.map((child) => (
-                <Link href={child.href} key={child.label}>
-                  <Box as="a" py={2}>
-                    {child.label}
-                  </Box>
+                <Link
+                  key={child.label}
+                  href={child.href}
+                  _hover={{ textDecoration: "none" }}
+                >
+                  <Flex
+                    py={2}
+                    px={4}
+                    rounded="md"
+                    align="center"
+                    _hover={{ bg: bgHover }}
+                    transition="all 0.2s"
+                  >
+                    <Text fontSize="md" color="gray.600">
+                      {child.label}
+                    </Text>
+                    {child.subLabel && (
+                      <Text fontSize="sm" color="gray.500" ml={2}>
+                        {child.subLabel}
+                      </Text>
+                    )}
+                  </Flex>
                 </Link>
               ))}
           </Stack>
