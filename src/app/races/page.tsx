@@ -14,7 +14,13 @@ import { keyframes } from "@emotion/react";
 import Race from "@/components/race";
 import supabase from "@/supabase";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { racesQuery, useAuth, queryClient, SharedLogic } from "@/shared";
+import {
+  racesQuery,
+  useAuth,
+  queryClient,
+  SharedLogic,
+  sailingColour,
+} from "@/shared";
 import {
   TbChevronsDown,
   TbChevronsUp,
@@ -185,7 +191,13 @@ function Page() {
             )}
           </Box>
           {races.isFetched && filteredRaces.length !== races.data?.length && (
-            <Text mt={2} fontSize="xs" color="gray.500" fontStyle="italic">
+            <Text
+              mt={2}
+              mb={-2}
+              fontSize="xs"
+              color="gray.500"
+              fontStyle="italic"
+            >
               Showing {filteredRaces.length}/{races.data?.length} races
             </Text>
           )}
@@ -219,10 +231,24 @@ function Page() {
                     index !== 0 &&
                     filteredRaces[index - 1].number !== race.number + 1;
 
+                  // Check if any team stays in boats from previous race
+                  const stayingTeam =
+                    index !== 0 &&
+                    filteredRaces[index - 1].number === race.number + 4 &&
+                    (filteredRaces[index - 1].raceteam.some((rt1) =>
+                      race.raceteam.some((rt2) => rt1.team.id === rt2.team.id)
+                    )
+                      ? race.raceteam.find((rt1) =>
+                          filteredRaces[index - 1].raceteam.some(
+                            (rt2) => rt1.team.id === rt2.team.id
+                          )
+                        )?.team.name
+                      : null);
+
                   return (
                     <Box key={race.id}>
                       {/* dot dot dot */}
-                      {gapAbove && (
+                      {gapAbove && !stayingTeam && (
                         <Text
                           display="flex"
                           justifyContent="center"
@@ -232,6 +258,27 @@ function Page() {
                         >
                           <TbDotsVertical />
                         </Text>
+                      )}
+
+                      {/* Team stays in boats message */}
+                      {stayingTeam && (
+                        <Box
+                          bg={`${sailingColour}cc`}
+                          // borderRadius="md"
+                          py={2}
+                          mt={-5}
+                          mb={-1}
+                        >
+                          <Text
+                            textAlign="center"
+                            fontSize="xs"
+                            color="white"
+                            fontWeight="bold"
+                            fontStyle="italic"
+                          >
+                            {stayingTeam.toUpperCase()} STAYS ON
+                          </Text>
+                        </Box>
                       )}
 
                       <MemoizedRace

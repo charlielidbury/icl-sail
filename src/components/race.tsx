@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { RaceResult } from "../shared";
+import { RaceResult, getLeagueName } from "../shared";
 import { FaCrown } from "react-icons/fa";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -148,9 +148,14 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
       <Box m={4}>
         {/* HEADER */}
         <Flex justify="space-between" align="center" mb={3}>
-          <Text fontSize="lg" fontWeight="bold">
-            Race {race.number}
-          </Text>
+          <Flex align="baseline" gap={2}>
+            <Text fontSize="lg" fontWeight="bold">
+              Race {race.number}
+            </Text>
+            <Text fontSize="lg" color="gray.500">
+              - {getLeagueName(race.league)}
+            </Text>
+          </Flex>
           {headerBadge}
         </Flex>
         {/* DIVIDER */}
@@ -279,7 +284,7 @@ export default function Race({ race, active, isStand, search }: RaceProps) {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Race {race.number}</DialogTitle>
+          {/* <DialogTitle>Race {race.number}</DialogTitle> */}
         </DialogHeader>
         <DialogBody>
           <RaceCard

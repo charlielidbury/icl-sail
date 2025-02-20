@@ -111,7 +111,9 @@ export default function RaceEdit({
 
   return (
     <>
-      <Heading size="xl">Results</Heading>
+      <Heading size="xl" textAlign="center" mb={2}>
+        Results
+      </Heading>
       <Box mb={4} borderWidth="1px" borderRadius="md" bg="gray.50">
         <Grid templateColumns="1fr auto 1fr" gap={2} m={4}>
           <GridItem textAlign="center">
@@ -147,6 +149,7 @@ export default function RaceEdit({
                 </GridItem>
                 <GridItem textAlign="center" key={10 * i + 2}>
                   <NumberInputRoot
+                    size="lg"
                     value={String(teamResults[0][i])}
                     onValueChange={(e) => handleChange(0, i, Number(e.value))}
                   >
@@ -155,6 +158,7 @@ export default function RaceEdit({
                 </GridItem>
                 <GridItem textAlign="center" key={10 * i + 3}>
                   <NumberInputRoot
+                    size="lg"
                     value={String(teamResults[1][i])}
                     onValueChange={(e) => handleChange(1, i, Number(e.value))}
                   >

@@ -50,10 +50,10 @@ export default function Info() {
 
       <Container maxW="1200px" py={12}>
         {/* Header Section */}
-        <VStack gap={6} mb={8}>
+        <VStack mb={8}>
           <Heading
             as="h1"
-            size="4xl"
+            size="5xl"
             textAlign="center"
             width="100%"
             color={sailingColour}
@@ -62,9 +62,29 @@ export default function Info() {
             fontWeight="bold"
             fontFamily="'Roboto Mono', monospace"
           >
-            Imperial Icicle
+            Imperial
           </Heading>
-          <Text fontSize="xl" textAlign="center" color="gray.600" maxW="600px">
+          <Heading
+            mt={-5}
+            as="h1"
+            size="5xl"
+            textAlign="center"
+            width="100%"
+            color={sailingColour}
+            textTransform="uppercase"
+            letterSpacing="0.1em"
+            fontWeight="bold"
+            fontFamily="'Roboto Mono', monospace"
+          >
+            Icicle
+          </Heading>
+          <Text
+            py={4}
+            fontSize="xl"
+            textAlign="center"
+            color="gray.600"
+            maxW="600px"
+          >
             Welcome to an exciting tournament experience where skill meets
             competition on the water.
           </Text>
@@ -163,8 +183,8 @@ export default function Info() {
               >
                 <Text
                   position="absolute"
-                  top={4}
-                  right={4}
+                  top={4.5}
+                  right={4.5}
                   fontSize="xs"
                   color={sailingColour}
                   fontWeight="medium"

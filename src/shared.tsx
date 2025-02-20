@@ -10,6 +10,19 @@ import {
 
 export const sailingColour = "#004a79";
 
+export function getLeagueName(league: string): string {
+  switch (league.toLowerCase()) {
+    case "quali":
+      return "Qualifying";
+    case "silver":
+      return "Silver";
+    case "gold":
+      return "Gold";
+    default:
+      return league;
+  }
+}
+
 export function useAuth(): { session: Session | null; isAdmin: boolean } {
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
@@ -56,6 +69,7 @@ export const racesQuery = {
           number,
           video,
           finishtime,
+          league,
           raceteam (
             race,
             team ( id, name ),
@@ -73,10 +87,16 @@ export const racesQuery = {
       number: d.number,
       video: d.video,
       finishtime: dayjs(d.finishtime),
-      raceteam: d.raceteam.map((rt: any) => ({
+      league: d.league,
+      raceteam: d.raceteam.map((rt) => ({
         team: rt.team,
         result: rt.result,
-        halfflight: rt.halfflight,
+        halfflight: {
+          ...rt.halfflight,
+          image: `/flights/${rt.halfflight.name}(${rt.halfflight.numbers.join(
+            ","
+          )}).jpeg`,
+        },
       })),
     }));
   },
@@ -87,6 +107,7 @@ export interface RaceResult {
   number: number;
   video: string | null;
   finishtime: Dayjs | null;
+  league: string;
   raceteam: {
     team: {
       id: string;
@@ -98,6 +119,7 @@ export interface RaceResult {
       symbol: string | null;
       colour: string | null;
       numbers: number[];
+      image: string;
     };
     result: number[] | null;
   }[];

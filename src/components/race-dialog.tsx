@@ -13,6 +13,7 @@ import {
   Input,
   Icon,
   Button,
+  Image,
   Group,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
@@ -45,6 +46,31 @@ function getEmbedUrl(url: string): string {
 
 // Wrap iframe using Chakra's chakra() so we can pass style props.
 const Iframe = chakra("iframe");
+
+function FlightPictures({ race }: { race: RaceResult }) {
+  return (
+    <Box mb={4}>
+      <Flex justify="center" gap={4}>
+        <Box borderWidth="1px" borderRadius="md" overflow="hidden">
+          <Image
+            src={race.raceteam[0].halfflight.image}
+            alt="Brunel Flight"
+            width={300}
+            objectFit="cover"
+          />
+        </Box>
+        <Box borderWidth="1px" borderRadius="md" overflow="hidden">
+          <Image
+            src={race.raceteam[1].halfflight.image}
+            alt="Brunel Flight"
+            width={300}
+            objectFit="cover"
+          />
+        </Box>
+      </Flex>
+    </Box>
+  );
+}
 
 function TeamComparison({
   leftTeamId,
@@ -81,7 +107,9 @@ function TeamComparison({
 
   return (
     <>
-      <Heading size="xl">Team Comparison</Heading>
+      <Heading size="xl" textAlign="center" mb={2}>
+        Team Comparison
+      </Heading>
       {!stats ? (
         <Skeleton height="80px" variant="shine" />
       ) : (
@@ -159,8 +187,8 @@ function DroneVideo({ race }: { race: RaceResult }) {
   return (
     <>
       {(race.video || isAdmin) && (
-        <Box mb={4}>
-          <Heading as="h3" size="xl" mb={2}>
+        <Box mb={4} mt={4}>
+          <Heading as="h3" size="xl" mb={2} textAlign="center">
             Drone Footage
           </Heading>
           {race.video && (
@@ -223,6 +251,8 @@ export default function RaceDialog({ race, active }: RaceDialogProps) {
 
   return (
     <Box mt={4}>
+      {/* Flight Pictures */}
+      <FlightPictures race={race} />
       {/* Video embed */}
       <DroneVideo race={race} />
 
