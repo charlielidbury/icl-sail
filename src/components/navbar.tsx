@@ -55,6 +55,10 @@ interface NavItem {
 
 const BASE_NAV_ITEMS: Array<NavItem> = [
   {
+    label: "Tournament Info",
+    href: "/info",
+  },
+  {
     label: "Races",
     href: "/",
   },
@@ -90,7 +94,6 @@ export default function NavBar({ isAdmin }: NavBarProps) {
 
   return (
     <Box>
-      <SharedLogic />
       <Flex
         bg={useColorModeValue("white", "gray.800")}
         color={useColorModeValue("gray.600", "white")}
@@ -169,11 +172,36 @@ export default function NavBar({ isAdmin }: NavBarProps) {
           )}
         </Stack>
       </Flex>
-      <Collapsible.Root open={open}>
-        <Collapsible.Content>
-          <MobileNav navItems={navItems} />
-        </Collapsible.Content>
-      </Collapsible.Root>
+      {open && (
+        <Box
+          position="fixed"
+          top="60px"
+          left="0"
+          right="0"
+          bottom="0"
+          display={{ base: "flex", md: "none" }}
+          flexDirection="column"
+          bg={useColorModeValue("white", "gray.800")}
+          zIndex={1000}
+        >
+          <Box flex="1" overflowY="auto">
+            <MobileNav navItems={navItems} />
+          </Box>
+          <Box py="2">
+            <Text
+              textAlign="center"
+              fontSize="xs"
+              fontStyle="italic"
+              color="gray.500"
+              whiteSpace="pre-wrap"
+            >
+              {
+                "Made (with love) by\nCharlie Lidbury, Henry Hollingworth\nand Rushil Patel"
+              }
+            </Text>
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 }

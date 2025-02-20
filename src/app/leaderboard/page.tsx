@@ -16,7 +16,7 @@ import { useEffect, useState } from "react";
 import supabase from "@/supabase";
 import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
 import ordinal from "ordinal";
-import { queryClient, useAuth } from "@/shared";
+import { queryClient, SharedLogic, useAuth } from "@/shared";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 
 type LeaderboardRow = {
@@ -80,7 +80,7 @@ function Page() {
   const defaultOrdinalBg = useColorModeValue("blue.100", "blue.900");
 
   return (
-    <>
+    <Box minH="100vh" bg="gray.50">
       <Box position="sticky" top="0" zIndex="100">
         <NavBar isAdmin={isAdmin} />
       </Box>
@@ -224,13 +224,14 @@ function Page() {
           </Stack>
         )}
       </Box>
-    </>
+    </Box>
   );
 }
 
 export default function Leaderboard() {
   return (
     <QueryClientProvider client={queryClient}>
+      <SharedLogic />
       <Page />
     </QueryClientProvider>
   );

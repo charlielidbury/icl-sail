@@ -14,7 +14,7 @@ import { keyframes } from "@emotion/react";
 import Race from "@/components/race";
 import supabase from "@/supabase";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { racesQuery, useAuth, queryClient } from "@/shared";
+import { racesQuery, useAuth, queryClient, SharedLogic } from "@/shared";
 import {
   TbChevronsDown,
   TbChevronsUp,
@@ -155,7 +155,7 @@ function Page() {
   }, [debouncedSearch]);
 
   return (
-    <>
+    <Box minH="100vh" bg="gray.50">
       {/* Sticky navbar and search bar */}
       <Box position="sticky" top="0" zIndex="100">
         <NavBar isAdmin={isAdmin} />
@@ -184,7 +184,7 @@ function Page() {
               </IconButton>
             )}
           </Box>
-          {filteredRaces.length !== races.data?.length && (
+          {races.isFetched && filteredRaces.length !== races.data?.length && (
             <Text mt={2} fontSize="xs" color="gray.500" fontStyle="italic">
               Showing {filteredRaces.length}/{races.data?.length} races
             </Text>
@@ -285,13 +285,14 @@ function Page() {
           </Button>
         </Box>
       )}
-    </>
+    </Box>
   );
 }
 
 export default function Home() {
   return (
     <QueryClientProvider client={queryClient}>
+      <SharedLogic />
       <Page />
     </QueryClientProvider>
   );
