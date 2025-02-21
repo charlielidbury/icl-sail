@@ -151,16 +151,19 @@ export type Database = {
         Row: {
           estimates: boolean
           go_to_stand: number
+          racing_paused: boolean
           uuid: string
         }
         Insert: {
           estimates?: boolean
           go_to_stand: number
+          racing_paused?: boolean
           uuid?: string
         }
         Update: {
           estimates?: boolean
           go_to_stand?: number
+          racing_paused?: boolean
           uuid?: string
         }
         Relationships: []

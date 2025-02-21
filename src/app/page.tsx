@@ -18,6 +18,11 @@ import { MadeWithLove } from "@/components/ui/made-with-love";
 
 const documents = [
   {
+    title: "Qualifying Schedule",
+    description: "Qualifying schedule in typical table format",
+    href: "/qualifying_schedule.pdf",
+  },
+  {
     title: "Information Pack",
     description: "Social info, emergency contacts, itinerary, addresses",
     href: "/info-pack.pdf",

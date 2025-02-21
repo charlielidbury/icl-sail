@@ -136,8 +136,6 @@ export const racesQuery = {
         }
       }
 
-      console.log({ finishTimes });
-
       if (finishTimes.length >= 2) {
         let totalTimeDiff = 0;
         for (let j = 0; j < finishTimes.length - 1; j++) {
@@ -150,9 +148,8 @@ export const racesQuery = {
         console.log({ currentRace, averageTimeBetweenRacesMs });
 
         // Add estimates to races array
-        const currentTime = races[currentRaceIndex + 1]!.finishtime!;
         for (let i = 0; i < currentRaceIndex; i++) {
-          races[i].estfinishtime = currentTime.add(
+          races[i].estfinishtime = dayjs().add(
             averageTimeBetweenRacesMs * (currentRaceIndex - i - goToStand)
           );
         }

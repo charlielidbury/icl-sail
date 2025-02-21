@@ -42,11 +42,15 @@ function SettingsPage() {
 
   const [settings, setSettings] = useState<Settings | undefined>(undefined);
   useEffect(() => {
-    console.log("remoteSettings", remoteSettings);
     if (remoteSettings) {
       setSettings(remoteSettings);
     }
-  }, [remoteSettings]);
+  }, [
+    !!remoteSettings,
+    remoteSettings?.estimates,
+    remoteSettings?.go_to_stand,
+    remoteSettings?.racing_paused,
+  ]);
 
   const saveSettings = useMutation({
     mutationFn: async (newSettings: Settings) => {
@@ -116,13 +120,24 @@ function SettingsPage() {
               />
             </Field>
 
+            <Field label="Pause Racing">
+              <Checkbox
+                checked={settings.racing_paused}
+                onCheckedChange={(v) =>
+                  setSettings({ ...settings, racing_paused: !!v.checked })
+                }
+                colorScheme={sailingColour}
+              />
+            </Field>
+
             <Box mt={2}>
               <Button
                 onClick={() => saveSettings.mutate(settings)}
                 loading={saveSettings.isPending}
                 disabled={
                   settings.estimates === remoteSettings?.estimates &&
-                  settings.go_to_stand === remoteSettings?.go_to_stand
+                  settings.go_to_stand === remoteSettings?.go_to_stand &&
+                  settings.racing_paused === remoteSettings?.racing_paused
                 }
                 colorScheme="blue"
                 bg={sailingColour}
