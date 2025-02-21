@@ -149,18 +149,21 @@ export type Database = {
       }
       settings: {
         Row: {
+          announcement: string | null
           estimates: boolean
           go_to_stand: number
           racing_paused: boolean
           uuid: string
         }
         Insert: {
+          announcement?: string | null
           estimates?: boolean
           go_to_stand: number
           racing_paused?: boolean
           uuid?: string
         }
         Update: {
+          announcement?: string | null
           estimates?: boolean
           go_to_stand?: number
           racing_paused?: boolean

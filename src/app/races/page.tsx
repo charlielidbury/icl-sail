@@ -189,6 +189,20 @@ function Page() {
                 Showing {filteredRaces.length}/{races.data?.races.length} races
               </Text>
             )}
+          {settings?.racing_paused && (
+            <Box
+              mt={3}
+              p={2}
+              mb={-1}
+              bg="yellow.100"
+              color="yellow.700"
+              borderRadius="md"
+              textAlign="center"
+              fontWeight="medium"
+            >
+              Racing Paused
+            </Box>
+          )}
         </Box>
       </Box>
 
@@ -199,7 +213,7 @@ function Page() {
             Error loading races.
             {races.error.message}
           </Text>
-        ) : races.isFetched ? (
+        ) : races.isFetched && settings ? (
           filteredRaces.length > 0 && currentRace ? (
             <>
               <Virtuoso
@@ -277,8 +291,10 @@ function Page() {
                       <MemoizedRace
                         race={race}
                         active={isActive}
-                        isStand={isStand}
-                        showEstFinishtime={settings?.estimates ?? false}
+                        isStand={!settings.racing_paused && isStand}
+                        showEstFinishtime={
+                          !settings.racing_paused && settings.estimates
+                        }
                         search={debouncedSearch}
                       />
                     </Box>

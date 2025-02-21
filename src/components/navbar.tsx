@@ -27,6 +27,7 @@ import {
   TbClock,
   TbMedal,
   TbSettings,
+  TbBellRinging,
 } from "react-icons/tb";
 import { Auth } from "@supabase/auth-ui-react";
 import supabase from "../supabase";
@@ -42,7 +43,8 @@ import {
 } from "@/components/ui/dialog";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { MadeWithLove } from "@/components/ui/made-with-love";
-import { sailingColour } from "@/shared";
+import { sailingColour, queryClient } from "@/shared";
+import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 
 interface NavBarProps {
   isAdmin: boolean;
@@ -70,9 +72,33 @@ const BASE_NAV_ITEMS: Array<NavItem> = [
   },
 ];
 
-export default function NavBar({ isAdmin }: NavBarProps) {
+export default function NavBarRoot({ isAdmin }: NavBarProps) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <NavBar isAdmin={isAdmin} />
+    </QueryClientProvider>
+  );
+}
+
+function NavBar({ isAdmin }: NavBarProps) {
   const { open, onToggle } = useDisclosure();
   const [session, setSession] = useState<any>(null);
+
+  const { data: settings } = useQuery({
+    queryKey: ["settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("settings")
+        .select("*")
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return data;
+    },
+  });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -177,10 +203,25 @@ export default function NavBar({ isAdmin }: NavBarProps) {
           )}
         </Stack>
       </Flex>
+
+      {settings?.announcement && (
+        <Flex
+          bg={sailingColour}
+          color="white"
+          p={2}
+          alignItems="center"
+          justifyContent="center"
+          gap={2}
+        >
+          <Icon as={TbBellRinging} />
+          <Text>{settings.announcement}</Text>
+        </Flex>
+      )}
+
       {open && (
         <Box
           position="fixed"
-          top="60px"
+          top={settings?.announcement ? "100px" : "60px"}
           left="0"
           right="0"
           bottom="0"

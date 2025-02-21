@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Stack, Heading, Button, Text } from "@chakra-ui/react";
+import { Box, Stack, Heading, Button, Text, Input } from "@chakra-ui/react";
 import { Field } from "@/components/ui/field";
 import {
   NumberInputRoot,
@@ -97,6 +97,19 @@ function SettingsPage() {
           </Heading>
 
           <Stack gap={6}>
+            <Field label="Announcement">
+              <Input
+                value={settings.announcement || ""}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    announcement: e.target.value || null,
+                  })
+                }
+                placeholder="Enter an announcement message (optional)"
+              />
+            </Field>
+
             <Field label="Go to Stand Notification">
               <NumberInputRoot
                 value={settings.go_to_stand.toString()}
@@ -137,7 +150,8 @@ function SettingsPage() {
                 disabled={
                   settings.estimates === remoteSettings?.estimates &&
                   settings.go_to_stand === remoteSettings?.go_to_stand &&
-                  settings.racing_paused === remoteSettings?.racing_paused
+                  settings.racing_paused === remoteSettings?.racing_paused &&
+                  settings.announcement === remoteSettings?.announcement
                 }
                 colorScheme="blue"
                 bg={sailingColour}

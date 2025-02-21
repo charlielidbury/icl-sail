@@ -201,14 +201,13 @@ export function SharedLogic() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const keyTableLinks: [QueryKey, string][] = [
-      [["leaderboard"], "leaderboard"],
-      [["races"], "raceteam"],
-      [["settings"], "settings"],
-      [["races"], "settings"],
+    const keyTableLinks: [QueryKey[], string][] = [
+      [[["leaderboard"]], "leaderboard"],
+      [[["races"]], "raceteam"],
+      [[["settings"], ["races"]], "settings"],
     ];
 
-    const channels = keyTableLinks.map(([queryKey, table]) => {
+    const channels = keyTableLinks.map(([queryKeys, table]) => {
       let loading = false;
       return supabase
         .channel(table + "-changes")
@@ -216,15 +215,28 @@ export function SharedLogic() {
           "postgres_changes",
           { event: "*", schema: "public", table },
           async (payload) => {
-            const queryState = queryClient.getQueryState(queryKey);
-            if (loading || queryState?.status === "pending") {
+            if (loading) {
               return;
             }
 
-            console.log("invalidating", queryKey);
-
             loading = true;
-            await queryClient.invalidateQueries({ queryKey });
+            await Promise.all(
+              queryKeys.map(async (queryKey) => {
+                const queryState = queryClient.getQueryState(queryKey);
+                if (queryState?.status === "pending") {
+                  return;
+                }
+
+                console.log(
+                  "invalidating",
+                  queryKey,
+                  "due to a change in",
+                  table
+                );
+
+                await queryClient.invalidateQueries({ queryKey });
+              })
+            );
             loading = false;
           }
         )
