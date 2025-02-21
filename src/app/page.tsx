@@ -213,17 +213,17 @@ export default function Info() {
         {/* Advert */}
         <Box mt={10}>
           <Heading as="h2" size="lg" mb={4} textAlign="center" color="gray.700">
-            Host Competition With Us
+            Host A Competition With Us
           </Heading>
           <Text textAlign="center" color="gray.600" maxW="600px" mx="auto">
             If you would like to use this software for your university's team
             racing competitions, leave me an email at{" "}
             <Link href="mailto:personal@charlielidbury.com">
               personal@charlielidbury.com
-            </Link>{" "}
-            or a WhatsApp on +44 7557 345060. In the future we will likely
-            charge for its usage, but for now we're offering it for free so we
-            can get as much practice running competitions as possible.
+            </Link>
+            . In the future we will likely charge for its usage, but for now
+            we're offering it for free so we can get as much practice running
+            competitions as possible.
           </Text>
         </Box>
       </Container>

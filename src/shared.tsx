@@ -10,10 +10,10 @@ export function getLeagueName(league: string): string {
   switch (league.toLowerCase()) {
     case "quali":
       return "Qualifying";
-    case "silver":
-      return "Silver";
-    case "gold":
-      return "Gold";
+    case "semis/silver":
+      return "Silver Semi-Final";
+    case "semis/gold":
+      return "Gold Semi-Final";
     default:
       return league;
   }
