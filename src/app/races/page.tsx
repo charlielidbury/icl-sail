@@ -42,17 +42,17 @@ function Page() {
   const races = useQuery(racesQuery);
 
   // Fetch settings (go_to_stand offset)
-  let { data: goToStandOffset } = useQuery({
-    queryKey: ["settings", "go_to_stand"],
+  let { data: settings } = useQuery({
+    queryKey: ["settings"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("settings")
-        .select("go_to_stand")
+        .select("*")
         .single();
-      return data?.go_to_stand;
+      return data;
     },
   });
-  if (!goToStandOffset) goToStandOffset = 3;
+  const goToStandOffset = settings ? settings.go_to_stand : 0;
 
   // Determine current race (first race with no result)
   const currentRace = useMemo(() => {

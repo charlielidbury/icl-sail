@@ -149,14 +149,17 @@ export type Database = {
       }
       settings: {
         Row: {
+          estimates: boolean
           go_to_stand: number
           uuid: string
         }
         Insert: {
+          estimates?: boolean
           go_to_stand: number
           uuid?: string
         }
         Update: {
+          estimates?: boolean
           go_to_stand?: number
           uuid?: string
         }
@@ -176,6 +179,32 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      tiebreak: {
+        Row: {
+          league: string
+          order: number
+          team: string
+        }
+        Insert: {
+          league: string
+          order: number
+          team: string
+        }
+        Update: {
+          league?: string
+          order?: number
+          team?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tiebreaks_team_fkey"
+            columns: ["team"]
+            isOneToOne: false
+            referencedRelation: "team"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

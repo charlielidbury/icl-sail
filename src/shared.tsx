@@ -4,6 +4,7 @@ import supabase from "./supabase";
 import { Session } from "@supabase/supabase-js";
 import {
   QueryClient,
+  QueryKey,
   QueryOptions,
   useQueryClient,
 } from "@tanstack/react-query";
@@ -135,52 +136,41 @@ export const queryClient = new QueryClient({
 });
 
 // This is supabase logic which needs to run all the time
-// the navbar is just a convienient place to put it
 export function SharedLogic() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    let leaderboardLoading = false;
-    const leaderboardChannel = supabase
-      .channel("leaderboard-changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "leaderboard" },
-        async (payload) => {
-          const queryState = queryClient.getQueryState(["leaderboard"]);
-          if (leaderboardLoading || queryState?.status === "pending") {
-            return;
+    const keyTableLinks: [QueryKey, string][] = [
+      [["leaderboard"], "leaderboard"],
+      [["races"], "raceteam"],
+      [["settings"], "settings"],
+    ];
+
+    const channels = keyTableLinks.map(([queryKey, table]) => {
+      let loading = false;
+      return supabase
+        .channel(table + "-changes")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table },
+          async (payload) => {
+            const queryState = queryClient.getQueryState(queryKey);
+            if (loading || queryState?.status === "pending") {
+              return;
+            }
+
+            console.log("invalidating", queryKey);
+
+            loading = true;
+            await queryClient.invalidateQueries({ queryKey });
+            loading = false;
           }
-
-          leaderboardLoading = true;
-          await queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
-          leaderboardLoading = false;
-        }
-      )
-      .subscribe();
-
-    let racesLoading = false;
-    const racesChannel = supabase
-      .channel("races-changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "raceteam" },
-        async (payload) => {
-          const queryState = queryClient.getQueryState(["races"]);
-          if (racesLoading || queryState?.status === "pending") {
-            return;
-          }
-
-          racesLoading = true;
-          await queryClient.invalidateQueries({ queryKey: ["races"] });
-          racesLoading = false;
-        }
-      )
-      .subscribe();
+        )
+        .subscribe();
+    });
 
     return () => {
-      leaderboardChannel.unsubscribe();
-      racesChannel.unsubscribe();
+      channels.forEach((channel) => channel.unsubscribe());
     };
   }, []);
 

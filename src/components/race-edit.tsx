@@ -9,7 +9,7 @@ import {
   Button,
   ButtonGroup,
 } from "@chakra-ui/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   NumberInputField,
   NumberInputRoot,
@@ -26,10 +26,21 @@ export default function RaceEdit({
 }) {
   if (!race.raceteam[0] || !race.raceteam[1]) return <></>;
 
+  // Uses useEffect to update the team results when the race results are updated.
+  // const initialResults = [
+  //   race.raceteam[0].result ?? [null, null, null],
+  //   race.raceteam[1].result ?? [null, null, null],
+  // ];
   const [teamResults, setTeamResults] = useState<(number | null)[][]>([
     race.raceteam[0].result ?? [null, null, null],
     race.raceteam[1].result ?? [null, null, null],
   ]);
+  useEffect(() => {
+    setTeamResults([
+      race.raceteam[0].result ?? [null, null, null],
+      race.raceteam[1].result ?? [null, null, null],
+    ]);
+  }, [race.raceteam[0].result, race.raceteam[1].result]);
 
   const fullResults = useMemo(() => {
     for (let i = 0; i < 2; i++) {
