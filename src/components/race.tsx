@@ -25,6 +25,7 @@ interface RaceCardProps {
   active: boolean;
   isStand?: boolean;
   search?: string;
+  showEstFinishtime: boolean;
 }
 
 // Helper function to highlight search term.
@@ -60,7 +61,13 @@ function formatFinishTime(finishTime: dayjs.Dayjs | null): string {
   return finishTime.format("DD/MM/YYYY, HH:mm");
 }
 
-function RaceCard({ race, active, isStand, search }: RaceCardProps) {
+function RaceCard({
+  race,
+  active,
+  isStand,
+  search,
+  showEstFinishtime,
+}: RaceCardProps) {
   // Styling for light mode.
   const bgColor = "white";
   const borderColor = active ? "green.500" : "gray.200";
@@ -133,6 +140,12 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
         {race.finishtime.isValid() ? formatFinishTime(race.finishtime) : ""}
       </Text>
     );
+  } else if (showEstFinishtime && race.estfinishtime) {
+    headerBadge = (
+      <Text fontSize="sm" px={2} py={1} borderRadius="md" color="gray.500">
+        Go to pontoon at {race.estfinishtime.format("HH:mm")} (est.)
+      </Text>
+    );
   }
 
   return (
@@ -148,14 +161,14 @@ function RaceCard({ race, active, isStand, search }: RaceCardProps) {
       <Box m={4}>
         {/* HEADER */}
         <Flex justify="space-between" align="center" mb={3}>
-          <Flex align="baseline" gap={2}>
+          <Box>
             <Text fontSize="lg" fontWeight="bold">
               Race {race.number}
             </Text>
-            <Text fontSize="lg" color="gray.500">
-              - {getLeagueName(race.league)}
+            <Text fontSize="sm" color="gray.500" fontStyle="italic" mt={-1}>
+              {getLeagueName(race.league)}
             </Text>
-          </Flex>
+          </Box>
           {headerBadge}
         </Flex>
         {/* DIVIDER */}
@@ -260,9 +273,16 @@ interface RaceProps {
   active: boolean;
   isStand?: boolean;
   search?: string;
+  showEstFinishtime: boolean;
 }
 
-export default function Race({ race, active, isStand, search }: RaceProps) {
+export default function Race({
+  race,
+  active,
+  isStand,
+  search,
+  showEstFinishtime,
+}: RaceProps) {
   // const showRace =
   //   !search ||
   //   `${race.number} ${race.raceteam[0]?.team?.name} ${race.raceteam[1]?.team?.name}`
@@ -279,6 +299,7 @@ export default function Race({ race, active, isStand, search }: RaceProps) {
             active={active}
             isStand={isStand}
             search={search}
+            showEstFinishtime={showEstFinishtime}
           />
         </Box>
       </DialogTrigger>
@@ -292,6 +313,7 @@ export default function Race({ race, active, isStand, search }: RaceProps) {
             active={active}
             isStand={isStand}
             search={search}
+            showEstFinishtime={showEstFinishtime}
           />
           <RaceDialog race={race} active={active} />
         </DialogBody>

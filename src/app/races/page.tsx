@@ -40,6 +40,7 @@ function Page() {
 
   // Fetch all races
   const races = useQuery(racesQuery);
+  const currentRace = races.data?.currentRace;
 
   // Fetch settings (go_to_stand offset)
   let { data: settings } = useQuery({
@@ -53,20 +54,6 @@ function Page() {
     },
   });
   const goToStandOffset = settings ? settings.go_to_stand : 0;
-
-  // Determine current race (first race with no result)
-  const currentRace = useMemo(() => {
-    if (!races.data) return;
-    let cr: number | null = null;
-    for (let i = 0; i < races.data.length; i++) {
-      // If the first team in this race has a result, it means the race is done.
-      if (races.data[i].raceteam[0]?.result !== null) {
-        break;
-      }
-      cr = races.data[i].number;
-    }
-    return cr;
-  }, [races]);
 
   // State to track if the current race is visible and if it is above the viewport.
   const [isCurrentRaceVisible, setIsCurrentRaceVisible] = useState(true);
@@ -96,8 +83,8 @@ function Page() {
   const filteredRaces = useMemo(() => {
     if (!races.data) return [];
     const lowerSearch = debouncedSearch.toLowerCase();
-    return races.data.filter((race) => {
-      if (race.number === currentRace) return true;
+    return races.data.races.filter((race) => {
+      if (race.number === races.data.currentRace) return true;
 
       const raceName = `${race.number} ${race.raceteam
         .map((rt) => rt.team?.name ?? "")
@@ -190,23 +177,29 @@ function Page() {
               </IconButton>
             )}
           </Box>
-          {races.isFetched && filteredRaces.length !== races.data?.length && (
-            <Text
-              mt={2}
-              mb={-2}
-              fontSize="xs"
-              color="gray.500"
-              fontStyle="italic"
-            >
-              Showing {filteredRaces.length}/{races.data?.length} races
-            </Text>
-          )}
+          {races.isFetched &&
+            filteredRaces.length !== races.data?.races.length && (
+              <Text
+                mt={2}
+                mb={-2}
+                fontSize="xs"
+                color="gray.500"
+                fontStyle="italic"
+              >
+                Showing {filteredRaces.length}/{races.data?.races.length} races
+              </Text>
+            )}
         </Box>
       </Box>
 
       {/* Main content area */}
       <Box p={4} height="calc(100vh - 100px)">
-        {races.isFetched ? (
+        {races.error ? (
+          <Text textAlign="center" fontSize="lg" color="red">
+            Error loading races.
+            {races.error.message}
+          </Text>
+        ) : races.isFetched ? (
           filteredRaces.length > 0 && currentRace ? (
             <>
               <Virtuoso
@@ -285,6 +278,7 @@ function Page() {
                         race={race}
                         active={isActive}
                         isStand={isStand}
+                        showEstFinishtime={settings?.estimates ?? false}
                         search={debouncedSearch}
                       />
                     </Box>
