@@ -31,6 +31,85 @@ type LeaderboardRow = {
   };
 };
 
+function LeaderboardRow({
+  row,
+  selectedLeague,
+  leaderboard,
+  index,
+}: {
+  row: LeaderboardRow;
+  selectedLeague: string;
+  leaderboard: LeaderboardRow[];
+  index: number;
+}) {
+  const cardBg = useColorModeValue("white", "gray.700");
+  const cardBorderColor = useColorModeValue("gray.200", "gray.600");
+  const defaultOrdinalBg = useColorModeValue("blue.100", "blue.900");
+
+  // For QUALI league, use gold for top half and silver for bottom half.
+  let badgeBg: string;
+  if (selectedLeague === "gold") {
+    badgeBg = "gold";
+  } else if (selectedLeague === "silver") {
+    badgeBg = "silver";
+  } else if (selectedLeague === "quali" && leaderboard) {
+    badgeBg = index < Math.ceil(leaderboard.length / 2) ? "gold" : "silver";
+  } else {
+    badgeBg = defaultOrdinalBg;
+  }
+  return (
+    <Box
+      key={row.team.id}
+      bg={cardBg}
+      borderWidth="1px"
+      borderColor={cardBorderColor}
+      borderRadius="xl"
+      p={3}
+      boxShadow="sm"
+      _hover={{ boxShadow: "md", transform: "scale(1.01)" }}
+      transition="all 0.2s ease"
+    >
+      <Flex justify="space-between" align="center" mb={1}>
+        <Text fontSize="lg" fontWeight="bold" color="black">
+          {row.team.name}
+        </Text>
+        <Badge
+          bg={badgeBg}
+          color="black"
+          fontSize="xs"
+          fontWeight="semibold"
+          px={2}
+          py={1}
+          borderRadius="md"
+        >
+          {ordinal(index + 1)}
+        </Badge>
+      </Flex>
+      <Flex justify="space-between" align="center">
+        <Flex align="center">
+          <Text fontSize="sm" fontWeight="bold" color="green.600">
+            {row.wins}W
+          </Text>
+          <Text fontSize="sm" mx={1} color="gray.600">
+            /
+          </Text>
+          <Text fontSize="sm" fontWeight="bold" color="red.600">
+            {row.losses}L
+          </Text>
+        </Flex>
+        <Flex align="center">
+          <Text fontSize="sm" color="gray.600" mr={1}>
+            Avg. Points:
+          </Text>
+          <Text fontSize="sm" fontWeight="bold" color="black">
+            {row.avg_pts.toFixed(1)}
+          </Text>
+        </Flex>
+      </Flex>
+    </Box>
+  );
+}
+
 function Page() {
   // Session and admin state.
   const { isAdmin } = useAuth();
@@ -56,7 +135,7 @@ function Page() {
         )
       `
         )
-        .eq("league", selectedLeague)
+        .like("league", selectedLeague + "%")
         .order("order", { ascending: true });
 
       if (error) {
@@ -75,9 +154,6 @@ function Page() {
 
   // Styling values.
   const pageBg = useColorModeValue("gray.50", "gray.800");
-  const cardBg = useColorModeValue("white", "gray.700");
-  const cardBorderColor = useColorModeValue("gray.200", "gray.600");
-  const defaultOrdinalBg = useColorModeValue("blue.100", "blue.900");
 
   return (
     <Box minH="100vh" bg="gray.50">
@@ -97,7 +173,14 @@ function Page() {
         </Heading>
 
         {/* League switcher */}
-        <Flex maxW="600px" w="full" mx="auto" justify="center" mb={6}>
+        <Flex
+          maxW="600px"
+          w="full"
+          mx="auto"
+          justify="center"
+          mb={6}
+          boxShadow="lg"
+        >
           <ButtonGroup attached variant="solid" w="full">
             <Button
               flex="1"
@@ -110,33 +193,33 @@ function Page() {
               fontSize="xs"
               fontWeight="bold"
             >
-              QUALIFYING
+              1. QUALIFYING
             </Button>
             <Button
               flex="1"
-              bg={selectedLeague === "silver" ? sailingColour : "gray.300"}
-              color={selectedLeague === "silver" ? "white" : "gray.800"}
+              bg={selectedLeague === "semis" ? sailingColour : "gray.300"}
+              color={selectedLeague === "semis" ? "white" : "gray.800"}
               _hover={{
-                bg: selectedLeague === "silver" ? sailingColour : "gray.400",
+                bg: selectedLeague === "semis" ? sailingColour : "gray.400",
               }}
-              onClick={() => setSelectedLeague("silver")}
+              onClick={() => setSelectedLeague("semis")}
               fontSize="xs"
               fontWeight="bold"
             >
-              SILVER
+              2. GROUPS
             </Button>
             <Button
               flex="1"
-              bg={selectedLeague === "gold" ? sailingColour : "gray.300"}
-              color={selectedLeague === "gold" ? "white" : "gray.800"}
+              bg={selectedLeague === "finals" ? sailingColour : "gray.300"}
+              color={selectedLeague === "finals" ? "white" : "gray.800"}
               _hover={{
-                bg: selectedLeague === "gold" ? sailingColour : "gray.400",
+                bg: selectedLeague === "finals" ? sailingColour : "gray.400",
               }}
-              onClick={() => setSelectedLeague("gold")}
+              onClick={() => setSelectedLeague("finals")}
               fontSize="xs"
               fontWeight="bold"
             >
-              GOLD
+              3. KNOCKOUTS
             </Button>
           </ButtonGroup>
         </Flex>
@@ -148,74 +231,166 @@ function Page() {
           </Stack>
         ) : (
           <Stack>
-            {leaderboard && leaderboard.length > 0 ? (
-              leaderboard.map((row, index) => {
-                // For QUALI league, use gold for top half and silver for bottom half.
-                let badgeBg: string;
-                if (selectedLeague === "gold") {
-                  badgeBg = "gold";
-                } else if (selectedLeague === "silver") {
-                  badgeBg = "silver";
-                } else if (selectedLeague === "quali" && leaderboard) {
-                  badgeBg =
-                    index < Math.ceil(leaderboard.length / 2)
-                      ? "gold"
-                      : "silver";
-                } else {
-                  badgeBg = defaultOrdinalBg;
-                }
-                return (
-                  <Box
-                    key={row.team.id}
-                    bg={cardBg}
-                    borderWidth="1px"
-                    borderColor={cardBorderColor}
-                    borderRadius="xl"
-                    p={3}
-                    boxShadow="sm"
-                    _hover={{ boxShadow: "md", transform: "scale(1.01)" }}
-                    transition="all 0.2s ease"
+            {true ? (
+              selectedLeague === "quali" ? (
+                // Qualis
+                <>
+                  <Text
+                    fontSize="sm"
+                    color="gray.600"
+                    mb={4}
+                    fontStyle="italic"
                   >
-                    <Flex justify="space-between" align="center" mb={1}>
-                      <Text fontSize="lg" fontWeight="bold" color="black">
-                        {row.team.name}
-                      </Text>
-                      <Badge
-                        bg={badgeBg}
-                        color="black"
-                        fontSize="xs"
-                        fontWeight="semibold"
-                        px={2}
-                        py={1}
-                        borderRadius="md"
-                      >
-                        {ordinal(index + 1)}
-                      </Badge>
-                    </Flex>
-                    <Flex justify="space-between" align="center">
-                      <Flex align="center">
-                        <Text fontSize="sm" fontWeight="bold" color="green.600">
-                          {row.wins}W
-                        </Text>
-                        <Text fontSize="sm" mx={1} color="gray.600">
-                          /
-                        </Text>
-                        <Text fontSize="sm" fontWeight="bold" color="red.600">
-                          {row.losses}L
-                        </Text>
-                      </Flex>
-                      <Flex align="center">
-                        <Text fontSize="sm" color="gray.600" mr={1}>
-                          Avg. Points:
-                        </Text>
-                        <Text fontSize="sm" fontWeight="bold" color="black">
-                          {row.avg_pts.toFixed(1)}
-                        </Text>
-                      </Flex>
-                    </Flex>
-                  </Box>
-                );
-              })
+                    Round Robin
+                  </Text>
+                  {leaderboard.length > 0 ? (
+                    leaderboard.map((row, index) => (
+                      <LeaderboardRow
+                        row={row}
+                        selectedLeague={selectedLeague}
+                        leaderboard={leaderboard}
+                        index={index}
+                        key={row.team.id}
+                      />
+                    ))
+                  ) : (
+                    <Text textAlign="center" fontSize="lg" color="gray.600">
+                      No leaderboard data available.
+                    </Text>
+                  )}
+                </>
+              ) : selectedLeague === "semis" ? (
+                // Semis
+                <>
+                  <Heading as="h1" size="xl" mt={4} color="black">
+                    Gold Division
+                  </Heading>
+                  <Text
+                    fontSize="sm"
+                    color="gray.600"
+                    mb={4}
+                    fontStyle="italic"
+                  >
+                    Round robin between top half of qualifying
+                  </Text>
+                  {leaderboard.length > 0 ? (
+                    leaderboard
+                      .filter((r) => r.league === "semis/gold")
+                      .map((row, index) => (
+                        <LeaderboardRow
+                          row={row}
+                          selectedLeague={selectedLeague}
+                          leaderboard={leaderboard}
+                          index={index}
+                          key={row.team.id}
+                        />
+                      ))
+                  ) : (
+                    <Text textAlign="center" fontSize="lg" color="gray.600">
+                      No leaderboard data available.
+                    </Text>
+                  )}
+
+                  <Heading as="h1" size="xl" mt={4} color="black">
+                    Silver Division
+                  </Heading>
+                  <Text
+                    fontSize="sm"
+                    color="gray.600"
+                    mb={4}
+                    fontStyle="italic"
+                  >
+                    Round robin between bottom half of qualifying
+                  </Text>
+                  {leaderboard.length > 0 ? (
+                    leaderboard
+                      .filter((r) => r.league === "semis/silver")
+                      .map((row, index) => (
+                        <LeaderboardRow
+                          row={row}
+                          selectedLeague={selectedLeague}
+                          leaderboard={leaderboard}
+                          index={index}
+                          key={row.team.id}
+                        />
+                      ))
+                  ) : (
+                    <Text textAlign="center" fontSize="lg" color="gray.600">
+                      No leaderboard data available.
+                    </Text>
+                  )}
+                </>
+              ) : selectedLeague === "finals" ? (
+                <>
+                  {/* 1. Repchange */}
+                  <Heading as="h1" size="xl" mt={4} color="black">
+                    Repchange
+                  </Heading>
+                  <Text
+                    fontSize="sm"
+                    color="gray.600"
+                    mb={4}
+                    fontStyle="italic"
+                  >
+                    Gold 4th vs Silver 1st
+                  </Text>
+
+                  {/* Semi-finals */}
+                  <Heading as="h1" size="xl" mt={4} color="black">
+                    Semi-finals
+                  </Heading>
+                  <Text
+                    fontSize="sm"
+                    color="gray.600"
+                    mb={4}
+                    fontStyle="italic"
+                  >
+                    Gold 1st vs Repchange Winner
+                  </Text>
+                  <Text
+                    fontSize="sm"
+                    color="gray.600"
+                    mb={4}
+                    fontStyle="italic"
+                  >
+                    Gold 2nd vs Gold 3rd
+                  </Text>
+
+                  {/* Finals */}
+                  <Heading as="h1" size="xl" mt={4} color="black">
+                    Finals
+                  </Heading>
+                  <Text
+                    fontSize="sm"
+                    color="gray.600"
+                    mb={4}
+                    fontStyle="italic"
+                  >
+                    Best of 5 between semi-final winners (Final)
+                  </Text>
+                  <Text
+                    fontSize="sm"
+                    color="gray.600"
+                    mb={4}
+                    fontStyle="italic"
+                  >
+                    Best of 3 between semi-final losers (Petit Final)
+                  </Text>
+
+                  {/* Finals */}
+                  {leaderboard.map((row, index) => (
+                    <LeaderboardRow
+                      row={row}
+                      selectedLeague={selectedLeague}
+                      leaderboard={leaderboard}
+                      index={index}
+                      key={row.team.id}
+                    />
+                  ))}
+                </>
+              ) : (
+                <></>
+              )
             ) : (
               <Text textAlign="center" fontSize="lg" color="gray.600">
                 No leaderboard data available.
