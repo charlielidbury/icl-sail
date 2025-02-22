@@ -123,9 +123,9 @@ export const racesQuery = {
     if (currentRaceIndex !== null && currentRaceIndex !== races.length - 1) {
       const finishTimes = [];
       for (
-        let i = currentRaceIndex + 1;
-        finishTimes.length < 10 && i < races.length;
-        i++
+        let i = currentRaceIndex - 1;
+        finishTimes.length < 10 && i >= 0;
+        i--
       ) {
         if (races[i].finishtime) {
           finishTimes.push(races[i].finishtime);
@@ -145,9 +145,11 @@ export const racesQuery = {
 
         // Add estimates to races array
         for (let i = currentRaceIndex + 1; i < races.length; i++) {
-          races[i].estfinishtime = dayjs().add(
-            averageTimeBetweenRacesMs * (currentRaceIndex - i - goToStand)
+          // races[i].estfinishtime = dayjs();
+          const time = dayjs().add(
+            averageTimeBetweenRacesMs * (i - currentRaceIndex - goToStand)
           );
+          races[i].estfinishtime = time;
         }
       }
     }
