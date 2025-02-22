@@ -15,6 +15,8 @@ import NavBar from "@/components/navbar";
 import { sailingColour, useAuth } from "@/shared";
 import { TbDownload, TbChevronRight, TbClock, TbMedal } from "react-icons/tb";
 import { MadeWithLove } from "@/components/ui/made-with-love";
+import { useColorMode } from "@/components/ui/color-mode";
+import { useEffect } from "react";
 
 const documents = [
   {
@@ -46,6 +48,12 @@ const documents = [
 
 export default function Info() {
   const { isAdmin } = useAuth();
+
+  // Ensure light mode.
+  const { setColorMode } = useColorMode();
+  useEffect(() => {
+    setColorMode("light");
+  }, []);
 
   return (
     <Box minH="100vh" bg="gray.50">

@@ -18,6 +18,7 @@ import {
 import supabase from "@/supabase";
 import { Database } from "@/database.types";
 import { useEffect, useState } from "react";
+import { useColorMode } from "@/components/ui/color-mode";
 
 type Settings = Database["public"]["Tables"]["settings"]["Row"];
 
@@ -39,6 +40,12 @@ function SettingsPage() {
       return data;
     },
   });
+
+  // Force light color mode on load
+  const { setColorMode } = useColorMode();
+  useEffect(() => {
+    setColorMode("light");
+  }, [setColorMode]);
 
   const [settings, setSettings] = useState<Settings | undefined>(undefined);
   useEffect(() => {
