@@ -236,17 +236,17 @@ function Page() {
 
                   const gapAbove =
                     index !== 0 &&
-                    filteredRaces[index - 1].number !== race.number + 1;
+                    filteredRaces[index - 1].number !== race.number - 1;
 
                   // Check if any team stays in boats from previous race
                   const stayingTeam =
-                    index !== 0 &&
-                    filteredRaces[index - 1].number === race.number + 4 &&
-                    (filteredRaces[index - 1].raceteam.some((rt1) =>
+                    index !== filteredRaces.length - 1 &&
+                    filteredRaces[index + 1].number === race.number + 4 &&
+                    (filteredRaces[index + 1].raceteam.some((rt1) =>
                       race.raceteam.some((rt2) => rt1.team.id === rt2.team.id)
                     )
                       ? race.raceteam.find((rt1) =>
-                          filteredRaces[index - 1].raceteam.some(
+                          filteredRaces[index + 1].raceteam.some(
                             (rt2) => rt1.team.id === rt2.team.id
                           )
                         )?.team.name
@@ -254,6 +254,16 @@ function Page() {
 
                   return (
                     <Box key={race.id}>
+                      <MemoizedRace
+                        race={race}
+                        active={isActive}
+                        isStand={!settings.racing_paused && isStand}
+                        showEstFinishtime={
+                          !settings.racing_paused && settings.estimates
+                        }
+                        search={debouncedSearch}
+                      />
+
                       {/* dot dot dot */}
                       {gapAbove && !stayingTeam && (
                         <Text
@@ -287,16 +297,6 @@ function Page() {
                           </Text>
                         </Box>
                       )}
-
-                      <MemoizedRace
-                        race={race}
-                        active={isActive}
-                        isStand={!settings.racing_paused && isStand}
-                        showEstFinishtime={
-                          !settings.racing_paused && settings.estimates
-                        }
-                        search={debouncedSearch}
-                      />
                     </Box>
                   );
                 }}

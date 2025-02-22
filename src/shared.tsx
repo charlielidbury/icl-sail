@@ -78,7 +78,7 @@ export const racesQuery = {
           )
         `
         )
-        .order("number", { ascending: false }),
+        .order("number", { ascending: true }),
       supabase.from("settings").select("*").maybeSingle(),
     ]);
 
@@ -110,7 +110,7 @@ export const racesQuery = {
     // Determine current race (first race with no result)
     let currentRace: number | null = null;
     let currentRaceIndex: number | null = null;
-    for (let i = 0; i < races.length; i++) {
+    for (let i = races.length - 1; i >= 0; i--) {
       // If the first team in this race has a result, it means the race is done.
       if (races[i].raceteam[0]?.result !== null) {
         break;
@@ -128,10 +128,8 @@ export const racesQuery = {
         i++
       ) {
         if (races[i].finishtime) {
-          console.log("finish time", races[i].number);
           finishTimes.push(races[i].finishtime);
         } else {
-          console.log("no finish time", races[i].number);
           break; // if there is no finish time, cancel early
         }
       }
@@ -145,10 +143,8 @@ export const racesQuery = {
         const averageTimeBetweenRacesMs =
           totalTimeDiff / (finishTimes.length - 1);
 
-        console.log({ currentRace, averageTimeBetweenRacesMs });
-
         // Add estimates to races array
-        for (let i = 0; i < currentRaceIndex; i++) {
+        for (let i = currentRaceIndex + 1; i < races.length; i++) {
           races[i].estfinishtime = dayjs().add(
             averageTimeBetweenRacesMs * (currentRaceIndex - i - goToStand)
           );
