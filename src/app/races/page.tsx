@@ -116,7 +116,7 @@ function Page() {
     if (index >= 0 && virtuosoRef.current) {
       virtuosoRef.current.scrollToIndex({
         index,
-        align: "center",
+        align: "start",
         behavior: "auto",
       });
     }
@@ -218,9 +218,9 @@ function Page() {
             <>
               <Virtuoso
                 overscan={1000}
-                initialTopMostItemIndex={
-                  filteredRaces.findIndex((r) => r.number === currentRace) - 1
-                }
+                initialTopMostItemIndex={filteredRaces.findIndex(
+                  (r) => r.number === currentRace
+                )}
                 ref={virtuosoRef}
                 data={filteredRaces}
                 style={{ height: "100%", width: "100%" }}
