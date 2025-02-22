@@ -42,6 +42,16 @@ export default function RaceEdit({
     ]);
   }, [race.raceteam[0].result, race.raceteam[1].result]);
 
+  // Calculates the next number
+  const nextNumber = useMemo(() => {
+    return (
+      1 +
+      teamResults
+        .flatMap((ns) => ns.map((n) => n ?? 0))
+        .reduce((a, b) => Math.max(a, b))
+    );
+  }, [teamResults]);
+
   const fullResults = useMemo(() => {
     for (let i = 0; i < 2; i++) {
       for (let j = 0; j < 3; j++) {
@@ -120,6 +130,8 @@ export default function RaceEdit({
     setIsRemoving(false);
   };
 
+  const existingResult = race.raceteam[0].result !== null;
+
   return (
     <>
       <Heading size="xl" textAlign="center" mb={2}>
@@ -154,9 +166,14 @@ export default function RaceEdit({
                   alignSelf="center"
                   key={10 * i + 1}
                 >
-                  <Text fontSize="xs" color="gray.600" fontWeight="bold">
+                  <Button
+                    fontSize="xs"
+                    fontWeight="bold"
+                    variant="ghost"
+                    onClick={() => handleChange(0, i, nextNumber)}
+                  >
                     Boat {race.raceteam[0].halfflight.numbers[i]}
-                  </Text>
+                  </Button>
                 </GridItem>
                 <GridItem textAlign="center" key={10 * i + 2}>
                   <NumberInputRoot
@@ -182,9 +199,14 @@ export default function RaceEdit({
                   alignSelf="center"
                   key={10 * i + 4}
                 >
-                  <Text fontSize="xs" color="gray.600" fontWeight="bold">
+                  <Button
+                    fontSize="xs"
+                    fontWeight="bold"
+                    variant="ghost"
+                    onClick={() => handleChange(1, i, nextNumber)}
+                  >
                     Boat {race.raceteam[1].halfflight.numbers[i]}
-                  </Text>
+                  </Button>
                 </GridItem>
               </>
             )}
@@ -199,16 +221,22 @@ export default function RaceEdit({
             disabled={!fullResults}
             mr={0.25}
           >
-            Update
+            {existingResult ? "Update" : "Submit"}
           </Button>
           <Button
             width="50%"
-            onClick={() => removeResults()}
+            onClick={() =>
+              existingResult
+                ? removeResults()
+                : setTeamResults([
+                    [null, null, null],
+                    [null, null, null],
+                  ])
+            }
             loading={isRemoving}
             colorPalette="red"
-            disabled={race.raceteam[0].result === null}
           >
-            Remove Result
+            {existingResult ? "Remove Result" : "Clear"}
           </Button>
         </ButtonGroup>
       </Box>
