@@ -221,7 +221,7 @@ function NavBar({ isAdmin }: NavBarProps) {
       {open && (
         <Box
           position="fixed"
-          top={settings?.announcement ? "100px" : "60px"}
+          top="60px"
           left="0"
           right="0"
           bottom="0"

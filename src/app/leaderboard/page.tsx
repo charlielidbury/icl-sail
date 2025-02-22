@@ -47,16 +47,14 @@ function LeaderboardRow({
   const defaultOrdinalBg = useColorModeValue("blue.100", "blue.900");
 
   // For QUALI league, use gold for top half and silver for bottom half.
-  let badgeBg: string;
-  if (selectedLeague === "gold") {
-    badgeBg = "gold";
-  } else if (selectedLeague === "silver") {
-    badgeBg = "silver";
-  } else if (selectedLeague === "quali" && leaderboard) {
-    badgeBg = index < Math.ceil(leaderboard.length / 2) ? "gold" : "silver";
-  } else {
-    badgeBg = defaultOrdinalBg;
-  }
+  let badgeBg: string = sailingColour;
+  // if (selectedLeague === "gold") {
+  //   badgeBg = "gold";
+  // } else if (selectedLeague === "silver") {
+  //   badgeBg = "silver";
+  // } else if (selectedLeague === "quali" && leaderboard) {
+  //   badgeBg = index < Math.ceil(leaderboard.length / 2) ? "gold" : "silver";
+  // }
   return (
     <Box
       key={row.team.id}
@@ -75,7 +73,7 @@ function LeaderboardRow({
         </Text>
         <Badge
           bg={badgeBg}
-          color="black"
+          color="white"
           fontSize="xs"
           fontWeight="semibold"
           px={2}
@@ -110,16 +108,10 @@ function LeaderboardRow({
   );
 }
 
-function Page() {
-  // Session and admin state.
-  const { isAdmin } = useAuth();
-
-  // League selection state.
-  const [selectedLeague, setSelectedLeague] = useState<string>("quali");
-
+function Leaderboard({ league }: { league: string }) {
   // Fetch leaderboard data filtered by the selected league.
   const { data: leaderboard } = useQuery({
-    queryKey: ["leaderboard", selectedLeague],
+    queryKey: ["leaderboard", league],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("leaderboard")
@@ -135,7 +127,7 @@ function Page() {
         )
       `
         )
-        .like("league", selectedLeague + "%")
+        .eq("league", league)
         .order("order", { ascending: true });
 
       if (error) {
@@ -145,6 +137,42 @@ function Page() {
       }
     },
   });
+
+  if (leaderboard === undefined) {
+    return (
+      <Stack>
+        <Skeleton height="80px" />
+        <Skeleton height="80px" />
+        <Skeleton height="80px" />
+      </Stack>
+    );
+  }
+
+  if (leaderboard.length === 0) {
+    return (
+      <Text textAlign="center" fontSize="lg" color="gray.600">
+        No leaderboard data available.
+      </Text>
+    );
+  }
+
+  return leaderboard.map((row, index) => (
+    <LeaderboardRow
+      row={row}
+      selectedLeague={league}
+      leaderboard={leaderboard}
+      index={index}
+      key={row.team.id}
+    />
+  ));
+}
+
+function Page() {
+  // Session and admin state.
+  const { isAdmin } = useAuth();
+
+  // League selection state.
+  const [selectedLeague, setSelectedLeague] = useState<string>("quali");
 
   // Ensure light mode.
   const { setColorMode } = useColorMode();
@@ -195,7 +223,7 @@ function Page() {
             >
               1. QUALIFYING
             </Button>
-            <Button
+            {/* <Button
               flex="1"
               bg={selectedLeague === "semis" ? sailingColour : "gray.300"}
               color={selectedLeague === "semis" ? "white" : "gray.800"}
@@ -207,7 +235,7 @@ function Page() {
               fontWeight="bold"
             >
               2. GROUPS
-            </Button>
+            </Button> */}
             <Button
               flex="1"
               bg={selectedLeague === "finals" ? sailingColour : "gray.300"}
@@ -219,191 +247,118 @@ function Page() {
               fontSize="xs"
               fontWeight="bold"
             >
-              3. KNOCKOUTS
+              2. KNOCKOUTS
             </Button>
           </ButtonGroup>
         </Flex>
-        {leaderboard === undefined ? (
-          <Stack>
-            <Skeleton height="80px" />
-            <Skeleton height="80px" />
-            <Skeleton height="80px" />
-          </Stack>
-        ) : (
-          <Stack>
-            {true ? (
-              selectedLeague === "quali" ? (
-                // Qualis
-                <>
-                  <Text
-                    fontSize="sm"
-                    color="gray.600"
-                    mb={4}
-                    fontStyle="italic"
-                  >
-                    Round Robin
-                  </Text>
-                  {leaderboard.length > 0 ? (
-                    leaderboard.map((row, index) => (
-                      <LeaderboardRow
-                        row={row}
-                        selectedLeague={selectedLeague}
-                        leaderboard={leaderboard}
-                        index={index}
-                        key={row.team.id}
-                      />
-                    ))
-                  ) : (
-                    <Text textAlign="center" fontSize="lg" color="gray.600">
-                      No leaderboard data available.
-                    </Text>
-                  )}
-                </>
-              ) : selectedLeague === "semis" ? (
-                // Semis
-                <>
-                  <Heading as="h1" size="xl" mt={4} color="black">
-                    Gold Division
-                  </Heading>
-                  <Text
-                    fontSize="sm"
-                    color="gray.600"
-                    mb={4}
-                    fontStyle="italic"
-                  >
-                    Round robin between top half of qualifying
-                  </Text>
-                  {leaderboard.length > 0 ? (
-                    leaderboard
-                      .filter((r) => r.league === "semis/gold")
-                      .map((row, index) => (
-                        <LeaderboardRow
-                          row={row}
-                          selectedLeague={selectedLeague}
-                          leaderboard={leaderboard}
-                          index={index}
-                          key={row.team.id}
-                        />
-                      ))
-                  ) : (
-                    <Text textAlign="center" fontSize="lg" color="gray.600">
-                      No leaderboard data available.
-                    </Text>
-                  )}
-
-                  <Heading as="h1" size="xl" mt={4} color="black">
-                    Silver Division
-                  </Heading>
-                  <Text
-                    fontSize="sm"
-                    color="gray.600"
-                    mb={4}
-                    fontStyle="italic"
-                  >
-                    Round robin between bottom half of qualifying
-                  </Text>
-                  {leaderboard.length > 0 ? (
-                    leaderboard
-                      .filter((r) => r.league === "semis/silver")
-                      .map((row, index) => (
-                        <LeaderboardRow
-                          row={row}
-                          selectedLeague={selectedLeague}
-                          leaderboard={leaderboard}
-                          index={index}
-                          key={row.team.id}
-                        />
-                      ))
-                  ) : (
-                    <Text textAlign="center" fontSize="lg" color="gray.600">
-                      No leaderboard data available.
-                    </Text>
-                  )}
-                </>
-              ) : selectedLeague === "finals" ? (
-                <>
-                  {/* 1. Repchange */}
-                  <Heading as="h1" size="xl" mt={4} color="black">
-                    Repchange
-                  </Heading>
-                  <Text
-                    fontSize="sm"
-                    color="gray.600"
-                    mb={4}
-                    fontStyle="italic"
-                  >
-                    Gold 4th vs Silver 1st
-                  </Text>
-
-                  {/* Semi-finals */}
-                  <Heading as="h1" size="xl" mt={4} color="black">
-                    Semi-finals
-                  </Heading>
-                  <Text
-                    fontSize="sm"
-                    color="gray.600"
-                    mb={4}
-                    fontStyle="italic"
-                  >
-                    Gold 1st vs Repchange Winner
-                  </Text>
-                  <Text
-                    fontSize="sm"
-                    color="gray.600"
-                    mb={4}
-                    fontStyle="italic"
-                  >
-                    Gold 2nd vs Gold 3rd
-                  </Text>
-
-                  {/* Finals */}
-                  <Heading as="h1" size="xl" mt={4} color="black">
-                    Finals
-                  </Heading>
-                  <Text
-                    fontSize="sm"
-                    color="gray.600"
-                    mb={4}
-                    fontStyle="italic"
-                  >
-                    Best of 5 between semi-final winners (Final)
-                  </Text>
-                  <Text
-                    fontSize="sm"
-                    color="gray.600"
-                    mb={4}
-                    fontStyle="italic"
-                  >
-                    Best of 3 between semi-final losers (Petit Final)
-                  </Text>
-
-                  {/* Finals */}
-                  {leaderboard.map((row, index) => (
-                    <LeaderboardRow
-                      row={row}
-                      selectedLeague={selectedLeague}
-                      leaderboard={leaderboard}
-                      index={index}
-                      key={row.team.id}
-                    />
-                  ))}
-                </>
-              ) : (
-                <></>
-              )
-            ) : (
-              <Text textAlign="center" fontSize="lg" color="gray.600">
-                No leaderboard data available.
+        <Stack>
+          {selectedLeague === "quali" ? (
+            // Qualis
+            <>
+              <Text fontSize="sm" color="gray.600" mb={4} fontStyle="italic">
+                Round Robin
               </Text>
-            )}
-          </Stack>
-        )}
+              <Leaderboard league="quali" />
+            </>
+          ) : // ) : selectedLeague === "semis" ? (
+          //   // Semis
+          //   <>
+          //     <Heading as="h1" size="xl" mt={4} color="black">
+          //       Gold Division
+          //     </Heading>
+          //     <Text
+          //       fontSize="sm"
+          //       color="gray.600"
+          //       mb={4}
+          //       fontStyle="italic"
+          //     >
+          //       Round robin between top half of qualifying
+          //     </Text>
+          //     {leaderboard.length > 0 ? (
+          //       leaderboard
+          //         .filter((r) => r.league === "semis/gold")
+          //         .map((row, index) => (
+          //           <LeaderboardRow
+          //             row={row}
+          //             selectedLeague={selectedLeague}
+          //             leaderboard={leaderboard}
+          //             index={index}
+          //             key={row.team.id}
+          //           />
+          //         ))
+          //     ) : (
+          //       <Text textAlign="center" fontSize="lg" color="gray.600">
+          //         No leaderboard data available.
+          //       </Text>
+          //     )}
+
+          //     <Heading as="h1" size="xl" mt={4} color="black">
+          //       Silver Division
+          //     </Heading>
+          //     <Text
+          //       fontSize="sm"
+          //       color="gray.600"
+          //       mb={4}
+          //       fontStyle="italic"
+          //     >
+          //       Round robin between bottom half of qualifying
+          //     </Text>
+          //     {leaderboard.length > 0 ? (
+          //       leaderboard
+          //         .filter((r) => r.league === "semis/silver")
+          //         .map((row, index) => (
+          //           <LeaderboardRow
+          //             row={row}
+          //             selectedLeague={selectedLeague}
+          //             leaderboard={leaderboard}
+          //             index={index}
+          //             key={row.team.id}
+          //           />
+          //         ))
+          //     ) : (
+          //       <Text textAlign="center" fontSize="lg" color="gray.600">
+          //         No leaderboard data available.
+          //       </Text>
+          //     )}
+          //   </>
+          selectedLeague === "finals" ? (
+            <>
+              {/* Semi-finals */}
+              <Heading as="h1" size="xl" mt={4} color="black">
+                Semi-finals
+              </Heading>
+              <Text fontSize="sm" color="gray.600" mb={4} fontStyle="italic">
+                Qualis 1st vs Qualis 4th
+              </Text>
+              <Leaderboard league="finals/q1vsq4" />
+              <Text fontSize="sm" color="gray.600" mb={4} fontStyle="italic">
+                Qualis 2nd vs Qualis 3rd
+              </Text>
+              <Leaderboard league="finals/q2vsq3" />
+
+              {/* Finals */}
+              <Heading as="h1" size="xl" mt={4} color="black">
+                Finals
+              </Heading>
+              <Text fontSize="sm" color="gray.600" mb={4} fontStyle="italic">
+                Best of 5 between semi-final winners
+              </Text>
+              <Leaderboard league="finals/winners" />
+              <Text fontSize="sm" color="gray.600" mb={4} fontStyle="italic">
+                Best of 3 between semi-final losers
+              </Text>
+              <Leaderboard league="finals/losers" />
+            </>
+          ) : (
+            <></>
+          )}
+        </Stack>
       </Box>
     </Box>
   );
 }
 
-export default function Leaderboard() {
+export default function LeaderboardPage() {
   return (
     <QueryClientProvider client={queryClient}>
       <SharedLogic />
