@@ -11,6 +11,7 @@ import {
   Badge,
   Button,
   ButtonGroup,
+  Link,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import supabase from "@/supabase";
@@ -56,55 +57,62 @@ function LeaderboardRow({
   //   badgeBg = index < Math.ceil(leaderboard.length / 2) ? "gold" : "silver";
   // }
   return (
-    <Box
+    <Link
+      href={`/races?search=league:${row.league} ${row.team.name}`}
+      _hover={{ textDecoration: "none" }}
       key={row.team.id}
-      bg={cardBg}
-      borderWidth="1px"
-      borderColor={cardBorderColor}
-      borderRadius="xl"
-      p={3}
-      boxShadow="sm"
-      _hover={{ boxShadow: "md", transform: "scale(1.01)" }}
-      transition="all 0.2s ease"
+      display="block"
+      width="100%"
     >
-      <Flex justify="space-between" align="center" mb={1}>
-        <Text fontSize="lg" fontWeight="bold" color="black">
-          {row.team.name}
-        </Text>
-        <Badge
-          bg={badgeBg}
-          color="white"
-          fontSize="xs"
-          fontWeight="semibold"
-          px={2}
-          py={1}
-          borderRadius="md"
-        >
-          {ordinal(index + 1)}
-        </Badge>
-      </Flex>
-      <Flex justify="space-between" align="center">
-        <Flex align="center">
-          <Text fontSize="sm" fontWeight="bold" color="green.600">
-            {row.wins}W
+      <Box
+        bg={cardBg}
+        borderWidth="1px"
+        borderColor={cardBorderColor}
+        borderRadius="xl"
+        p={3}
+        boxShadow="sm"
+        _hover={{ boxShadow: "md", transform: "scale(1.01)" }}
+        transition="all 0.2s ease"
+      >
+        <Flex justify="space-between" align="center" mb={1}>
+          <Text fontSize="lg" fontWeight="bold" color="black">
+            {row.team.name}
           </Text>
-          <Text fontSize="sm" mx={1} color="gray.600">
-            /
-          </Text>
-          <Text fontSize="sm" fontWeight="bold" color="red.600">
-            {row.losses}L
-          </Text>
+          <Badge
+            bg={badgeBg}
+            color="white"
+            fontSize="xs"
+            fontWeight="semibold"
+            px={2}
+            py={1}
+            borderRadius="md"
+          >
+            {ordinal(index + 1)}
+          </Badge>
         </Flex>
-        <Flex align="center">
-          <Text fontSize="sm" color="gray.600" mr={1}>
-            Avg. Points:
-          </Text>
-          <Text fontSize="sm" fontWeight="bold" color="black">
-            {row.avg_pts.toFixed(1)}
-          </Text>
+        <Flex justify="space-between" align="center">
+          <Flex align="center">
+            <Text fontSize="sm" fontWeight="bold" color="green.600">
+              {row.wins}W
+            </Text>
+            <Text fontSize="sm" mx={1} color="gray.600">
+              /
+            </Text>
+            <Text fontSize="sm" fontWeight="bold" color="red.600">
+              {row.losses}L
+            </Text>
+          </Flex>
+          <Flex align="center">
+            <Text fontSize="sm" color="gray.600" mr={1}>
+              Avg. Points:
+            </Text>
+            <Text fontSize="sm" fontWeight="bold" color="black">
+              {row.avg_pts.toFixed(1)}
+            </Text>
+          </Flex>
         </Flex>
-      </Flex>
-    </Box>
+      </Box>
+    </Link>
   );
 }
 

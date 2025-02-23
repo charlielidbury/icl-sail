@@ -30,6 +30,7 @@ import {
 import { useColorMode } from "@/components/ui/color-mode";
 import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 
 // Memoize your Race component to avoid unnecessary re-renders
 const MemoizedRace = memo(Race);
@@ -37,6 +38,19 @@ const MemoizedRace = memo(Race);
 function Page() {
   // Admin/session state
   const { isAdmin } = useAuth();
+
+  // Get search param from URL and process it
+  const searchParams = useSearchParams();
+  const urlSearch = searchParams.get("search");
+
+  // Process the search string to extract league and clean search
+  const processSearchString = (search: string) => {
+    const lowerSearch = search.toLowerCase();
+    const leagueMatch = lowerSearch.match(/league:([^ ]+)/);
+    const league = leagueMatch ? leagueMatch[1] : null;
+    const cleanSearch = lowerSearch.replace(/league:[^ ]+/, "").trim();
+    return { league, cleanSearch };
+  };
 
   // Fetch all races
   const races = useQuery(racesQuery);
@@ -59,13 +73,22 @@ function Page() {
   const [isCurrentRaceVisible, setIsCurrentRaceVisible] = useState(true);
   const [isCurrentRaceAbove, setIsCurrentRaceAbove] = useState(false);
 
-  // Search filter state with localStorage
+  // Search filter state with localStorage, initialized with URL param if present
   const [search, setSearch] = useState(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("search") || "";
+      return urlSearch || localStorage.getItem("search") || "";
     }
-    return "";
+    return urlSearch || "";
   });
+
+  // Update search when URL param changes
+  useEffect(() => {
+    if (urlSearch !== null) {
+      setSearch(urlSearch);
+    }
+  }, [urlSearch]);
+
+  // Save search to localStorage
   useEffect(() => {
     localStorage.setItem("search", search);
   }, [search]);
@@ -82,16 +105,30 @@ function Page() {
   // Filtered races
   const filteredRaces = useMemo(() => {
     if (!races.data) return [];
-    const lowerSearch = debouncedSearch.toLowerCase();
+
+    const { league, cleanSearch } = processSearchString(debouncedSearch);
+
     return races.data.races.filter((race) => {
       if (race.number === races.data.currentRace) return true;
 
+      // Check league filter if present
+      if (league && race.league !== league) return false;
+
+      // If no other search term, show all races in league
+      if (!cleanSearch) return true;
+
+      // Normal search on team names and race number
       const raceName = `${race.number} ${race.raceteam
         .map((rt) => rt.team?.name ?? "")
         .join(" ")}`;
-      return raceName.toLowerCase().includes(lowerSearch);
+      return raceName.toLowerCase().includes(cleanSearch);
     });
   }, [races, debouncedSearch]);
+
+  // Get clean search for race cards
+  const cleanSearchForCards = useMemo(() => {
+    return processSearchString(debouncedSearch).cleanSearch;
+  }, [debouncedSearch]);
 
   // Button pulse animation
   const pulseAnimation = keyframes`
@@ -261,7 +298,7 @@ function Page() {
                         showEstFinishtime={
                           !settings.racing_paused && settings.estimates
                         }
-                        search={debouncedSearch}
+                        search={cleanSearchForCards}
                       />
 
                       {/* dot dot dot */}
