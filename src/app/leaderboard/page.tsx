@@ -336,11 +336,11 @@ function Page() {
                 Semi-finals
               </Heading>
               <Text fontSize="sm" color="gray.600" mb={4} fontStyle="italic">
-                Qualis 1st vs Qualis 4th
+                First to two wins between qualis 1st and qualis 4th
               </Text>
               <Leaderboard league="finals/q1vsq4" />
               <Text fontSize="sm" color="gray.600" mb={4} fontStyle="italic">
-                Qualis 2nd vs Qualis 3rd
+                First to two wins between qualis 2nd and qualis 3rd
               </Text>
               <Leaderboard league="finals/q2vsq3" />
 
@@ -349,11 +349,11 @@ function Page() {
                 Finals
               </Heading>
               <Text fontSize="sm" color="gray.600" mb={4} fontStyle="italic">
-                Best of 5 between semi-final winners
+                First to three wins between semi-final winners
               </Text>
               <Leaderboard league="finals/winners" />
               <Text fontSize="sm" color="gray.600" mb={4} fontStyle="italic">
-                Best of 3 between semi-final losers
+                First to three wins between semi-final losers
               </Text>
               <Leaderboard league="finals/losers" />
             </>
