@@ -13,7 +13,15 @@ import {
 import { keyframes } from "@emotion/react";
 import Race from "@/components/race";
 import supabase from "@/supabase";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  memo,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   racesQuery,
   useAuth,
@@ -389,7 +397,9 @@ export default function Home() {
   return (
     <QueryClientProvider client={queryClient}>
       <SharedLogic />
-      <Page />
+      <Suspense fallback={<div>Loading...</div>}>
+        <Page />
+      </Suspense>
     </QueryClientProvider>
   );
 }
