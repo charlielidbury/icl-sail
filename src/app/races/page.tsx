@@ -197,62 +197,65 @@ function Page() {
       {/* Sticky navbar and search bar */}
       <Box position="sticky" top="0" zIndex="100">
         <NavBar isAdmin={isAdmin} />
-        <Box p={4} bg="white" boxShadow="md">
-          <Box position="relative">
-            <Input
-              placeholder="Search by team name or race #"
-              variant="subtle"
-              bg="light-gray"
-              size="lg"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            {search && (
-              <IconButton
-                aria-label="Clear search"
-                size="xs"
-                variant="ghost"
-                onClick={() => setSearch("")}
-                position="absolute"
-                right="0.5rem"
-                top="50%"
-                transform="translateY(-50%)"
+        <Box bg="white" boxShadow="md">
+          <Box position="relative" maxW="600px" mx="auto" p={4}>
+            <Box position="relative">
+              <Input
+                placeholder="Search by team name or race #"
+                variant="subtle"
+                bg="light-gray"
+                size="lg"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              {search && (
+                <IconButton
+                  aria-label="Clear search"
+                  size="xs"
+                  variant="ghost"
+                  onClick={() => setSearch("")}
+                  position="absolute"
+                  right="0.5rem"
+                  top="50%"
+                  transform="translateY(-50%)"
+                >
+                  <TbX />
+                </IconButton>
+              )}
+            </Box>
+            {races.isFetched &&
+              filteredRaces.length !== races.data?.races.length && (
+                <Text
+                  mt={2}
+                  mb={-2}
+                  fontSize="xs"
+                  color="gray.500"
+                  fontStyle="italic"
+                >
+                  Showing {filteredRaces.length}/{races.data?.races.length}{" "}
+                  races
+                </Text>
+              )}
+            {settings?.racing_paused && (
+              <Box
+                mt={3}
+                p={2}
+                mb={-1}
+                bg="yellow.100"
+                color="yellow.700"
+                borderRadius="md"
+                textAlign="center"
+                fontWeight="medium"
               >
-                <TbX />
-              </IconButton>
+                Racing Paused
+              </Box>
             )}
           </Box>
-          {races.isFetched &&
-            filteredRaces.length !== races.data?.races.length && (
-              <Text
-                mt={2}
-                mb={-2}
-                fontSize="xs"
-                color="gray.500"
-                fontStyle="italic"
-              >
-                Showing {filteredRaces.length}/{races.data?.races.length} races
-              </Text>
-            )}
-          {settings?.racing_paused && (
-            <Box
-              mt={3}
-              p={2}
-              mb={-1}
-              bg="yellow.100"
-              color="yellow.700"
-              borderRadius="md"
-              textAlign="center"
-              fontWeight="medium"
-            >
-              Racing Paused
-            </Box>
-          )}
         </Box>
       </Box>
 
       {/* Main content area */}
-      <Box p={4} height="calc(100vh - 100px)">
+      <Box p={4} height="calc(100vh - 100px)" maxW="600px" mx="auto">
         {races.error ? (
           <Text textAlign="center" fontSize="lg" color="red">
             Error loading races.

@@ -197,170 +197,130 @@ function Page() {
         <NavBar isAdmin={isAdmin} />
       </Box>
       <Box p={4} bg={pageBg} minH="100vh">
-        <Heading
-          as="h1"
-          size="xl"
-          mb={4}
-          textAlign="center"
-          color="black"
-          fontWeight="extrabold"
-        >
-          Leaderboard
-        </Heading>
+        <Box maxW="600px" mx="auto">
+          <Heading
+            as="h1"
+            size="xl"
+            mb={4}
+            textAlign="center"
+            color="black"
+            fontWeight="extrabold"
+          >
+            Leaderboard
+          </Heading>
 
-        {/* League switcher */}
-        <Flex
-          maxW="600px"
-          w="full"
-          mx="auto"
-          justify="center"
-          mb={6}
-          boxShadow="lg"
-        >
-          <ButtonGroup attached variant="solid" w="full">
-            <Button
-              flex="1"
-              bg={selectedLeague === "quali" ? sailingColour : "gray.300"}
-              color={selectedLeague === "quali" ? "white" : "gray.800"}
-              _hover={{
-                bg: selectedLeague === "quali" ? sailingColour : "gray.400",
-              }}
-              onClick={() => setSelectedLeague("quali")}
-              fontSize="xs"
-              fontWeight="bold"
-            >
-              1. QUALIFYING
-            </Button>
-            {/* <Button
-              flex="1"
-              bg={selectedLeague === "semis" ? sailingColour : "gray.300"}
-              color={selectedLeague === "semis" ? "white" : "gray.800"}
-              _hover={{
-                bg: selectedLeague === "semis" ? sailingColour : "gray.400",
-              }}
-              onClick={() => setSelectedLeague("semis")}
-              fontSize="xs"
-              fontWeight="bold"
-            >
-              2. GROUPS
-            </Button> */}
-            <Button
-              flex="1"
-              bg={selectedLeague === "finals" ? sailingColour : "gray.300"}
-              color={selectedLeague === "finals" ? "white" : "gray.800"}
-              _hover={{
-                bg: selectedLeague === "finals" ? sailingColour : "gray.400",
-              }}
-              onClick={() => setSelectedLeague("finals")}
-              fontSize="xs"
-              fontWeight="bold"
-            >
-              2. KNOCKOUTS
-            </Button>
-          </ButtonGroup>
-        </Flex>
-        <Stack>
-          {selectedLeague === "quali" ? (
-            // Qualis
-            <>
-              <Text fontSize="sm" color="gray.600" mb={4} fontStyle="italic">
-                Round Robin
-              </Text>
-              <Leaderboard league="quali" />
-            </>
-          ) : // ) : selectedLeague === "semis" ? (
-          //   // Semis
-          //   <>
-          //     <Heading as="h1" size="xl" mt={4} color="black">
-          //       Gold Division
-          //     </Heading>
-          //     <Text
-          //       fontSize="sm"
-          //       color="gray.600"
-          //       mb={4}
-          //       fontStyle="italic"
-          //     >
-          //       Round robin between top half of qualifying
-          //     </Text>
-          //     {leaderboard.length > 0 ? (
-          //       leaderboard
-          //         .filter((r) => r.league === "semis/gold")
-          //         .map((row, index) => (
-          //           <LeaderboardRow
-          //             row={row}
-          //             selectedLeague={selectedLeague}
-          //             leaderboard={leaderboard}
-          //             index={index}
-          //             key={row.team.id}
-          //           />
-          //         ))
-          //     ) : (
-          //       <Text textAlign="center" fontSize="lg" color="gray.600">
-          //         No leaderboard data available.
-          //       </Text>
-          //     )}
+          {/* League switcher */}
+          <Box maxW="600px" mx="auto">
+            <Flex w="full" justify="center" mb={6} boxShadow="lg">
+              <ButtonGroup attached variant="solid" w="full">
+                <Button
+                  flex="1"
+                  bg={selectedLeague === "quali" ? sailingColour : "gray.300"}
+                  color={selectedLeague === "quali" ? "white" : "gray.800"}
+                  _hover={{
+                    bg: selectedLeague === "quali" ? sailingColour : "gray.400",
+                  }}
+                  onClick={() => setSelectedLeague("quali")}
+                  fontSize="xs"
+                  fontWeight="bold"
+                >
+                  1. QUALIFYING
+                </Button>
+                <Button
+                  flex="1"
+                  bg={selectedLeague === "finals" ? sailingColour : "gray.300"}
+                  color={selectedLeague === "finals" ? "white" : "gray.800"}
+                  _hover={{
+                    bg:
+                      selectedLeague === "finals" ? sailingColour : "gray.400",
+                  }}
+                  onClick={() => setSelectedLeague("finals")}
+                  fontSize="xs"
+                  fontWeight="bold"
+                >
+                  2. KNOCKOUTS
+                </Button>
+              </ButtonGroup>
+            </Flex>
 
-          //     <Heading as="h1" size="xl" mt={4} color="black">
-          //       Silver Division
-          //     </Heading>
-          //     <Text
-          //       fontSize="sm"
-          //       color="gray.600"
-          //       mb={4}
-          //       fontStyle="italic"
-          //     >
-          //       Round robin between bottom half of qualifying
-          //     </Text>
-          //     {leaderboard.length > 0 ? (
-          //       leaderboard
-          //         .filter((r) => r.league === "semis/silver")
-          //         .map((row, index) => (
-          //           <LeaderboardRow
-          //             row={row}
-          //             selectedLeague={selectedLeague}
-          //             leaderboard={leaderboard}
-          //             index={index}
-          //             key={row.team.id}
-          //           />
-          //         ))
-          //     ) : (
-          //       <Text textAlign="center" fontSize="lg" color="gray.600">
-          //         No leaderboard data available.
-          //       </Text>
-          //     )}
-          //   </>
-          selectedLeague === "finals" ? (
-            <>
-              {/* Semi-finals */}
-              <Heading as="h1" size="xl" mt={4} color="black">
-                Semi-finals
-              </Heading>
-              <Text fontSize="sm" color="gray.600" mb={4} fontStyle="italic">
-                First to two wins between qualis 1st and qualis 4th
-              </Text>
-              <Leaderboard league="finals/q1vsq4" />
-              <Text fontSize="sm" color="gray.600" mb={4} fontStyle="italic">
-                First to two wins between qualis 2nd and qualis 3rd
-              </Text>
-              <Leaderboard league="finals/q2vsq3" />
+            <Stack gap={4}>
+              {selectedLeague === "quali" ? (
+                // Qualis
+                <>
+                  <Text
+                    fontSize="sm"
+                    color="gray.600"
+                    mb={4}
+                    fontStyle="italic"
+                  >
+                    Round Robin
+                  </Text>
+                  <Stack gap={4}>
+                    <Leaderboard league="quali" />
+                  </Stack>
+                </>
+              ) : selectedLeague === "finals" ? (
+                <>
+                  {/* Semi-finals */}
+                  <Heading as="h1" size="xl" mt={4} color="black">
+                    Semi-finals
+                  </Heading>
+                  <Text
+                    fontSize="sm"
+                    color="gray.600"
+                    mb={4}
+                    fontStyle="italic"
+                  >
+                    First to two wins between qualis 1st and qualis 4th
+                  </Text>
+                  <Stack gap={4}>
+                    <Leaderboard league="finals/q1vsq4" />
+                  </Stack>
+                  <Text
+                    fontSize="sm"
+                    color="gray.600"
+                    mb={4}
+                    fontStyle="italic"
+                  >
+                    First to two wins between qualis 2nd and qualis 3rd
+                  </Text>
+                  <Stack gap={4}>
+                    <Leaderboard league="finals/q2vsq3" />
+                  </Stack>
 
-              {/* Finals */}
-              <Heading as="h1" size="xl" mt={4} color="black">
-                Finals
-              </Heading>
-              <Text fontSize="sm" color="gray.600" mb={4} fontStyle="italic">
-                First to three wins between semi-final winners
-              </Text>
-              <Leaderboard league="finals/winners" />
-              <Text fontSize="sm" color="gray.600" mb={4} fontStyle="italic">
-                First to three wins between semi-final losers
-              </Text>
-              <Leaderboard league="finals/losers" />
-            </>
-          ) : (
-            <></>
-          )}
-        </Stack>
+                  {/* Finals */}
+                  <Heading as="h1" size="xl" mt={4} color="black">
+                    Finals
+                  </Heading>
+                  <Text
+                    fontSize="sm"
+                    color="gray.600"
+                    mb={4}
+                    fontStyle="italic"
+                  >
+                    First to three wins between semi-final winners
+                  </Text>
+                  <Stack gap={4}>
+                    <Leaderboard league="finals/winners" />
+                  </Stack>
+                  <Text
+                    fontSize="sm"
+                    color="gray.600"
+                    mb={4}
+                    fontStyle="italic"
+                  >
+                    First to three wins between semi-final losers
+                  </Text>
+                  <Stack gap={4}>
+                    <Leaderboard league="finals/losers" />
+                  </Stack>
+                </>
+              ) : (
+                <></>
+              )}
+            </Stack>
+          </Box>
+        </Box>
       </Box>
     </Box>
   );

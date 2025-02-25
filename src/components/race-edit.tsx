@@ -134,10 +134,10 @@ export default function RaceEdit({
 
   return (
     <>
-      <Heading size="xl" textAlign="center" mb={2}>
+      <Heading size="xl" textAlign="center">
         Results
       </Heading>
-      <Box mb={4} borderWidth="1px" borderRadius="md" bg="gray.50">
+      <Box borderWidth="1px" borderRadius="md" bg="white">
         <Grid templateColumns="1fr auto 1fr" gap={2} m={4}>
           <GridItem textAlign="center">
             <Text fontSize="sm" fontWeight="bold">

@@ -305,17 +305,20 @@ export default function Race({
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          {/* <DialogTitle>Race {race.number}</DialogTitle> */}
+          <DialogTitle mb={3} dropShadow="md"></DialogTitle>
         </DialogHeader>
-        <DialogBody>
-          <RaceCard
-            race={race}
-            active={active}
-            isStand={isStand}
-            search={search}
-            showEstFinishtime={showEstFinishtime}
-          />
-          <RaceDialog race={race} active={active} />
+
+        <DialogBody bg="gray.50" minH="100vh">
+          <Box maxW="600px" mx="auto">
+            <RaceCard
+              race={race}
+              active={active}
+              isStand={isStand}
+              search={search}
+              showEstFinishtime={showEstFinishtime}
+            />
+            <RaceDialog race={race} active={active} />
+          </Box>
         </DialogBody>
         <DialogFooter></DialogFooter>
         <DialogCloseTrigger />

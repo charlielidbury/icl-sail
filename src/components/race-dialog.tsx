@@ -56,7 +56,7 @@ const Iframe = chakra("iframe");
 
 function FlightPictures({ race }: { race: RaceResult }) {
   return (
-    <Box mb={4}>
+    <Box>
       <Flex justify="center" gap={4}>
         <Box borderWidth="1px" borderRadius="md" overflow="hidden">
           <Image
@@ -64,6 +64,8 @@ function FlightPictures({ race }: { race: RaceResult }) {
             alt="Brunel Flight"
             width={300}
             objectFit="cover"
+            borderRadius="lg"
+            boxShadow="md"
           />
         </Box>
         <Box borderWidth="1px" borderRadius="md" overflow="hidden">
@@ -72,6 +74,8 @@ function FlightPictures({ race }: { race: RaceResult }) {
             alt="Brunel Flight"
             width={300}
             objectFit="cover"
+            borderRadius="lg"
+            boxShadow="md"
           />
         </Box>
       </Flex>
@@ -114,13 +118,13 @@ function TeamComparison({
 
   return (
     <>
-      <Heading size="xl" textAlign="center" mb={2}>
+      <Heading size="xl" textAlign="center" mt={2}>
         Team Comparison
       </Heading>
       {!stats ? (
         <Skeleton height="80px" variant="shine" />
       ) : (
-        <Box mb={4} p={3} borderWidth="1px" borderRadius="md" bg="gray.50">
+        <Box mb={4} p={3} borderWidth="1px" borderRadius="md" bg="white">
           <Grid templateColumns="1fr auto 1fr" gap={2}>
             {/* Row 1: Wins */}
             <GridItem textAlign="center">
@@ -193,56 +197,50 @@ function DroneVideo({ race }: { race: RaceResult }) {
 
   return (
     <>
-      {(race.video || isAdmin) && (
-        <Box mb={4} mt={4}>
-          <Heading as="h3" size="xl" mb={2} textAlign="center">
-            Drone Footage
-          </Heading>
-          {race.video && (
-            <>
-              <Iframe
-                src={getEmbedUrl(race.video)}
-                title="Race Video"
-                width="100%"
-                height="300"
-                border="0"
-              />
-              <Text
-                fontSize="xs"
-                color="gray.600"
-                textAlign="center"
-                fontStyle="italic"
-              >
-                Fullscreen is hidden behind the <Icon as={TbChevronLeft} />{" "}
-                button.
-              </Text>
-            </>
-          )}
-          {isAdmin && (
-            <Flex>
-              <Input
-                value={newVideoURL || ""}
-                onChange={(e) => setNewVideoURL(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    updateVideo();
-                  }
-                }}
-                placeholder="https://player.vimeo.com/video/3539..."
-                width="100%"
-                borderRightRadius="0"
-              />
-              <Button
-                onClick={() => updateVideo()}
-                loading={isEditing}
-                disabled={race.video === newVideoURL}
-                borderLeftRadius="0"
-              >
-                {race.video ? "Save" : "Add"}
-              </Button>
-            </Flex>
-          )}
-        </Box>
+      <Heading as="h3" size="xl" textAlign="center">
+        Drone Footage
+      </Heading>
+      {race.video && (
+        <>
+          <Box width="100%" position="relative" paddingBottom="56.25%">
+            <Iframe
+              src={getEmbedUrl(race.video)}
+              title="Race Video"
+              width="100%"
+              height="100%"
+              border="0"
+              position="absolute"
+              top="0"
+              left="0"
+              borderRadius="md"
+            />
+          </Box>
+        </>
+      )}
+      {isAdmin && (
+        <Flex>
+          <Input
+            value={newVideoURL || ""}
+            onChange={(e) => setNewVideoURL(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                updateVideo();
+              }
+            }}
+            placeholder="https://player.vimeo.com/video/3539..."
+            width="100%"
+            borderRightRadius="0"
+            bg="white"
+          />
+          <Button
+            onClick={() => updateVideo()}
+            loading={isEditing}
+            disabled={race.video === newVideoURL}
+            borderLeftRadius="0"
+          >
+            {race.video ? "Save" : "Add"}
+          </Button>
+        </Flex>
       )}
     </>
   );
@@ -258,19 +256,28 @@ export default function RaceDialog({ race, active }: RaceDialogProps) {
 
   return (
     <Box mt={4}>
-      {/* Flight Pictures */}
-      <FlightPictures race={race} />
-      {/* Video embed */}
-      <DroneVideo race={race} />
+      <Box
+        maxW="1000px"
+        mx="auto"
+        display="flex"
+        flexDirection="column"
+        gap={4}
+      >
+        {/* Flight Pictures */}
+        <FlightPictures race={race} />
 
-      {/* Race Edit */}
-      {isAdmin && <RaceEdit race={race} active={active} />}
+        {/* Video embed */}
+        {(race.video || isAdmin) && <DroneVideo race={race} />}
 
-      {/* Head-to-Head Header */}
-      <TeamComparison
-        leftTeamId={race.raceteam[0]?.team.id}
-        rightTeamId={race.raceteam[1]?.team.id}
-      />
+        {/* Race Edit */}
+        {isAdmin && <RaceEdit race={race} active={active} />}
+
+        {/* Head-to-Head Header */}
+        <TeamComparison
+          leftTeamId={race.raceteam[0]?.team.id}
+          rightTeamId={race.raceteam[1]?.team.id}
+        />
+      </Box>
     </Box>
   );
 }
