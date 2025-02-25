@@ -36,6 +36,13 @@ type LeaderboardRow = {
 
 // Helper to transform a YouTube watch URL into an embed URL.
 function getEmbedUrl(url: string): string {
+  if (
+    url.startsWith("https://youtu.be/") ||
+    url.startsWith("https://www.youtu.be/")
+  ) {
+    url = url.replace("youtu.be/", "youtube.com/watch?v=");
+  }
+
   const ytRegex = /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/;
   const match = url.match(ytRegex);
   if (match && match[1]) {
