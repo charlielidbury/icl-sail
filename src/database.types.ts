@@ -21,27 +21,57 @@ export type Database = {
         }
         Relationships: []
       }
+      flight: {
+        Row: {
+          id: string
+          lhalf: string
+          name: string
+          rhalf: string
+        }
+        Insert: {
+          id?: string
+          lhalf: string
+          name: string
+          rhalf: string
+        }
+        Update: {
+          id?: string
+          lhalf?: string
+          name?: string
+          rhalf?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flight_lhalf_fkey"
+            columns: ["lhalf"]
+            isOneToOne: false
+            referencedRelation: "halfflight"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flight_rhalf_fkey"
+            columns: ["rhalf"]
+            isOneToOne: false
+            referencedRelation: "halfflight"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       halfflight: {
         Row: {
-          colour: string | null
           id: string
           name: string
           numbers: number[]
-          symbol: string | null
         }
         Insert: {
-          colour?: string | null
           id?: string
           name: string
           numbers: number[]
-          symbol?: string | null
         }
         Update: {
-          colour?: string | null
           id?: string
           name?: string
           numbers?: number[]
-          symbol?: string | null
         }
         Relationships: []
       }
@@ -83,26 +113,63 @@ export type Database = {
       race: {
         Row: {
           finishtime: string | null
+          flight: string
           id: string
           league: string
+          lresult: number[] | null
+          lteam: string
           number: number
+          rresult: number[] | null
+          rteam: string
           video: string | null
         }
         Insert: {
           finishtime?: string | null
+          flight: string
           id?: string
           league?: string
+          lresult?: number[] | null
+          lteam: string
           number: number
+          rresult?: number[] | null
+          rteam: string
           video?: string | null
         }
         Update: {
           finishtime?: string | null
+          flight?: string
           id?: string
           league?: string
+          lresult?: number[] | null
+          lteam?: string
           number?: number
+          rresult?: number[] | null
+          rteam?: string
           video?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "race_flight_fkey"
+            columns: ["flight"]
+            isOneToOne: false
+            referencedRelation: "flight"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "race_lteam_fkey"
+            columns: ["lteam"]
+            isOneToOne: false
+            referencedRelation: "team"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "race_rteam_fkey"
+            columns: ["rteam"]
+            isOneToOne: false
+            referencedRelation: "team"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       raceteam: {
         Row: {

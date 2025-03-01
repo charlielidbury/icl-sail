@@ -73,31 +73,19 @@ function RaceCard({
   const borderColor = active ? "green.500" : "gray.200";
   const shadow = active ? "lg" : "md";
 
-  if (!race.raceteam[0] || !race.raceteam[1]) return <></>;
-
   // Extract team names and result strings.
-  const leftTeamName = race.raceteam[0].team.name || "";
-  const rightTeamName = race.raceteam[1].team.name || "";
+  const leftTeamName = race.lteam.name || "";
+  const rightTeamName = race.rteam.name || "";
   const leftSubStr =
-    race.raceteam[0].result?.join(", ") ||
-    `in ${
-      race.raceteam[0].halfflight.name
-    } (${race.raceteam[0].halfflight.numbers.join(",")})`;
+    race.lresult?.join(", ") ||
+    `in ${race.flight.lhalf.name} (${race.flight.lhalf.numbers.join(",")})`;
   const rightSubStr =
-    race.raceteam[1].result?.join(", ") ||
-    `in ${
-      race.raceteam[1].halfflight.name
-    } (${race.raceteam[1].halfflight.numbers.join(",")})`;
+    race.rresult?.join(", ") ||
+    `in ${race.flight.rhalf.name} (${race.flight.rhalf.numbers.join(",")})`;
 
   // Compute scores if available.
-  const leftScore =
-    race.raceteam[0]?.result !== null
-      ? sumResult(race.raceteam[0].result)
-      : null;
-  const rightScore =
-    race.raceteam[1]?.result !== null
-      ? sumResult(race.raceteam[1].result)
-      : null;
+  const leftScore = race.lresult !== null ? sumResult(race.lresult) : null;
+  const rightScore = race.rresult !== null ? sumResult(race.rresult) : null;
 
   // Determine winners (lower score wins).
   const leftIsWinner =

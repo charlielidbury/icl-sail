@@ -60,8 +60,8 @@ function FlightPictures({ race }: { race: RaceResult }) {
       <Flex justify="center" gap={4}>
         <Box borderWidth="1px" borderRadius="md" overflow="hidden">
           <Image
-            src={race.raceteam[0].halfflight.image}
-            alt="Brunel Flight"
+            src={`/halfflights/${race.flight.lhalf.id}.jpeg`}
+            alt="Left Flight Half"
             width={300}
             objectFit="cover"
             borderRadius="lg"
@@ -70,8 +70,8 @@ function FlightPictures({ race }: { race: RaceResult }) {
         </Box>
         <Box borderWidth="1px" borderRadius="md" overflow="hidden">
           <Image
-            src={race.raceteam[1].halfflight.image}
-            alt="Brunel Flight"
+            src={`/halfflights/${race.flight.rhalf.id}.jpeg`}
+            alt="Right Flight Half"
             width={300}
             objectFit="cover"
             borderRadius="lg"
@@ -274,8 +274,8 @@ export default function RaceDialog({ race, active }: RaceDialogProps) {
 
         {/* Head-to-Head Header */}
         <TeamComparison
-          leftTeamId={race.raceteam[0]?.team.id}
-          rightTeamId={race.raceteam[1]?.team.id}
+          leftTeamId={race.lteam.id}
+          rightTeamId={race.rteam.id}
         />
       </Box>
     </Box>

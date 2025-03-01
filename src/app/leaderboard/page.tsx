@@ -17,20 +17,16 @@ import { useEffect, useState } from "react";
 import supabase from "@/supabase";
 import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
 import ordinal from "ordinal";
-import { queryClient, sailingColour, SharedLogic, useAuth } from "@/shared";
+import {
+  queryClient,
+  sailingColour,
+  SharedLogic,
+  useAuth,
+  LeaderboardTeam,
+  leaderboardAtom,
+} from "@/shared";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
-
-type LeaderboardRow = {
-  avg_pts: number;
-  losses: number;
-  order: number;
-  wins: number;
-  league: string;
-  team: {
-    id: string;
-    name: string;
-  };
-};
+import { useAtom } from "jotai";
 
 function LeaderboardRow({
   row,
@@ -38,9 +34,9 @@ function LeaderboardRow({
   leaderboard,
   index,
 }: {
-  row: LeaderboardRow;
+  row: LeaderboardTeam;
   selectedLeague: string;
-  leaderboard: LeaderboardRow[];
+  leaderboard: LeaderboardTeam[];
   index: number;
 }) {
   const cardBg = useColorModeValue("white", "gray.700");
@@ -118,35 +114,9 @@ function LeaderboardRow({
 
 function Leaderboard({ league }: { league: string }) {
   // Fetch leaderboard data filtered by the selected league.
-  const { data: leaderboard } = useQuery({
-    queryKey: ["leaderboard", league],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("leaderboard")
-        .select(
-          `
-        avg_pts,
-        losses,
-        order,
-        wins,
-        league,
-        team (
-          id, name
-        )
-      `
-        )
-        .eq("league", league)
-        .order("order", { ascending: true });
+  const [leaderboards] = useAtom(leaderboardAtom);
 
-      if (error) {
-        console.error("Error fetching leaderboard:", error);
-      } else {
-        return data;
-      }
-    },
-  });
-
-  if (leaderboard === undefined) {
+  if (leaderboards === undefined) {
     return (
       <Stack>
         <Skeleton height="80px" />
@@ -156,10 +126,19 @@ function Leaderboard({ league }: { league: string }) {
     );
   }
 
+  const leaderboard = leaderboards.get(league);
+  if (leaderboard === undefined) {
+    return (
+      <Text textAlign="center" fontSize="lg" color="gray.600">
+        No leaderboard found for this league.
+      </Text>
+    );
+  }
+
   if (leaderboard.length === 0) {
     return (
       <Text textAlign="center" fontSize="lg" color="gray.600">
-        No leaderboard data available.
+        No results in this league yet.
       </Text>
     );
   }

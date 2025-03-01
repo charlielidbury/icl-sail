@@ -23,11 +23,11 @@ import {
   useState,
 } from "react";
 import {
-  racesQuery,
   useAuth,
   queryClient,
   SharedLogic,
   sailingColour,
+  racesAtom,
 } from "@/shared";
 import {
   TbChevronsDown,
@@ -39,6 +39,7 @@ import { useColorMode } from "@/components/ui/color-mode";
 import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
+import { useAtom } from "jotai";
 
 // Memoize your Race component to avoid unnecessary re-renders
 const MemoizedRace = memo(Race);
@@ -61,7 +62,7 @@ function Page() {
   };
 
   // Fetch all races
-  const races = useQuery(racesQuery);
+  const [races] = useAtom(racesAtom);
   const currentRace = races.data?.currentRace;
 
   // Fetch settings (go_to_stand offset)
@@ -126,9 +127,7 @@ function Page() {
       if (!cleanSearch) return true;
 
       // Normal search on team names and race number
-      const raceName = `${race.number} ${race.raceteam
-        .map((rt) => rt.team?.name ?? "")
-        .join(" ")}`;
+      const raceName = `${race.number} ${race.lteam.name} ${race.rteam.name}`;
       return raceName.toLowerCase().includes(cleanSearch);
     });
   }, [races, debouncedSearch]);
@@ -287,18 +286,16 @@ function Page() {
                     filteredRaces[index - 1].number !== race.number - 1;
 
                   // Check if any team stays in boats from previous race
-                  const stayingTeam =
-                    index !== filteredRaces.length - 1 &&
-                    filteredRaces[index + 1].number === race.number + 4 &&
-                    (filteredRaces[index + 1].raceteam.some((rt1) =>
-                      race.raceteam.some((rt2) => rt1.team.id === rt2.team.id)
-                    )
-                      ? race.raceteam.find((rt1) =>
-                          filteredRaces[index + 1].raceteam.some(
-                            (rt2) => rt1.team.id === rt2.team.id
-                          )
-                        )?.team.name
-                      : null);
+                  let stayingTeam = null;
+                  let aboveRace = filteredRaces[index + 1];
+                  if (aboveRace && aboveRace.number === race.number + 4) {
+                    if (aboveRace.lteam.id === race.lteam.id) {
+                      stayingTeam = race.lteam.name;
+                    }
+                    if (aboveRace.rteam.id === race.rteam.id) {
+                      stayingTeam = race.rteam.name;
+                    }
+                  }
 
                   return (
                     <Box key={race.id}>
