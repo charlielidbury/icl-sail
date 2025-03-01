@@ -61,6 +61,17 @@ export type LeaderboardTeam = {
   };
 };
 
+export type Competition = {
+  announcement: string | null;
+  code: string;
+  estimates: boolean;
+  go_to_stand: number;
+  host: string;
+  name: string;
+  racing_paused: boolean;
+  id: string;
+};
+
 export const sailingColour = "#004a79";
 
 export function getLeagueName(league: string): string {
@@ -111,18 +122,23 @@ export function useAuth(): { session: Session | null; isAdmin: boolean } {
   return { session, isAdmin };
 }
 
-export const racesAtom = atomWithQuery((get) => ({
-  queryKey: ["races"],
+const racesDataAtom = atomWithQuery((get) => ({
+  queryKey: ["races_data"],
+  enabled: get(competitionAtom).isFetched,
+  error: get(competitionAtom).error,
   queryFn: async () => {
-    const [
-      { data: racesData, error: racesError },
-      { data: settingsData, error: settingsError },
-    ] = await Promise.all([
-      supabase
-        .from("race")
-        .select(
-          `
+    const competition = get(competitionAtom).data?.current;
+    if (!competition) {
+      return undefined;
+    }
+
+    // Get races
+    const { data: racesData, error: racesError } = await supabase
+      .from("race")
+      .select(
+        `
           id,
+          competition,
           number,
           video,
           finishtime,
@@ -138,15 +154,29 @@ export const racesAtom = atomWithQuery((get) => ({
           rresult,
           rteam:team!rteam ( id, name )
         `
-        )
-        .order("number", { ascending: true }),
-      supabase.from("settings").select("*").maybeSingle(),
-    ]);
+      )
+      .order("number", { ascending: true })
+      .eq("competition", competition.id);
 
     if (racesError) throw racesError;
-    if (settingsError) throw settingsError;
 
-    const goToStand = settingsData?.go_to_stand ?? 4;
+    return racesData;
+  },
+}));
+
+export const racesAtom = atomWithQuery((get) => ({
+  queryKey: ["races"],
+  enabled: get(racesDataAtom).isFetched && get(competitionAtom).isFetched,
+  error: get(racesDataAtom).error || get(competitionAtom).error,
+  queryFn: async () => {
+    const racesData = get(racesDataAtom).data;
+    if (racesData === undefined) {
+      return undefined;
+    }
+
+    // How many races in advance to go to stand for
+    const competition = get(competitionAtom).data?.current;
+    const goToStand = competition?.go_to_stand ?? 4;
 
     // Convert from Supabase data to RaceResult
     const races: RaceResult[] = racesData.map((d) => {
@@ -159,8 +189,9 @@ export const racesAtom = atomWithQuery((get) => ({
             }
           : {
               finishtime: dayjs(d.finishtime),
-              lresult: d.lresult!, // this should be set if finishtime is set
-              rresult: d.rresult!, // this should be set if finishtime is set
+              // these should be set if finishtime is set
+              lresult: d.lresult!,
+              rresult: d.rresult!,
             };
       return {
         ...d,
@@ -221,8 +252,8 @@ export const racesAtom = atomWithQuery((get) => ({
 }));
 
 export const leaderboardAtom = atom((get) => {
-  const races = get(racesAtom);
-  if (races.data === undefined) {
+  const races = get(racesAtom).data?.races;
+  if (races === undefined) {
     return undefined;
   }
 
@@ -263,7 +294,7 @@ export const leaderboardAtom = atom((get) => {
   // - populate leaderboard
   // - group races by league
   const racesByLeague = new Map<string, RaceResult[]>();
-  for (const race of races.data.races) {
+  for (const race of races) {
     if (race.finishtime === null) {
       continue;
     }
@@ -297,7 +328,6 @@ export const leaderboardAtom = atom((get) => {
   }
   const sortedLeaderboard: Map<string, LeaderboardTeam[]> = new Map();
   for (const [league, leagueBoard] of leaderboard) {
-    console.log("league", league);
     // Populate with statistics useful for tie breaks
     const leagueArray = [...leagueBoard.values()];
     for (const row of leagueArray) {
@@ -325,7 +355,7 @@ export const leaderboardAtom = atom((get) => {
 
         // Consider all races between these teams
         let rs = 0;
-        for (const r of races.data.races) {
+        for (const r of races) {
           if (r.league !== league) continue;
           if (r.finishtime === null) continue;
 
@@ -380,10 +410,6 @@ export const leaderboardAtom = atom((get) => {
       if (teams.length <= 1) {
         return teams;
       }
-      console.log(
-        "teams",
-        teams.map((t) => t.team.name)
-      );
 
       if (criteria.length === 0) {
         console.error(
@@ -408,10 +434,6 @@ export const leaderboardAtom = atom((get) => {
       teams = teams.slice(endI + 1);
 
       if (tiedTeams.length > 1) {
-        console.log(
-          "tie between",
-          tiedTeams.map((t) => t.team.name)
-        );
         // Fix ties in this block,
         // but avoids using the first criteria because that caused this tie
         tiedTeams = orderTeams(tiedTeams, criteria.slice(1));
@@ -428,6 +450,18 @@ export const leaderboardAtom = atom((get) => {
   return sortedLeaderboard;
 });
 
+export const competitionAtom = atomWithQuery((get) => ({
+  queryKey: ["competition"],
+  queryFn: async () => {
+    const competitions = await supabase.from("competition").select("*");
+    const current =
+      document.location.hostname === "localhost"
+        ? competitions.data?.find((c) => c.code === "imperialicicle")
+        : competitions.data?.find((c) => c.host === document.location.hostname);
+    return { current, all: competitions.data };
+  },
+}));
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -442,10 +476,10 @@ export function SharedLogic() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
+    // {queryKey} is invalidated when {table} changes
     const keyTableLinks: [QueryKey[], string][] = [
-      [[["leaderboard"]], "leaderboard"],
-      [[["races"]], "raceteam"],
-      [[["settings"], ["races"]], "settings"],
+      [[["races_data"]], "race"],
+      [[["competition"]], "competition"],
     ];
 
     const channels = keyTableLinks.map(([queryKeys, table]) => {

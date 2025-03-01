@@ -21,6 +21,39 @@ export type Database = {
         }
         Relationships: []
       }
+      competition: {
+        Row: {
+          announcement: string | null
+          code: string
+          estimates: boolean
+          go_to_stand: number
+          host: string
+          id: string
+          name: string
+          racing_paused: boolean
+        }
+        Insert: {
+          announcement?: string | null
+          code: string
+          estimates?: boolean
+          go_to_stand: number
+          host: string
+          id?: string
+          name: string
+          racing_paused?: boolean
+        }
+        Update: {
+          announcement?: string | null
+          code?: string
+          estimates?: boolean
+          go_to_stand?: number
+          host?: string
+          id?: string
+          name?: string
+          racing_paused?: boolean
+        }
+        Relationships: []
+      }
       flight: {
         Row: {
           id: string
@@ -75,43 +108,9 @@ export type Database = {
         }
         Relationships: []
       }
-      leaderboard: {
-        Row: {
-          avg_pts: number
-          league: string
-          losses: number
-          order: number
-          team: string
-          wins: number
-        }
-        Insert: {
-          avg_pts: number
-          league?: string
-          losses: number
-          order?: number
-          team: string
-          wins: number
-        }
-        Update: {
-          avg_pts?: number
-          league?: string
-          losses?: number
-          order?: number
-          team?: string
-          wins?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "leaderboard_team_fkey"
-            columns: ["team"]
-            isOneToOne: false
-            referencedRelation: "team"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       race: {
         Row: {
+          competition: string
           finishtime: string | null
           flight: string
           id: string
@@ -124,6 +123,7 @@ export type Database = {
           video: string | null
         }
         Insert: {
+          competition: string
           finishtime?: string | null
           flight: string
           id?: string
@@ -136,6 +136,7 @@ export type Database = {
           video?: string | null
         }
         Update: {
+          competition?: string
           finishtime?: string | null
           flight?: string
           id?: string
@@ -148,6 +149,13 @@ export type Database = {
           video?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "race_competition_fkey"
+            columns: ["competition"]
+            isOneToOne: false
+            referencedRelation: "competition"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "race_flight_fkey"
             columns: ["flight"]
@@ -171,73 +179,6 @@ export type Database = {
           },
         ]
       }
-      raceteam: {
-        Row: {
-          halfflight: string
-          race: string
-          result: number[] | null
-          team: string
-        }
-        Insert: {
-          halfflight: string
-          race: string
-          result?: number[] | null
-          team: string
-        }
-        Update: {
-          halfflight?: string
-          race?: string
-          result?: number[] | null
-          team?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "raceteam_flight_fkey"
-            columns: ["halfflight"]
-            isOneToOne: false
-            referencedRelation: "halfflight"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "raceteam_race_fkey"
-            columns: ["race"]
-            isOneToOne: false
-            referencedRelation: "race"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "raceteam_team_fkey"
-            columns: ["team"]
-            isOneToOne: false
-            referencedRelation: "team"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      settings: {
-        Row: {
-          announcement: string | null
-          estimates: boolean
-          go_to_stand: number
-          racing_paused: boolean
-          uuid: string
-        }
-        Insert: {
-          announcement?: string | null
-          estimates?: boolean
-          go_to_stand: number
-          racing_paused?: boolean
-          uuid?: string
-        }
-        Update: {
-          announcement?: string | null
-          estimates?: boolean
-          go_to_stand?: number
-          racing_paused?: boolean
-          uuid?: string
-        }
-        Relationships: []
-      }
       team: {
         Row: {
           id: string
@@ -252,32 +193,6 @@ export type Database = {
           name?: string
         }
         Relationships: []
-      }
-      tiebreak: {
-        Row: {
-          league: string
-          order: number
-          team: string
-        }
-        Insert: {
-          league: string
-          order: number
-          team: string
-        }
-        Update: {
-          league?: string
-          order?: number
-          team?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tiebreaks_team_fkey"
-            columns: ["team"]
-            isOneToOne: false
-            referencedRelation: "team"
-            referencedColumns: ["id"]
-          },
-        ]
       }
     }
     Views: {

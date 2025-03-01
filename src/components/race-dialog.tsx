@@ -18,10 +18,11 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import supabase from "@/supabase";
-import { RaceResult, useAuth } from "../shared";
+import { leaderboardAtom, RaceResult, useAuth } from "../shared";
 import RaceEdit from "./race-edit";
 import { TbChevronLeft } from "react-icons/tb";
 import { useQuery } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
 
 // Define a type for a leaderboard row.
 type LeaderboardRow = {
@@ -84,35 +85,16 @@ function FlightPictures({ race }: { race: RaceResult }) {
 }
 
 function TeamComparison({
+  league,
   leftTeamId,
   rightTeamId,
 }: {
+  league: string;
   leftTeamId: string;
   rightTeamId: string;
 }) {
-  const { data: stats } = useQuery({
-    queryKey: ["leaderboard", leftTeamId, rightTeamId],
-    queryFn: async () => {
-      if (!leftTeamId || !rightTeamId) {
-        return;
-      }
-      const { data, error } = await supabase
-        .from("leaderboard")
-        .select(
-          `
-            avg_pts,
-            losses,
-            wins,
-            team (id, name)
-          `
-        )
-        .in("team", [leftTeamId, rightTeamId]);
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
+  const data = useAtomValue(leaderboardAtom);
+  const stats = data?.get(league);
   const leftStats = stats?.find((s) => s.team.id === leftTeamId);
   const rightStats = stats?.find((s) => s.team.id === rightTeamId);
 
@@ -274,6 +256,7 @@ export default function RaceDialog({ race, active }: RaceDialogProps) {
 
         {/* Head-to-Head Header */}
         <TeamComparison
+          league={race.league}
           leftTeamId={race.lteam.id}
           rightTeamId={race.rteam.id}
         />

@@ -28,6 +28,7 @@ import {
   SharedLogic,
   sailingColour,
   racesAtom,
+  competitionAtom,
 } from "@/shared";
 import {
   TbChevronsDown,
@@ -39,7 +40,7 @@ import { useColorMode } from "@/components/ui/color-mode";
 import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 
 // Memoize your Race component to avoid unnecessary re-renders
 const MemoizedRace = memo(Race);
@@ -62,21 +63,13 @@ function Page() {
   };
 
   // Fetch all races
-  const [races] = useAtom(racesAtom);
+  const races = useAtomValue(racesAtom);
   const currentRace = races.data?.currentRace;
 
   // Fetch settings (go_to_stand offset)
-  let { data: settings } = useQuery({
-    queryKey: ["settings"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("settings")
-        .select("*")
-        .single();
-      return data;
-    },
-  });
-  const goToStandOffset = settings ? settings.go_to_stand : 0;
+  const result = useAtomValue(competitionAtom);
+  const competition = result.data?.current;
+  const goToStandOffset = competition?.go_to_stand ?? 0;
 
   // State to track if the current race is visible and if it is above the viewport.
   const [isCurrentRaceVisible, setIsCurrentRaceVisible] = useState(true);
@@ -113,12 +106,12 @@ function Page() {
 
   // Filtered races
   const filteredRaces = useMemo(() => {
-    if (!races.data) return [];
+    if (races.data === undefined) return [];
 
     const { league, cleanSearch } = processSearchString(debouncedSearch);
 
     return races.data.races.filter((race) => {
-      if (race.number === races.data.currentRace) return true;
+      if (race.number === races.data?.currentRace) return true;
 
       // Check league filter if present
       if (league && race.league !== league) return false;
@@ -235,7 +228,7 @@ function Page() {
                   races
                 </Text>
               )}
-            {settings?.racing_paused && (
+            {competition?.racing_paused && (
               <Box
                 mt={3}
                 p={2}
@@ -260,7 +253,7 @@ function Page() {
             Error loading races.
             {races.error.message}
           </Text>
-        ) : races.isFetched && settings ? (
+        ) : races.isFetched && competition ? (
           filteredRaces.length > 0 && currentRace ? (
             <>
               <Virtuoso
@@ -302,9 +295,9 @@ function Page() {
                       <MemoizedRace
                         race={race}
                         active={isActive}
-                        isStand={!settings.racing_paused && isStand}
+                        isStand={!competition.racing_paused && isStand}
                         showEstFinishtime={
-                          !settings.racing_paused && settings.estimates
+                          !competition.racing_paused && competition.estimates
                         }
                         search={cleanSearchForCards}
                       />

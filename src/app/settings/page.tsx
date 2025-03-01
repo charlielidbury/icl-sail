@@ -8,38 +8,25 @@ import {
 } from "@/components/ui/number-input";
 import { Checkbox } from "@/components/ui/checkbox";
 import NavBar from "@/components/navbar";
-import { queryClient, sailingColour, SharedLogic, useAuth } from "@/shared";
 import {
-  QueryClientProvider,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+  Competition,
+  competitionAtom,
+  queryClient,
+  sailingColour,
+  SharedLogic,
+  useAuth,
+} from "@/shared";
+import { QueryClientProvider, useMutation } from "@tanstack/react-query";
 import supabase from "@/supabase";
-import { Database } from "@/database.types";
 import { useEffect, useState } from "react";
 import { useColorMode } from "@/components/ui/color-mode";
-
-type Settings = Database["public"]["Tables"]["settings"]["Row"];
+import { useAtomValue } from "jotai";
 
 function SettingsPage() {
   const { isAdmin } = useAuth();
 
-  const { data: remoteSettings, isLoading } = useQuery({
-    queryKey: ["settings"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("settings")
-        .select("*")
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      return data;
-    },
-  });
+  const { data: competition, isLoading } = useAtomValue(competitionAtom);
+  const remoteSettings = competition?.current;
 
   // Force light color mode on load
   const { setColorMode } = useColorMode();
@@ -47,7 +34,7 @@ function SettingsPage() {
     setColorMode("light");
   }, [setColorMode]);
 
-  const [settings, setSettings] = useState<Settings | undefined>(undefined);
+  const [settings, setSettings] = useState<Competition | undefined>(undefined);
   useEffect(() => {
     if (remoteSettings) {
       setSettings(remoteSettings);
@@ -60,13 +47,13 @@ function SettingsPage() {
   ]);
 
   const saveSettings = useMutation({
-    mutationFn: async (newSettings: Settings) => {
-      if (!settings?.uuid) return;
+    mutationFn: async (newSettings: Competition) => {
+      if (!settings) return;
 
       await supabase
-        .from("settings")
+        .from("competition")
         .update(newSettings)
-        .eq("uuid", settings.uuid);
+        .eq("id", settings.id);
     },
   });
 
@@ -100,7 +87,7 @@ function SettingsPage() {
       <Box maxW="container.xl" mx="auto" p={8}>
         <Box maxW="md" mx="auto" bg="white" borderRadius="xl" p={8} shadow="sm">
           <Heading size="lg" color="gray.700" mb={8}>
-            Settings
+            Competition
           </Heading>
 
           <Stack gap={6}>

@@ -16,7 +16,9 @@ import {
   PopoverContent,
   PopoverRoot,
   PopoverTrigger,
+  Select,
 } from "@chakra-ui/react";
+import { ListCollection } from "@zag-js/collection";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import {
   TbMenu2,
@@ -43,8 +45,16 @@ import {
 } from "@/components/ui/dialog";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { MadeWithLove } from "@/components/ui/made-with-love";
-import { sailingColour, queryClient } from "@/shared";
+import { sailingColour, queryClient, competitionAtom } from "@/shared";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
+import {
+  SelectRoot,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValueText,
+} from "@/components/ui/select";
 
 interface NavBarProps {
   isAdmin: boolean;
@@ -84,21 +94,8 @@ function NavBar({ isAdmin }: NavBarProps) {
   const { open, onToggle } = useDisclosure();
   const [session, setSession] = useState<any>(null);
 
-  const { data: settings } = useQuery({
-    queryKey: ["settings"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("settings")
-        .select("*")
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      return data;
-    },
-  });
+  const { data: competition } = useAtomValue(competitionAtom);
+  const settings = competition?.current;
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -165,7 +162,20 @@ function NavBar({ isAdmin }: NavBarProps) {
             <DesktopNav navItems={navItems} />
           </Flex>
         </Flex>
-        <Stack flex={{ base: 1, md: 0 }} justify={"flex-end"} direction={"row"}>
+        <Stack
+          flex={{ base: 1, md: 0 }}
+          justify={"flex-end"}
+          direction={"row"}
+          align="center"
+        >
+          <Box
+            display={{ base: "none", md: "block" }}
+            mr={4}
+            minW="100px"
+            width="auto"
+          >
+            <CompetitionSelector />
+          </Box>
           {session ? (
             <Button
               as={"a"}
@@ -234,6 +244,7 @@ function NavBar({ isAdmin }: NavBarProps) {
             <MobileNav navItems={navItems} />
           </Box>
           <Box>
+            <CompetitionSelector isMobile />
             <MadeWithLove />
           </Box>
         </Box>
@@ -250,27 +261,57 @@ const DesktopNav = ({ navItems }: DesktopNavProps) => {
   const linkColor = useColorModeValue("gray.600", "gray.200");
   const linkHoverColor = useColorModeValue("gray.800", "white");
   const popoverContentBgColor = useColorModeValue("white", "gray.800");
+  const bgHover = useColorModeValue("gray.50", "gray.700");
 
   return (
-    <Stack direction={"row"}>
+    <Flex direction="row" gap={4} align="center">
       {navItems.map((navItem) => (
         <Box key={navItem.label}>
           <PopoverRoot>
             <PopoverTrigger>
-              <Link href={navItem.href ?? "#"}>
-                <Box
+              <Link
+                href={navItem.href ?? "#"}
+                _hover={{ textDecoration: "none" }}
+              >
+                <Flex
                   as="a"
-                  p={2}
+                  py={2}
+                  px={3}
                   fontSize={"sm"}
                   fontWeight={500}
                   color={linkColor}
+                  align="center"
+                  gap={2}
+                  rounded="md"
+                  transition="all 0.2s"
                   _hover={{
                     textDecoration: "none",
                     color: linkHoverColor,
+                    bg: bgHover,
                   }}
                 >
+                  {navItem.label === "Home" && (
+                    <Icon as={TbHome} boxSize={4} color={sailingColour} />
+                  )}
+                  {navItem.label === "Races" && (
+                    <Icon as={TbClock} boxSize={4} color={sailingColour} />
+                  )}
+                  {navItem.label === "Leaderboard" && (
+                    <Icon as={TbMedal} boxSize={4} color={sailingColour} />
+                  )}
+                  {navItem.label === "Settings" && (
+                    <Icon as={TbSettings} boxSize={4} color={sailingColour} />
+                  )}
                   {navItem.label}
-                </Box>
+                  {navItem.children && (
+                    <Icon
+                      as={TbChevronDown}
+                      boxSize={4}
+                      ml={1}
+                      color={sailingColour}
+                    />
+                  )}
+                </Flex>
               </Link>
             </PopoverTrigger>
             {navItem.children && (
@@ -292,47 +333,113 @@ const DesktopNav = ({ navItems }: DesktopNavProps) => {
           </PopoverRoot>
         </Box>
       ))}
-    </Stack>
+    </Flex>
   );
 };
 
 interface DesktopSubNavProps extends NavItem {}
 const DesktopSubNav = ({ label, href, subLabel }: DesktopSubNavProps) => {
+  const bgHover = useColorModeValue("gray.50", "gray.700");
+
   return (
-    <Link href={href}>
-      <Box
+    <Link href={href} _hover={{ textDecoration: "none" }}>
+      <Flex
         as="a"
         role={"group"}
-        display={"block"}
-        p={2}
+        p={3}
         rounded={"md"}
-        _hover={{ bg: useColorModeValue("pink.50", "gray.900") }}
+        align="center"
+        transition="all 0.2s"
+        _hover={{ bg: bgHover }}
       >
-        <Stack direction={"row"} align={"center"}>
-          <Box>
-            <Text
-              transition={"all .3s ease"}
-              _groupHover={{ color: "pink.400" }}
-              fontWeight={500}
-            >
-              {label}
-            </Text>
-            <Text fontSize={"sm"}>{subLabel}</Text>
-          </Box>
-          <Flex
+        <Box flex={1}>
+          <Text
             transition={"all .3s ease"}
-            transform={"translateX(-10px)"}
-            opacity={0}
-            _groupHover={{ opacity: "100%", transform: "translateX(0)" }}
-            justify={"flex-end"}
-            align={"center"}
-            flex={1}
+            _groupHover={{ color: sailingColour }}
+            fontWeight={500}
           >
-            <Icon color={"pink.400"} w={5} h={5} as={TbChevronRight} />
-          </Flex>
-        </Stack>
-      </Box>
+            {label}
+          </Text>
+          {subLabel && (
+            <Text fontSize={"sm"} color="gray.500">
+              {subLabel}
+            </Text>
+          )}
+        </Box>
+        <Icon
+          color={sailingColour}
+          w={5}
+          h={5}
+          as={TbChevronRight}
+          opacity={0.7}
+          _groupHover={{
+            opacity: 1,
+            transform: "translateX(2px)",
+          }}
+          transition="all 0.2s"
+        />
+      </Flex>
     </Link>
+  );
+};
+
+const CompetitionSelector = ({ isMobile = false }) => {
+  const { data: competition } = useAtomValue(competitionAtom);
+  const currentCompetition = competition?.current;
+  const allCompetitions = competition?.all || [];
+
+  const handleCompetitionChange = (compId: string) => {
+    const selectedComp = allCompetitions.find((comp) => comp.id === compId);
+    if (selectedComp) {
+      window.location.href = `https://${selectedComp.host}`;
+    }
+  };
+
+  const competitionItems = new ListCollection({
+    items: allCompetitions.map((comp) => ({
+      label: comp.name,
+      value: comp.id,
+    })),
+  });
+
+  // Ensure we have a valid default value
+  const defaultValue = currentCompetition && [currentCompetition.id];
+
+  return (
+    <Box
+      p={isMobile ? 4 : 0}
+      borderTop={isMobile ? "1px" : "none"}
+      borderColor={useColorModeValue("gray.100", "gray.700")}
+      maxW={isMobile ? "300px" : "200px"}
+      width={isMobile ? "auto" : "100%"}
+      mx={isMobile ? "auto" : "0"}
+    >
+      <SelectRoot
+        positioning={{ placement: isMobile ? "top" : "bottom" }}
+        value={defaultValue}
+        defaultValue={defaultValue}
+        onValueChange={(details) => {
+          if (details.value && details.value.length > 0) {
+            handleCompetitionChange(details.value[0]);
+          }
+        }}
+        collection={competitionItems}
+      >
+        <SelectTrigger width="100%">
+          <SelectValueText placeholder="Select competition" />
+        </SelectTrigger>
+        <SelectContent>
+          {allCompetitions.map((comp) => (
+            <SelectItem
+              key={comp.id}
+              item={{ value: comp.id, label: comp.name }}
+            >
+              {comp.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </SelectRoot>
+    </Box>
   );
 };
 
