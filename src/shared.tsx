@@ -70,9 +70,8 @@ export type Competition = {
   name: string;
   racing_paused: boolean;
   id: string;
+  colour: string;
 };
-
-export const sailingColour = "#004a79";
 
 export function getLeagueName(league: string): string {
   switch (league.toLowerCase()) {
@@ -450,17 +449,29 @@ export const leaderboardAtom = atom((get) => {
   return sortedLeaderboard;
 });
 
-export const competitionAtom = atomWithQuery((get) => ({
+export const competitionAtom = atomWithQuery<
+  | {
+      current: Competition;
+      all: Competition[];
+    }
+  | undefined
+>((get) => ({
   queryKey: ["competition"],
   queryFn: async () => {
     const competitions = await supabase.from("competition").select("*");
     const current =
       document.location.hostname === "localhost"
-        ? competitions.data?.find((c) => c.code === "imperialicicle")
+        ? competitions.data?.find((c) => c.code === "topgun")
         : competitions.data?.find((c) => c.host === document.location.hostname);
-    return { current, all: competitions.data };
+    return current && competitions.data
+      ? { current, all: competitions.data }
+      : undefined;
   },
 }));
+
+export const accentColourAtom = atom<string>(
+  (get) => get(competitionAtom)?.data?.current.colour ?? "#004a79"
+);
 
 export const queryClient = new QueryClient({
   defaultOptions: {

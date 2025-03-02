@@ -12,39 +12,62 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import NavBar from "@/components/navbar";
-import { sailingColour, useAuth } from "@/shared";
+import { competitionAtom, useAuth, accentColourAtom } from "@/shared";
 import { TbDownload, TbChevronRight, TbClock, TbMedal } from "react-icons/tb";
 import { MadeWithLove } from "@/components/ui/made-with-love";
 import { useColorMode } from "@/components/ui/color-mode";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import { useAtomValue } from "jotai";
 
-const documents = [
+const documents = new Map<
+  string,
   {
-    title: "Qualifying Schedule",
-    description: "Qualifying schedule in typical table format",
-    href: "/qualifying_schedule.pdf",
-  },
-  {
-    title: "Information Pack",
-    description: "Social info, emergency contacts, itinerary, addresses",
-    href: "/info-pack.pdf",
-  },
-  {
-    title: "Sailing Instructions",
-    description: "Tournament format, rules",
-    href: "/instructions.pdf",
-  },
-  {
-    title: "Notice of Race",
-    description: "Information for competitors",
-    href: "/nor.pdf",
-  },
-  {
-    title: "World Sailing RRS",
-    description: "2025-2028 World Sailing Racing Rules of Sailing",
-    href: "/rrs.pdf",
-  },
-];
+    title: string;
+    description: string;
+    href: string;
+  }[]
+>([
+  [
+    "icicle",
+    [
+      {
+        title: "Qualifying Schedule",
+        description: "Qualifying schedule in typical table format",
+        href: "/icicle/qualifying_schedule.pdf",
+      },
+      {
+        title: "Information Pack",
+        description: "Social info, emergency contacts, itinerary, addresses",
+        href: "/icicle/info-pack.pdf",
+      },
+      {
+        title: "Sailing Instructions",
+        description: "Tournament format, rules",
+        href: "/icicle/instructions.pdf",
+      },
+      {
+        title: "Notice of Race",
+        description: "Information for competitors",
+        href: "/icicle/nor.pdf",
+      },
+      {
+        title: "World Sailing RRS",
+        description: "2025-2028 World Sailing Racing Rules of Sailing",
+        href: "/icicle/rrs.pdf",
+      },
+    ],
+  ],
+  [
+    "topgun",
+    [
+      {
+        title: "Qualifying Schedule",
+        description: "Qualifying schedule in typical table format",
+        href: "/topgun/topgun_schedule.pdf",
+      },
+    ],
+  ],
+]);
 
 export default function Info() {
   const { isAdmin } = useAuth();
@@ -54,6 +77,20 @@ export default function Info() {
   useEffect(() => {
     setColorMode("light");
   }, []);
+
+  const { data: competition } = useAtomValue(competitionAtom);
+  const accentColour = useAtomValue(accentColourAtom);
+
+  const [topLine, bottomLine] = useMemo(() => {
+    if (competition) {
+      if (competition.current.code === "icicle") {
+        return ["IMPERIAL", "ICICLE"];
+      } else if (competition.current.code === "topgun") {
+        return ["OXFORD", "TOPGUN"];
+      }
+    }
+    return ["", ""];
+  }, [competition]);
 
   return (
     <Box minH="100vh" bg="gray.50">
@@ -69,13 +106,13 @@ export default function Info() {
             size="5xl"
             textAlign="center"
             width="100%"
-            color={sailingColour}
+            color={accentColour}
             textTransform="uppercase"
             letterSpacing="0.2em"
             fontWeight="bold"
             fontFamily="'Roboto Mono', monospace"
           >
-            Imperial
+            {topLine}
           </Heading>
           <Heading
             mt={-5}
@@ -83,13 +120,13 @@ export default function Info() {
             size="5xl"
             textAlign="center"
             width="100%"
-            color={sailingColour}
+            color={accentColour}
             textTransform="uppercase"
             letterSpacing="0.2em"
             fontWeight="bold"
             fontFamily="'Roboto Mono', monospace"
           >
-            Icicle
+            {bottomLine}
           </Heading>
           <Text
             py={4}
@@ -117,7 +154,7 @@ export default function Info() {
               _hover={{
                 transform: "translateY(-2px)",
                 shadow: "lg",
-                color: sailingColour,
+                color: accentColour,
                 "& svg.chevron": { transform: "translateX(2px)" },
               }}
               transition="all 0.2s"
@@ -131,7 +168,7 @@ export default function Info() {
                   boxSize={4}
                   className="chevron"
                   transition="transform 0.2s"
-                  color={sailingColour}
+                  color={accentColour}
                 />
               </Flex>
               <Text fontSize="sm" color="gray.500">
@@ -151,7 +188,7 @@ export default function Info() {
               _hover={{
                 transform: "translateY(-2px)",
                 shadow: "lg",
-                color: sailingColour,
+                color: accentColour,
                 "& svg.chevron": { transform: "translateX(2px)" },
               }}
               transition="all 0.2s"
@@ -165,7 +202,7 @@ export default function Info() {
                   boxSize={4}
                   className="chevron"
                   transition="transform 0.2s"
-                  color={sailingColour}
+                  color={accentColour}
                 />
               </Flex>
               <Text fontSize="sm" color="gray.500">
@@ -181,40 +218,41 @@ export default function Info() {
             Documents
           </Heading>
           <SimpleGrid columns={[1, null, 2]} gap={4} maxW="900px" mx="auto">
-            {documents.map((doc) => (
-              <Link
-                key={doc.href}
-                href={doc.href}
-                p={4}
-                target="_blank"
-                bg="white"
-                rounded="lg"
-                shadow="md"
-                position="relative"
-                _hover={{ transform: "translateY(-2px)", shadow: "lg" }}
-                transition="all 0.2s"
-              >
-                <Text
-                  position="absolute"
-                  top={4.5}
-                  right={4.5}
-                  fontSize="xs"
-                  color={sailingColour}
-                  fontWeight="medium"
+            {competition &&
+              documents.get(competition.current.code)?.map((doc) => (
+                <Link
+                  key={doc.href}
+                  href={doc.href}
+                  p={4}
+                  target="_blank"
+                  bg="white"
+                  rounded="lg"
+                  shadow="md"
+                  position="relative"
+                  _hover={{ transform: "translateY(-2px)", shadow: "lg" }}
+                  transition="all 0.2s"
                 >
-                  PDF
-                </Text>
-                <VStack align="start" gap={2}>
-                  <Flex align="center">
-                    <Icon as={TbDownload} boxSize="4" mr={2} />
-                    <Text fontWeight="bold">{doc.title}</Text>
-                  </Flex>
-                  <Text fontSize="sm" color="gray.500">
-                    {doc.description}
+                  <Text
+                    position="absolute"
+                    top={4.5}
+                    right={4.5}
+                    fontSize="xs"
+                    color={accentColour}
+                    fontWeight="medium"
+                  >
+                    PDF
                   </Text>
-                </VStack>
-              </Link>
-            ))}
+                  <VStack align="start" gap={2}>
+                    <Flex align="center">
+                      <Icon as={TbDownload} boxSize="4" mr={2} />
+                      <Text fontWeight="bold">{doc.title}</Text>
+                    </Flex>
+                    <Text fontSize="sm" color="gray.500">
+                      {doc.description}
+                    </Text>
+                  </VStack>
+                </Link>
+              ))}
           </SimpleGrid>
         </Box>
 

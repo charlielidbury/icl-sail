@@ -12,7 +12,7 @@ import {
   Competition,
   competitionAtom,
   queryClient,
-  sailingColour,
+  accentColourAtom,
   SharedLogic,
   useAuth,
 } from "@/shared";
@@ -33,6 +33,8 @@ function SettingsPage() {
   useEffect(() => {
     setColorMode("light");
   }, [setColorMode]);
+
+  const accentColour = useAtomValue(accentColourAtom);
 
   const [settings, setSettings] = useState<Competition | undefined>(undefined);
   useEffect(() => {
@@ -123,7 +125,7 @@ function SettingsPage() {
                 onCheckedChange={(v) =>
                   setSettings({ ...settings, estimates: !!v.checked })
                 }
-                colorScheme={sailingColour}
+                colorScheme={accentColour}
               />
             </Field>
 
@@ -133,7 +135,7 @@ function SettingsPage() {
                 onCheckedChange={(v) =>
                   setSettings({ ...settings, racing_paused: !!v.checked })
                 }
-                colorScheme={sailingColour}
+                colorScheme={accentColour}
               />
             </Field>
 
@@ -148,8 +150,8 @@ function SettingsPage() {
                   settings.announcement === remoteSettings?.announcement
                 }
                 colorScheme="blue"
-                bg={sailingColour}
-                _hover={{ bg: `${sailingColour}dd` }}
+                bg={accentColour}
+                _hover={{ bg: `${accentColour}dd` }}
                 size="lg"
                 w="full"
               >

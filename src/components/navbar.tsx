@@ -45,7 +45,7 @@ import {
 } from "@/components/ui/dialog";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { MadeWithLove } from "@/components/ui/made-with-love";
-import { sailingColour, queryClient, competitionAtom } from "@/shared";
+import { accentColourAtom, queryClient, competitionAtom } from "@/shared";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 import {
@@ -96,6 +96,15 @@ function NavBar({ isAdmin }: NavBarProps) {
 
   const { data: competition } = useAtomValue(competitionAtom);
   const settings = competition?.current;
+
+  const accentColour = useAtomValue(accentColourAtom);
+
+  let logo = null;
+  if (settings?.code === "icicle") {
+    logo = "/icicle/logo_transparent.png";
+  } else if (settings?.code === "topgun") {
+    logo = "/topgun/oxford_logo.png";
+  }
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -150,12 +159,7 @@ function NavBar({ isAdmin }: NavBarProps) {
             color={useColorModeValue("gray.800", "white")}
           >
             <Link href="/">
-              <Image
-                src="/logo_transparent.png"
-                alt="Logo"
-                width={100}
-                height={50}
-              />
+              {logo && <Image src={logo} alt={logo} height="50px" />}
             </Link>
           </Text>
           <Flex display={{ base: "none", md: "flex" }} ml={10}>
@@ -216,7 +220,7 @@ function NavBar({ isAdmin }: NavBarProps) {
 
       {settings?.announcement && (
         <Flex
-          bg={sailingColour}
+          bg={accentColour}
           color="white"
           p={2}
           alignItems="center"
@@ -262,6 +266,7 @@ const DesktopNav = ({ navItems }: DesktopNavProps) => {
   const linkHoverColor = useColorModeValue("gray.800", "white");
   const popoverContentBgColor = useColorModeValue("white", "gray.800");
   const bgHover = useColorModeValue("gray.50", "gray.700");
+  const accentColour = useAtomValue(accentColourAtom);
 
   return (
     <Flex direction="row" gap={4} align="center">
@@ -291,16 +296,16 @@ const DesktopNav = ({ navItems }: DesktopNavProps) => {
                   }}
                 >
                   {navItem.label === "Home" && (
-                    <Icon as={TbHome} boxSize={4} color={sailingColour} />
+                    <Icon as={TbHome} boxSize={4} color={accentColour} />
                   )}
                   {navItem.label === "Races" && (
-                    <Icon as={TbClock} boxSize={4} color={sailingColour} />
+                    <Icon as={TbClock} boxSize={4} color={accentColour} />
                   )}
                   {navItem.label === "Leaderboard" && (
-                    <Icon as={TbMedal} boxSize={4} color={sailingColour} />
+                    <Icon as={TbMedal} boxSize={4} color={accentColour} />
                   )}
                   {navItem.label === "Settings" && (
-                    <Icon as={TbSettings} boxSize={4} color={sailingColour} />
+                    <Icon as={TbSettings} boxSize={4} color={accentColour} />
                   )}
                   {navItem.label}
                   {navItem.children && (
@@ -308,7 +313,7 @@ const DesktopNav = ({ navItems }: DesktopNavProps) => {
                       as={TbChevronDown}
                       boxSize={4}
                       ml={1}
-                      color={sailingColour}
+                      color={accentColour}
                     />
                   )}
                 </Flex>
@@ -340,6 +345,7 @@ const DesktopNav = ({ navItems }: DesktopNavProps) => {
 interface DesktopSubNavProps extends NavItem {}
 const DesktopSubNav = ({ label, href, subLabel }: DesktopSubNavProps) => {
   const bgHover = useColorModeValue("gray.50", "gray.700");
+  const accentColour = useAtomValue(accentColourAtom);
 
   return (
     <Link href={href} _hover={{ textDecoration: "none" }}>
@@ -355,7 +361,7 @@ const DesktopSubNav = ({ label, href, subLabel }: DesktopSubNavProps) => {
         <Box flex={1}>
           <Text
             transition={"all .3s ease"}
-            _groupHover={{ color: sailingColour }}
+            _groupHover={{ color: accentColour }}
             fontWeight={500}
           >
             {label}
@@ -367,7 +373,7 @@ const DesktopSubNav = ({ label, href, subLabel }: DesktopSubNavProps) => {
           )}
         </Box>
         <Icon
-          color={sailingColour}
+          color={accentColour}
           w={5}
           h={5}
           as={TbChevronRight}
@@ -474,6 +480,7 @@ const MobileNav = ({ navItems }: MobileNavProps) => {
 const MobileNavItem = ({ label, children, href }: NavItem) => {
   const { open, onToggle } = useDisclosure();
   const bgHover = useColorModeValue("gray.50", "gray.700");
+  const accentColour = useAtomValue(accentColourAtom);
 
   return (
     <Stack gap={0}>
@@ -495,16 +502,16 @@ const MobileNavItem = ({ label, children, href }: NavItem) => {
         >
           <Flex align="center" gap={3}>
             {label === "Home" && (
-              <Icon as={TbHome} boxSize={5} color={sailingColour} />
+              <Icon as={TbHome} boxSize={5} color={accentColour} />
             )}
             {label === "Races" && (
-              <Icon as={TbClock} boxSize={5} color={sailingColour} />
+              <Icon as={TbClock} boxSize={5} color={accentColour} />
             )}
             {label === "Leaderboard" && (
-              <Icon as={TbMedal} boxSize={5} color={sailingColour} />
+              <Icon as={TbMedal} boxSize={5} color={accentColour} />
             )}
             {label === "Settings" && (
-              <Icon as={TbSettings} boxSize={5} color={sailingColour} />
+              <Icon as={TbSettings} boxSize={5} color={accentColour} />
             )}
             <Text
               fontSize="lg"

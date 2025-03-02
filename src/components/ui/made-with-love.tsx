@@ -26,7 +26,7 @@ export function MadeWithLove() {
       </Link>
       ,{" "}
       <Link
-        href="https://www.linkedin.com/in/henry-hollingworth/"
+        href="http://henryhollingworth.com/"
         color={linkColor}
         target="_blank"
         rel="noopener noreferrer"

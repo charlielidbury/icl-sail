@@ -11,20 +11,32 @@ export type Database = {
     Tables: {
       admin: {
         Row: {
-          uuid: string
+          competition: string
+          user: string
         }
         Insert: {
-          uuid?: string
+          competition: string
+          user: string
         }
         Update: {
-          uuid?: string
+          competition?: string
+          user?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "admin_competition_fkey"
+            columns: ["competition"]
+            isOneToOne: false
+            referencedRelation: "competition"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       competition: {
         Row: {
           announcement: string | null
           code: string
+          colour: string
           estimates: boolean
           go_to_stand: number
           host: string
@@ -35,8 +47,9 @@ export type Database = {
         Insert: {
           announcement?: string | null
           code: string
+          colour: string
           estimates?: boolean
-          go_to_stand: number
+          go_to_stand?: number
           host: string
           id?: string
           name: string
@@ -45,6 +58,7 @@ export type Database = {
         Update: {
           announcement?: string | null
           code?: string
+          colour?: string
           estimates?: boolean
           go_to_stand?: number
           host?: string

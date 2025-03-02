@@ -26,7 +26,7 @@ import {
   useAuth,
   queryClient,
   SharedLogic,
-  sailingColour,
+  accentColourAtom,
   racesAtom,
   competitionAtom,
 } from "@/shared";
@@ -48,6 +48,8 @@ const MemoizedRace = memo(Race);
 function Page() {
   // Admin/session state
   const { isAdmin } = useAuth();
+
+  const accentColour = useAtomValue(accentColourAtom);
 
   // Get search param from URL and process it
   const searchParams = useSearchParams();
@@ -318,7 +320,7 @@ function Page() {
                       {/* Team stays in boats message */}
                       {stayingTeam && (
                         <Box
-                          bg={`${sailingColour}cc`}
+                          bg={`${accentColour}cc`}
                           // borderRadius="md"
                           py={2}
                           mt={-5}
