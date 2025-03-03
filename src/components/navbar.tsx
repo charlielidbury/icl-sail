@@ -19,7 +19,7 @@ import {
   Select,
 } from "@chakra-ui/react";
 import { ListCollection } from "@zag-js/collection";
-import { useColorModeValue } from "@/components/ui/color-mode";
+import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
 import {
   TbMenu2,
   TbX,
@@ -93,12 +93,16 @@ export default function NavBarRoot({ isAdmin }: NavBarProps) {
 function NavBar({ isAdmin }: NavBarProps) {
   const { open, onToggle } = useDisclosure();
   const [session, setSession] = useState<any>(null);
-
   const { data: competition } = useAtomValue(competitionAtom);
-  const settings = competition?.current;
-
   const accentColour = useAtomValue(accentColourAtom);
+  const { colorMode } = useColorMode();
+  const colorModeValue = useColorModeValue("white", "gray.800");
+  const textColorModeValue = useColorModeValue("gray.600", "white");
+  const borderColorModeValue = useColorModeValue("gray.200", "gray.900");
+  const headingColorModeValue = useColorModeValue("gray.800", "white");
+  const bgColorModeValue = useColorModeValue("white", "gray.800");
 
+  const settings = competition?.current;
   let logo = null;
   if (settings?.code === "icicle") {
     logo = "/icicle/logo_transparent.png";
@@ -129,14 +133,14 @@ function NavBar({ isAdmin }: NavBarProps) {
   return (
     <Box>
       <Flex
-        bg={useColorModeValue("white", "gray.800")}
-        color={useColorModeValue("gray.600", "white")}
+        bg={colorModeValue}
+        color={textColorModeValue}
         minH={"60px"}
         py={{ base: 2 }}
         px={{ base: 4 }}
         borderBottom={1}
         borderStyle={"solid"}
-        borderColor={useColorModeValue("gray.200", "gray.900")}
+        borderColor={borderColorModeValue}
         align={"center"}
       >
         <Flex
@@ -156,7 +160,7 @@ function NavBar({ isAdmin }: NavBarProps) {
           <Text
             textAlign={useBreakpointValue({ base: "center", md: "left" })}
             fontFamily={"heading"}
-            color={useColorModeValue("gray.800", "white")}
+            color={headingColorModeValue}
           >
             <Link href="/">
               {logo && <Image src={logo} alt={logo} height="50px" />}
@@ -241,7 +245,7 @@ function NavBar({ isAdmin }: NavBarProps) {
           bottom="0"
           display={{ base: "flex", md: "none" }}
           flexDirection="column"
-          bg={useColorModeValue("white", "gray.800")}
+          bg={bgColorModeValue}
           zIndex={1000}
         >
           <Box flex="1" overflowY="auto">
@@ -453,13 +457,10 @@ interface MobileNavProps {
   navItems: Array<NavItem>;
 }
 const MobileNav = ({ navItems }: MobileNavProps) => {
+  const bgColorModeValue = useColorModeValue("white", "gray.800");
+
   return (
-    <Stack
-      bg={useColorModeValue("white", "gray.800")}
-      p={6}
-      display={{ md: "none" }}
-      gap={0}
-    >
+    <Stack bg={bgColorModeValue} p={6} display={{ md: "none" }}>
       {navItems.map((navItem, index) => (
         <Box key={navItem.label}>
           <MobileNavItem {...navItem} />
