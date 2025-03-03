@@ -197,6 +197,12 @@ export default function RaceEdit({
           </For>
         </Grid>
 
+        <Box textAlign="center" mt={2} mb={4}>
+          <Text fontSize="sm" color="gray.500" fontStyle="italic">
+            Click the boat numbers as they cross the line.
+          </Text>
+        </Box>
+
         <ButtonGroup attached width="100%" variant="outline">
           <Button
             width="50%"

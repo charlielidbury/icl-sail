@@ -41,12 +41,7 @@ function SettingsPage() {
     if (remoteSettings) {
       setSettings(remoteSettings);
     }
-  }, [
-    !!remoteSettings,
-    remoteSettings?.estimates,
-    remoteSettings?.go_to_stand,
-    remoteSettings?.racing_paused,
-  ]);
+  }, [JSON.stringify(remoteSettings)]);
 
   const saveSettings = useMutation({
     mutationFn: async (newSettings: Competition) => {
@@ -88,11 +83,10 @@ function SettingsPage() {
       </Box>
       <Box maxW="container.xl" mx="auto" p={8}>
         <Box maxW="md" mx="auto" bg="white" borderRadius="xl" p={8} shadow="sm">
-          <Heading size="lg" color="gray.700" mb={8}>
-            Competition
-          </Heading>
-
           <Stack gap={6}>
+            <Heading size="lg" color="gray.700" fontWeight="bold">
+              General
+            </Heading>
             <Field label="Announcement">
               <Input
                 value={settings.announcement || ""}
@@ -105,7 +99,21 @@ function SettingsPage() {
                 placeholder="Enter an announcement message (optional)"
               />
             </Field>
+            <Field label="Pause Racing">
+              <Checkbox
+                checked={settings.racing_paused}
+                onCheckedChange={(v) =>
+                  setSettings({ ...settings, racing_paused: !!v.checked })
+                }
+                colorScheme={accentColour}
+              />
+            </Field>
 
+            <Box height="1px" bg="gray.200" my={3} />
+
+            <Heading size="lg" color="gray.700" fontWeight="bold">
+              Beach Master
+            </Heading>
             <Field label="Go to Stand Notification">
               <NumberInputRoot
                 value={settings.go_to_stand.toString()}
@@ -129,17 +137,9 @@ function SettingsPage() {
               />
             </Field>
 
-            <Field label="Pause Racing">
-              <Checkbox
-                checked={settings.racing_paused}
-                onCheckedChange={(v) =>
-                  setSettings({ ...settings, racing_paused: !!v.checked })
-                }
-                colorScheme={accentColour}
-              />
-            </Field>
+            <Box height="1px" bg="gray.200" my={3} />
 
-            <Box mt={2}>
+            <Box>
               <Button
                 onClick={() => saveSettings.mutate(settings)}
                 loading={saveSettings.isPending}
