@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import supabase from "./supabase";
 import { Session } from "@supabase/supabase-js";
 import { QueryClient, QueryKey, useQueryClient } from "@tanstack/react-query";
-import { atom, useAtom } from "jotai";
+import { atom, useAtom, useAtomValue } from "jotai";
 import { atomWithQuery } from "jotai-tanstack-query";
 
 export interface Flight {
@@ -73,6 +73,18 @@ export type Competition = {
   colour: string;
 };
 
+const DEFAULT_COMPETITION: Competition = {
+  id: "d909cc26-636f-4563-98ba-cef93e17c7fc",
+  go_to_stand: 0,
+  estimates: false,
+  racing_paused: true,
+  announcement: null,
+  host: "topgun.isail.events",
+  code: "topgun",
+  name: "Oxford Top Gun",
+  colour: "#004a79",
+};
+
 export function getLeagueName(league: string): string {
   switch (league.toLowerCase()) {
     case "quali":
@@ -89,6 +101,7 @@ export function getLeagueName(league: string): string {
 export function useAuth(): { session: Session | null; isAdmin: boolean } {
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const competition = useAtomValue(competitionAtom).data?.current;
 
   useEffect(() => {
     supabase.auth
@@ -104,11 +117,13 @@ export function useAuth(): { session: Session | null; isAdmin: boolean } {
 
   useEffect(() => {
     const checkAdminStatus = async () => {
-      if (session && session.user) {
+      console.log({ session, user: session?.user, competition });
+      if (session && session.user && competition) {
         const { data } = await supabase
           .from("admin")
-          .select("uuid")
-          .eq("uuid", session.user.id)
+          .select("user")
+          .eq("user", session.user.id)
+          .eq("competition", competition.id)
           .maybeSingle();
         setIsAdmin(!!data);
       } else {
@@ -116,7 +131,9 @@ export function useAuth(): { session: Session | null; isAdmin: boolean } {
       }
     };
     checkAdminStatus();
-  }, [session]);
+  }, [session, competition]);
+
+  console.log({ session, isAdmin });
 
   return { session, isAdmin };
 }
@@ -449,14 +466,12 @@ export const leaderboardAtom = atom((get) => {
   return sortedLeaderboard;
 });
 
-export const competitionAtom = atomWithQuery<
-  | {
-      current: Competition;
-      all: Competition[];
-    }
-  | undefined
->((get) => ({
+export const competitionAtom = atomWithQuery<{
+  current: Competition;
+  all: Competition[];
+}>((get) => ({
   queryKey: ["competition"],
+  initialData: { current: DEFAULT_COMPETITION, all: [DEFAULT_COMPETITION] },
   queryFn: async () => {
     const competitions = await supabase.from("competition").select("*");
     const current =
@@ -465,7 +480,7 @@ export const competitionAtom = atomWithQuery<
         : competitions.data?.find((c) => c.host === document.location.hostname);
     return current && competitions.data
       ? { current, all: competitions.data }
-      : undefined;
+      : { current: DEFAULT_COMPETITION, all: [DEFAULT_COMPETITION] };
   },
 }));
 
