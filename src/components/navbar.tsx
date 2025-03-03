@@ -107,7 +107,7 @@ function NavBar({ isAdmin }: NavBarProps) {
   if (settings?.code === "icicle") {
     logo = "/icicle/logo_transparent.png";
   } else if (settings?.code === "topgun") {
-    logo = "/topgun/oxford_logo.png";
+    logo = "/topgun/logo.png";
   }
 
   useEffect(() => {
