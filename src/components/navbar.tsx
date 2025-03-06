@@ -25,11 +25,12 @@ import {
   TbX,
   TbChevronDown,
   TbChevronRight,
-  TbHome,
-  TbClock,
-  TbMedal,
-  TbSettings,
+  TbHomeFilled,
+  TbClockFilled,
+  TbTrophyFilled,
+  TbAdjustmentsFilled,
   TbBellRinging,
+  TbMessageFilled,
 } from "react-icons/tb";
 import { Auth } from "@supabase/auth-ui-react";
 import supabase from "../supabase";
@@ -45,7 +46,13 @@ import {
 } from "@/components/ui/dialog";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { MadeWithLove } from "@/components/ui/made-with-love";
-import { accentColourAtom, queryClient, competitionAtom } from "@/shared";
+import {
+  queryClient,
+  competitionAtom,
+  useCompetition,
+  allCompetitions,
+  CompetitionId,
+} from "@/shared";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 import {
@@ -93,22 +100,13 @@ export default function NavBarRoot({ isAdmin }: NavBarProps) {
 function NavBar({ isAdmin }: NavBarProps) {
   const { open, onToggle } = useDisclosure();
   const [session, setSession] = useState<any>(null);
-  const { data: competition } = useAtomValue(competitionAtom);
-  const accentColour = useAtomValue(accentColourAtom);
+  const { data: settings } = useAtomValue(competitionAtom);
   const { colorMode } = useColorMode();
   const colorModeValue = useColorModeValue("white", "gray.800");
   const textColorModeValue = useColorModeValue("gray.600", "white");
   const borderColorModeValue = useColorModeValue("gray.200", "gray.900");
   const headingColorModeValue = useColorModeValue("gray.800", "white");
   const bgColorModeValue = useColorModeValue("white", "gray.800");
-
-  const settings = competition?.current;
-  let logo = null;
-  if (settings?.code === "icicle") {
-    logo = "/icicle/logo_transparent.png";
-  } else if (settings?.code === "topgun") {
-    logo = "/topgun/logo.png";
-  }
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -124,10 +122,18 @@ function NavBar({ isAdmin }: NavBarProps) {
     return () => subscription.unsubscribe();
   }, []);
 
+  const textAlign = useBreakpointValue({ base: "center", md: "left" });
+
+  const competition = useCompetition();
+
   // Build nav items array and add Settings if isAdmin is true.
   const navItems: Array<NavItem> = [...BASE_NAV_ITEMS];
+  // Add Feedback link if feedback is enabled
+  if (settings?.feedback) {
+    navItems.push({ label: "Feedback", href: "/feedback" });
+  }
   if (isAdmin) {
-    navItems.push({ label: "Settings", href: "/settings" });
+    navItems.push({ label: "Controls", href: "/controls" });
   }
 
   return (
@@ -158,12 +164,18 @@ function NavBar({ isAdmin }: NavBarProps) {
         </Flex>
         <Flex flex={{ base: 1 }} justify={{ base: "center", md: "start" }}>
           <Text
-            textAlign={useBreakpointValue({ base: "center", md: "left" })}
+            textAlign={textAlign}
             fontFamily={"heading"}
             color={headingColorModeValue}
           >
             <Link href="/">
-              {logo && <Image src={logo} alt={logo} height="50px" />}
+              {competition.logo && (
+                <Image
+                  src={competition.logo}
+                  alt={competition.logo}
+                  height="50px"
+                />
+              )}
             </Link>
           </Text>
           <Flex display={{ base: "none", md: "flex" }} ml={10}>
@@ -224,7 +236,7 @@ function NavBar({ isAdmin }: NavBarProps) {
 
       {settings?.announcement && (
         <Flex
-          bg={accentColour}
+          bg={competition.accentColour}
           color="white"
           p={2}
           alignItems="center"
@@ -270,7 +282,10 @@ const DesktopNav = ({ navItems }: DesktopNavProps) => {
   const linkHoverColor = useColorModeValue("gray.800", "white");
   const popoverContentBgColor = useColorModeValue("white", "gray.800");
   const bgHover = useColorModeValue("gray.50", "gray.700");
-  const accentColour = useAtomValue(accentColourAtom);
+  const competition = useCompetition();
+  if (competition === null) {
+    return <></>;
+  }
 
   return (
     <Flex direction="row" gap={4} align="center">
@@ -300,16 +315,39 @@ const DesktopNav = ({ navItems }: DesktopNavProps) => {
                   }}
                 >
                   {navItem.label === "Home" && (
-                    <Icon as={TbHome} boxSize={4} color={accentColour} />
+                    <Icon
+                      as={TbHomeFilled}
+                      boxSize={4}
+                      color={competition.accentColour}
+                    />
                   )}
                   {navItem.label === "Races" && (
-                    <Icon as={TbClock} boxSize={4} color={accentColour} />
+                    <Icon
+                      as={TbClockFilled}
+                      boxSize={4}
+                      color={competition.accentColour}
+                    />
                   )}
                   {navItem.label === "Leaderboard" && (
-                    <Icon as={TbMedal} boxSize={4} color={accentColour} />
+                    <Icon
+                      as={TbTrophyFilled}
+                      boxSize={4}
+                      color={competition.accentColour}
+                    />
                   )}
-                  {navItem.label === "Settings" && (
-                    <Icon as={TbSettings} boxSize={4} color={accentColour} />
+                  {navItem.label === "Feedback" && (
+                    <Icon
+                      as={TbMessageFilled}
+                      boxSize={4}
+                      color={competition.accentColour}
+                    />
+                  )}
+                  {navItem.label === "Controls" && (
+                    <Icon
+                      as={TbAdjustmentsFilled}
+                      boxSize={4}
+                      color={competition.accentColour}
+                    />
                   )}
                   {navItem.label}
                   {navItem.children && (
@@ -317,7 +355,7 @@ const DesktopNav = ({ navItems }: DesktopNavProps) => {
                       as={TbChevronDown}
                       boxSize={4}
                       ml={1}
-                      color={accentColour}
+                      color={competition.accentColour}
                     />
                   )}
                 </Flex>
@@ -349,7 +387,10 @@ const DesktopNav = ({ navItems }: DesktopNavProps) => {
 interface DesktopSubNavProps extends NavItem {}
 const DesktopSubNav = ({ label, href, subLabel }: DesktopSubNavProps) => {
   const bgHover = useColorModeValue("gray.50", "gray.700");
-  const accentColour = useAtomValue(accentColourAtom);
+  const competition = useCompetition();
+  if (competition === null) {
+    return <></>;
+  }
 
   return (
     <Link href={href} _hover={{ textDecoration: "none" }}>
@@ -365,7 +406,7 @@ const DesktopSubNav = ({ label, href, subLabel }: DesktopSubNavProps) => {
         <Box flex={1}>
           <Text
             transition={"all .3s ease"}
-            _groupHover={{ color: accentColour }}
+            _groupHover={{ color: competition.accentColour }}
             fontWeight={500}
           >
             {label}
@@ -377,7 +418,7 @@ const DesktopSubNav = ({ label, href, subLabel }: DesktopSubNavProps) => {
           )}
         </Box>
         <Icon
-          color={accentColour}
+          color={competition.accentColour}
           w={5}
           h={5}
           as={TbChevronRight}
@@ -394,19 +435,22 @@ const DesktopSubNav = ({ label, href, subLabel }: DesktopSubNavProps) => {
 };
 
 const CompetitionSelector = ({ isMobile = false }) => {
-  const { data: competition } = useAtomValue(competitionAtom);
-  const currentCompetition = competition?.current;
-  const allCompetitions = competition?.all || [];
+  const currentCompetition = useCompetition();
+  if (currentCompetition === null) {
+    return <></>;
+  }
 
   const handleCompetitionChange = (compId: string) => {
-    const selectedComp = allCompetitions.find((comp) => comp.id === compId);
-    if (selectedComp) {
-      window.location.href = `https://${selectedComp.host}`;
+    if (compId in allCompetitions) {
+      const selectedComp = allCompetitions[compId as CompetitionId];
+      if (selectedComp) {
+        window.location.href = `https://${selectedComp.host}`;
+      }
     }
   };
 
   const competitionItems = new ListCollection({
-    items: allCompetitions.map((comp) => ({
+    items: Object.values(allCompetitions).map((comp) => ({
       label: comp.name,
       value: comp.id,
     })),
@@ -439,7 +483,7 @@ const CompetitionSelector = ({ isMobile = false }) => {
           <SelectValueText placeholder="Select competition" />
         </SelectTrigger>
         <SelectContent>
-          {allCompetitions.map((comp) => (
+          {Object.values(allCompetitions).map((comp) => (
             <SelectItem
               key={comp.id}
               item={{ value: comp.id, label: comp.name }}
@@ -481,7 +525,10 @@ const MobileNav = ({ navItems }: MobileNavProps) => {
 const MobileNavItem = ({ label, children, href }: NavItem) => {
   const { open, onToggle } = useDisclosure();
   const bgHover = useColorModeValue("gray.50", "gray.700");
-  const accentColour = useAtomValue(accentColourAtom);
+  const competition = useCompetition();
+  if (competition === null) {
+    return <></>;
+  }
 
   return (
     <Stack gap={0}>
@@ -503,16 +550,39 @@ const MobileNavItem = ({ label, children, href }: NavItem) => {
         >
           <Flex align="center" gap={3}>
             {label === "Home" && (
-              <Icon as={TbHome} boxSize={5} color={accentColour} />
+              <Icon
+                as={TbHomeFilled}
+                boxSize={5}
+                color={competition.accentColour}
+              />
             )}
             {label === "Races" && (
-              <Icon as={TbClock} boxSize={5} color={accentColour} />
+              <Icon
+                as={TbClockFilled}
+                boxSize={5}
+                color={competition.accentColour}
+              />
             )}
             {label === "Leaderboard" && (
-              <Icon as={TbMedal} boxSize={5} color={accentColour} />
+              <Icon
+                as={TbTrophyFilled}
+                boxSize={5}
+                color={competition.accentColour}
+              />
             )}
-            {label === "Settings" && (
-              <Icon as={TbSettings} boxSize={5} color={accentColour} />
+            {label === "Controls" && (
+              <Icon
+                as={TbAdjustmentsFilled}
+                boxSize={5}
+                color={competition.accentColour}
+              />
+            )}
+            {label === "Feedback" && (
+              <Icon
+                as={TbMessageFilled}
+                boxSize={5}
+                color={competition.accentColour}
+              />
             )}
             <Text
               fontSize="lg"

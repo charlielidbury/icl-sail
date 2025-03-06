@@ -1,3 +1,5 @@
+"use client";
+
 import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useState } from "react";
 import supabase from "./supabase";
@@ -63,26 +65,13 @@ export type LeaderboardTeam = {
 
 export type Competition = {
   announcement: string | null;
-  code: string;
   estimates: boolean;
   go_to_stand: number;
   host: string;
   name: string;
   racing_paused: boolean;
   id: string;
-  colour: string;
-};
-
-const DEFAULT_COMPETITION: Competition = {
-  id: "d909cc26-636f-4563-98ba-cef93e17c7fc",
-  go_to_stand: 0,
-  estimates: false,
-  racing_paused: true,
-  announcement: null,
-  host: "topgun.isail.events",
-  code: "topgun",
-  name: "Oxford Top Gun",
-  colour: "#004a79",
+  feedback: boolean;
 };
 
 export function getLeagueName(league: string): string {
@@ -101,7 +90,8 @@ export function getLeagueName(league: string): string {
 export function useAuth(): { session: Session | null; isAdmin: boolean } {
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const competition = useAtomValue(competitionAtom).data?.current;
+
+  const competition = useAtomValue(competitionBasicAtom);
 
   useEffect(() => {
     supabase.auth
@@ -117,8 +107,7 @@ export function useAuth(): { session: Session | null; isAdmin: boolean } {
 
   useEffect(() => {
     const checkAdminStatus = async () => {
-      console.log({ session, user: session?.user, competition });
-      if (session && session.user && competition) {
+      if (session && session.user && competition !== null) {
         const { data } = await supabase
           .from("admin")
           .select("user")
@@ -131,22 +120,16 @@ export function useAuth(): { session: Session | null; isAdmin: boolean } {
       }
     };
     checkAdminStatus();
-  }, [session, competition]);
-
-  console.log({ session, isAdmin });
+  }, [session]);
 
   return { session, isAdmin };
 }
 
 const racesDataAtom = atomWithQuery((get) => ({
   queryKey: ["races_data"],
-  enabled: get(competitionAtom).isFetched,
-  error: get(competitionAtom).error,
+  enabled: get(competitionBasicAtom) !== null,
   queryFn: async () => {
-    const competition = get(competitionAtom).data?.current;
-    if (!competition) {
-      return undefined;
-    }
+    const competition = get(competitionBasicAtom)!;
 
     // Get races
     const { data: racesData, error: racesError } = await supabase
@@ -191,7 +174,7 @@ export const racesAtom = atomWithQuery((get) => ({
     }
 
     // How many races in advance to go to stand for
-    const competition = get(competitionAtom).data?.current;
+    const competition = get(competitionAtom).data;
     const goToStand = competition?.go_to_stand ?? 4;
 
     // Convert from Supabase data to RaceResult
@@ -466,27 +449,95 @@ export const leaderboardAtom = atom((get) => {
   return sortedLeaderboard;
 });
 
-export const competitionAtom = atomWithQuery<{
-  current: Competition;
-  all: Competition[];
-}>((get) => ({
+export type CompetitionId = "topgun" | "icicle" | "bathrobe";
+
+export type CompetitionBasic = {
+  id: CompetitionId;
+  host: string;
+  accentColour: string;
+  logo: string;
+  name: string;
+};
+
+export const allCompetitions: Record<CompetitionId, CompetitionBasic> = {
+  topgun: {
+    id: "topgun",
+    host: "topgun.isail.events",
+    accentColour: "#004a79",
+    logo: "/topgun/logo.png",
+    name: "Oxford Top Gun",
+  },
+  icicle: {
+    id: "icicle",
+    host: "imperialicicle.com",
+    accentColour: "#004a79",
+    logo: "/icicle/logo_transparent.png",
+    name: "Imperial Icicle",
+  },
+  bathrobe: {
+    id: "bathrobe",
+    host: "bathrobe.isail.events",
+    accentColour: "#004a79",
+    logo: "/bathrobe/logo.png",
+    name: "Bath Robe",
+  },
+};
+
+export const competitionHosts = new Map([
+  ["localhost", allCompetitions.bathrobe],
+  ["topgun.isail.events", allCompetitions.topgun],
+  ["imperialicicle.com", allCompetitions.icicle],
+  ["bathrobe.isail.events", allCompetitions.bathrobe],
+]);
+
+export const hostnameAtom = atom<string | undefined>(undefined);
+
+export const competitionBasicAtom = atom<CompetitionBasic>(
+  (get) =>
+    competitionHosts.get(get(hostnameAtom) ?? "") ?? allCompetitions.icicle
+);
+
+export function useCompetition() {
+  return useAtomValue(competitionBasicAtom);
+
+  // const [competition, setCompetition] = useState<CompetitionBasic | null>(null);
+
+  // useEffect(() => {
+  //   if (typeof window === "undefined") {
+  //     return; // should only happen on ssr
+  //   }
+
+  //   setCompetition(
+  //     competitionHosts.get(document.location.hostname) ??
+  //       (() => {
+  //         throw "Cannot deduce competition from hostname";
+  //       })()
+  //   );
+  // }, []);
+
+  // return competition;
+}
+
+export const competitionAtom = atomWithQuery<Competition>((get) => ({
   queryKey: ["competition"],
-  initialData: { current: DEFAULT_COMPETITION, all: [DEFAULT_COMPETITION] },
+  // enabled: get(competitionBasicAtom) !== null,
   queryFn: async () => {
-    const competitions = await supabase.from("competition").select("*");
-    const current =
-      document.location.hostname === "localhost"
-        ? competitions.data?.find((c) => c.code === "topgun")
-        : competitions.data?.find((c) => c.host === document.location.hostname);
-    return current && competitions.data
-      ? { current, all: competitions.data }
-      : { current: DEFAULT_COMPETITION, all: [DEFAULT_COMPETITION] };
+    const competition = get(competitionBasicAtom)!;
+
+    const settings = await supabase
+      .from("competition")
+      .select("*")
+      .eq("id", competition.id)
+      .single();
+
+    if (settings.error) {
+      throw settings.error;
+    }
+
+    let x: Competition = settings.data;
+    return x;
   },
 }));
-
-export const accentColourAtom = atom<string>(
-  (get) => get(competitionAtom)?.data?.current.colour ?? "#004a79"
-);
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -506,6 +557,7 @@ export function SharedLogic() {
     const keyTableLinks: [QueryKey[], string][] = [
       [[["races_data"]], "race"],
       [[["competition"]], "competition"],
+      [[["feedback"]], "feedback"],
     ];
 
     const channels = keyTableLinks.map(([queryKeys, table]) => {

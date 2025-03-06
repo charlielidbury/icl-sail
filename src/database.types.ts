@@ -35,9 +35,8 @@ export type Database = {
       competition: {
         Row: {
           announcement: string | null
-          code: string
-          colour: string
           estimates: boolean
+          feedback: boolean
           go_to_stand: number
           host: string
           id: string
@@ -46,25 +45,47 @@ export type Database = {
         }
         Insert: {
           announcement?: string | null
-          code: string
-          colour: string
           estimates?: boolean
+          feedback?: boolean
           go_to_stand?: number
           host: string
-          id?: string
+          id: string
           name: string
           racing_paused?: boolean
         }
         Update: {
           announcement?: string | null
-          code?: string
-          colour?: string
           estimates?: boolean
+          feedback?: boolean
           go_to_stand?: number
           host?: string
           id?: string
           name?: string
           racing_paused?: boolean
+        }
+        Relationships: []
+      }
+      feedback: {
+        Row: {
+          body: string
+          created_at: string
+          hidden: boolean
+          id: number
+          response: string | null
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          hidden?: boolean
+          id?: number
+          response?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          hidden?: boolean
+          id?: number
+          response?: string | null
         }
         Relationships: []
       }

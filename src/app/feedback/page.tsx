@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import Page from "./races";
+import Page from "./feedback";
 import { Provider as JotaiProvider } from "jotai";
 
 export default async function P() {

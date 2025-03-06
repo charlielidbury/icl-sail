@@ -9,32 +9,34 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import NavBar from "@/components/navbar";
 import {
+  useCompetition,
   Competition,
   competitionAtom,
   queryClient,
-  accentColourAtom,
   SharedLogic,
   useAuth,
+  hostnameAtom,
 } from "@/shared";
 import { QueryClientProvider, useMutation } from "@tanstack/react-query";
 import supabase from "@/supabase";
 import { useEffect, useState } from "react";
 import { useColorMode } from "@/components/ui/color-mode";
 import { useAtomValue } from "jotai";
+import dynamic from "next/dynamic";
+import { useHydrateAtoms } from "jotai/utils";
 
 function SettingsPage() {
   const { isAdmin } = useAuth();
 
-  const { data: competition, isLoading } = useAtomValue(competitionAtom);
-  const remoteSettings = competition?.current;
+  const competition = useCompetition();
+
+  const { data: remoteSettings, isLoading } = useAtomValue(competitionAtom);
 
   // Force light color mode on load
   const { setColorMode } = useColorMode();
   useEffect(() => {
     setColorMode("light");
   }, [setColorMode]);
-
-  const accentColour = useAtomValue(accentColourAtom);
 
   const [settings, setSettings] = useState<Competition | undefined>(undefined);
   useEffect(() => {
@@ -105,7 +107,17 @@ function SettingsPage() {
                 onCheckedChange={(v) =>
                   setSettings({ ...settings, racing_paused: !!v.checked })
                 }
-                colorScheme={accentColour}
+                colorScheme={competition.accentColour}
+              />
+            </Field>
+
+            <Field label="Enable Feedback">
+              <Checkbox
+                checked={settings.feedback}
+                onCheckedChange={(v) =>
+                  setSettings({ ...settings, feedback: !!v.checked })
+                }
+                colorScheme={competition.accentColour}
               />
             </Field>
 
@@ -133,7 +145,7 @@ function SettingsPage() {
                 onCheckedChange={(v) =>
                   setSettings({ ...settings, estimates: !!v.checked })
                 }
-                colorScheme={accentColour}
+                colorScheme={competition.accentColour}
               />
             </Field>
 
@@ -147,11 +159,12 @@ function SettingsPage() {
                   settings.estimates === remoteSettings?.estimates &&
                   settings.go_to_stand === remoteSettings?.go_to_stand &&
                   settings.racing_paused === remoteSettings?.racing_paused &&
-                  settings.announcement === remoteSettings?.announcement
+                  settings.announcement === remoteSettings?.announcement &&
+                  settings.feedback === remoteSettings?.feedback
                 }
                 colorScheme="blue"
-                bg={accentColour}
-                _hover={{ bg: `${accentColour}dd` }}
+                bg={competition.accentColour}
+                _hover={{ bg: `${competition.accentColour}dd` }}
                 size="lg"
                 w="full"
               >
@@ -165,7 +178,8 @@ function SettingsPage() {
   );
 }
 
-export default function Page() {
+export default function Page({ hostname }: { hostname: string | undefined }) {
+  useHydrateAtoms([[hostnameAtom, hostname]]);
   return (
     <QueryClientProvider client={queryClient}>
       <SharedLogic />
