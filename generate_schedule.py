@@ -788,7 +788,7 @@ if __name__ == "__main__":
     with open(f"schedule/state.sql", "w") as f:
         f.write(sql_header)
 
-    if False:
+    if True:
         league = "quali"
         teams = TEAMS
         flights = FLIGHTS

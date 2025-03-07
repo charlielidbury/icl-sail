@@ -73,7 +73,18 @@ const documents: Record<
       href: "/topgun/topgun_schedule.pdf",
     },
   ],
-  bathrobe: [],
+  bathrobe: [
+    {
+      title: "Sailing Instructions",
+      description: "Tournament format, rules",
+      href: "/bathrobe/instructions.pdf",
+    },
+    {
+      title: "Qualifying Schedule",
+      description: "Qualifying schedule in typical table format",
+      href: "/bathrobe/qualifying_schedule.pdf",
+    },
+  ],
 };
 
 // export async function getServerSideProps(context: GetServerSidePropsContext) {
