@@ -74,13 +74,8 @@ function FeedbackItem({ feedback, isAdmin, onDelete }: FeedbackItemProps) {
     },
   });
 
-  // ((auth.uid())::text IN ( SELECT USER AS "user"
-  //   FROM admin))
-
   const handleDelete = () => {
-    // if (confirm("Are you sure you want to delete this feedback?")) {
     deleteFeedback.mutate();
-    // }
   };
 
   const competition = useCompetition();
@@ -291,6 +286,19 @@ function FeedbackPage() {
               </Flex>
             </VStack>
           </Box>
+
+          <Text
+            fontSize="sm"
+            fontStyle="italic"
+            color="gray.500"
+            textAlign="center"
+          >
+            If you can see this message, you can turn off feedback via{" "}
+            <a href="/controls" style={{ textDecoration: "underline" }}>
+              controls
+            </a>
+            . Please do so if things get out of hand.
+          </Text>
 
           <Box height="1px" bg="gray.200" my={3} />
 

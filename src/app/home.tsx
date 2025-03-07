@@ -191,7 +191,7 @@ function Info() {
                 />
               </Flex>
               <Text fontSize="sm" color="gray.500">
-                Schedule and Results
+                Schedule and results
               </Text>
             </Link>
             <Link
@@ -229,7 +229,7 @@ function Info() {
                 />
               </Flex>
               <Text fontSize="sm" color="gray.500">
-                View Rankings
+                View rankings
               </Text>
             </Link>
           </SimpleGrid>
@@ -261,7 +261,7 @@ function Info() {
                     boxSize={4}
                     color={competition.accentColour}
                   />
-                  <Text fontWeight="medium">Feedback</Text>
+                  <Text fontWeight="medium">Website Feedback</Text>
                   <Icon
                     as={TbChevronRight}
                     boxSize={4}
@@ -271,7 +271,7 @@ function Info() {
                   />
                 </Flex>
                 <Text fontSize="sm" color="gray.500">
-                  Share Your Thoughts
+                  Bug reports and feature requests
                 </Text>
               </Link>
             </Box>
