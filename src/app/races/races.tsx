@@ -285,7 +285,10 @@ function Page() {
                   // Check if any team stays in boats from previous race
                   let stayingTeam = null;
                   let aboveRace = filteredRaces[index + 1];
-                  if (aboveRace && aboveRace.number === race.number + 4) {
+                  if (
+                    aboveRace &&
+                    aboveRace.number === race.number + races.data!.numFlights
+                  ) {
                     if (aboveRace.lteam.id === race.lteam.id) {
                       stayingTeam = race.lteam.name;
                     }

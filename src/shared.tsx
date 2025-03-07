@@ -176,7 +176,9 @@ export const racesAtom = atomWithQuery((get) => ({
     const goToStand = competition?.go_to_stand ?? 4;
 
     // Convert from Supabase data to RaceResult
+    const flights = new Set<string>();
     const races: RaceResult[] = racesData.map((d) => {
+      flights.add(d.flight.id);
       const result =
         d.finishtime === null
           ? {
@@ -244,7 +246,7 @@ export const racesAtom = atomWithQuery((get) => ({
       }
     }
 
-    return { races, currentRace };
+    return { races, currentRace, numFlights: flights.size };
   },
 }));
 
@@ -482,7 +484,7 @@ export const allCompetitions: Record<CompetitionId, CompetitionBasic> = {
 };
 
 export const competitionHosts = new Map([
-  ["localhost", allCompetitions.icicle],
+  ["localhost", allCompetitions.bathrobe],
   ["topgun.isail.events", allCompetitions.topgun],
   ["imperialicicle.com", allCompetitions.icicle],
   ["bathrobe.isail.events", allCompetitions.bathrobe],
