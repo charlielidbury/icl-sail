@@ -333,9 +333,7 @@ function Info() {
             <Link href="mailto:personal@charlielidbury.com">
               personal@charlielidbury.com
             </Link>
-            . In the future we will likely charge for its usage, but for now
-            we're offering it for free so we can get as much practice running
-            competitions as possible.
+            .
           </Text>
         </Box>
       </Container>
