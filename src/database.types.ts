@@ -93,20 +93,32 @@ export type Database = {
         Row: {
           id: string
           lhalf: string
+          lname: string
+          lnumbers: number[]
           name: string
           rhalf: string
+          rname: string
+          rnumbers: number[]
         }
         Insert: {
           id?: string
           lhalf: string
+          lname: string
+          lnumbers: number[]
           name: string
           rhalf: string
+          rname: string
+          rnumbers: number[]
         }
         Update: {
           id?: string
           lhalf?: string
+          lname?: string
+          lnumbers?: number[]
           name?: string
           rhalf?: string
+          rname?: string
+          rnumbers?: number[]
         }
         Relationships: [
           {

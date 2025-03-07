@@ -61,7 +61,7 @@ function FlightPictures({ race }: { race: RaceResult }) {
       <Flex justify="center" gap={4}>
         <Box borderWidth="1px" borderRadius="md" overflow="hidden">
           <Image
-            src={`/halfflights/${race.flight.lhalf.id}.jpeg`}
+            src={`/halfflights/${race.flight.id}_left.jpeg`}
             alt="Left Flight Half"
             width={300}
             objectFit="cover"
@@ -71,7 +71,7 @@ function FlightPictures({ race }: { race: RaceResult }) {
         </Box>
         <Box borderWidth="1px" borderRadius="md" overflow="hidden">
           <Image
-            src={`/halfflights/${race.flight.rhalf.id}.jpeg`}
+            src={`/halfflights/${race.flight.id}_right.jpeg`}
             alt="Right Flight Half"
             width={300}
             objectFit="cover"

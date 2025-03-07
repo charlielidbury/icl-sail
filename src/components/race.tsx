@@ -78,10 +78,10 @@ function RaceCard({
   const rightTeamName = race.rteam.name || "";
   const leftSubStr =
     race.lresult?.join(", ") ||
-    `in ${race.flight.lhalf.name} (${race.flight.lhalf.numbers.join(",")})`;
+    `in ${race.flight.lname} (${race.flight.lnumbers.join(",")})`;
   const rightSubStr =
     race.rresult?.join(", ") ||
-    `in ${race.flight.rhalf.name} (${race.flight.rhalf.numbers.join(",")})`;
+    `in ${race.flight.rname} (${race.flight.rnumbers.join(",")})`;
 
   // Compute scores if available.
   const leftScore = race.lresult !== null ? sumResult(race.lresult) : null;

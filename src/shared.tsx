@@ -11,14 +11,10 @@ import { atomWithQuery } from "jotai-tanstack-query";
 export interface Flight {
   id: string;
   name: string;
-  lhalf: HalfFlight;
-  rhalf: HalfFlight;
-}
-
-export interface HalfFlight {
-  id: string;
-  name: string;
-  numbers: number[];
+  lname: string;
+  lnumbers: number[];
+  rnumbers: number[];
+  rname: string;
 }
 
 export interface Team {
@@ -145,8 +141,10 @@ const racesDataAtom = atomWithQuery((get) => ({
           flight (
             id,
             name,
-            lhalf:halfflight!lhalf ( id, name, numbers ),
-            rhalf:halfflight!rhalf ( id, name, numbers )
+            lname,
+            lnumbers,
+            rnumbers,
+            rname
           ),
           lteam:team!lteam ( id, name ),
           lresult,
@@ -484,7 +482,7 @@ export const allCompetitions: Record<CompetitionId, CompetitionBasic> = {
 };
 
 export const competitionHosts = new Map([
-  ["localhost", allCompetitions.bathrobe],
+  ["localhost", allCompetitions.icicle],
   ["topgun.isail.events", allCompetitions.topgun],
   ["imperialicicle.com", allCompetitions.icicle],
   ["bathrobe.isail.events", allCompetitions.bathrobe],

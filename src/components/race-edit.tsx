@@ -125,7 +125,7 @@ export default function RaceEdit({
         <Grid templateColumns="1fr auto 1fr" gap={2} m={4}>
           <GridItem textAlign="center">
             <Text fontSize="sm" fontWeight="bold">
-              {race.flight.lhalf.name}
+              {race.flight.lname}
             </Text>
           </GridItem>
           <GridItem textAlign="center" rowSpan={1} alignSelf="center">
@@ -135,7 +135,7 @@ export default function RaceEdit({
           </GridItem>
           <GridItem textAlign="center">
             <Text fontSize="sm" fontWeight="bold">
-              {race.flight.rhalf.name}
+              {race.flight.rname}
             </Text>
           </GridItem>
         </Grid>
@@ -156,7 +156,7 @@ export default function RaceEdit({
                     variant="ghost"
                     onClick={() => handleChange(0, i, nextNumber)}
                   >
-                    Boat {race.flight.lhalf.numbers[i]}
+                    Boat {race.flight.lnumbers[i]}
                   </Button>
                 </GridItem>
                 <GridItem textAlign="center" key={10 * i + 2}>
@@ -189,7 +189,7 @@ export default function RaceEdit({
                     variant="ghost"
                     onClick={() => handleChange(1, i, nextNumber)}
                   >
-                    Boat {race.flight.rhalf.numbers[i]}
+                    Boat {race.flight.rnumbers[i]}
                   </Button>
                 </GridItem>
               </>
