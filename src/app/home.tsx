@@ -14,11 +14,18 @@ import {
 import NavBar from "@/components/navbar";
 import {
   competitionBasicAtom,
+  competitionAtom,
   CompetitionId,
   hostnameAtom,
   useAuth,
 } from "@/shared";
-import { TbDownload, TbChevronRight, TbClock, TbMedal } from "react-icons/tb";
+import {
+  TbDownload,
+  TbChevronRight,
+  TbClockFilled,
+  TbTrophyFilled,
+  TbMessageFilled,
+} from "react-icons/tb";
 import { MadeWithLove } from "@/components/ui/made-with-love";
 import { useColorMode } from "@/components/ui/color-mode";
 import { useEffect } from "react";
@@ -76,6 +83,8 @@ const documents: Record<
 function Info() {
   const { isAdmin } = useAuth();
   const competition = useAtomValue(competitionBasicAtom);
+  const { data: competitionData } = useAtomValue(competitionAtom);
+  const feedbackEnabled = competitionData?.feedback ?? true;
 
   // Ensure light mode.
   const { setColorMode } = useColorMode();
@@ -167,7 +176,11 @@ function Info() {
               color="gray.700"
             >
               <Flex align="center" gap={1.5}>
-                <Icon as={TbClock} boxSize={4} />
+                <Icon
+                  as={TbClockFilled}
+                  boxSize={4}
+                  color={competition.accentColour}
+                />
                 <Text fontWeight="medium">Races</Text>
                 <Icon
                   as={TbChevronRight}
@@ -201,7 +214,11 @@ function Info() {
               color="gray.700"
             >
               <Flex align="center" gap={1.5}>
-                <Icon as={TbMedal} boxSize={4} />
+                <Icon
+                  as={TbTrophyFilled}
+                  boxSize={4}
+                  color={competition.accentColour}
+                />
                 <Text fontWeight="medium">Leaderboard</Text>
                 <Icon
                   as={TbChevronRight}
@@ -216,6 +233,49 @@ function Info() {
               </Text>
             </Link>
           </SimpleGrid>
+
+          {feedbackEnabled && (
+            <Box w="full" maxW="400px" mt={4}>
+              <Link
+                href="/feedback"
+                p={3}
+                bg="white"
+                rounded="lg"
+                shadow="md"
+                display="flex"
+                flexDir="column"
+                alignItems="center"
+                gap={1}
+                _hover={{
+                  transform: "translateY(-2px)",
+                  shadow: "lg",
+                  color: competition.accentColour,
+                  "& svg.chevron": { transform: "translateX(2px)" },
+                }}
+                transition="all 0.2s"
+                color="gray.700"
+              >
+                <Flex align="center" gap={1.5}>
+                  <Icon
+                    as={TbMessageFilled}
+                    boxSize={4}
+                    color={competition.accentColour}
+                  />
+                  <Text fontWeight="medium">Feedback</Text>
+                  <Icon
+                    as={TbChevronRight}
+                    boxSize={4}
+                    className="chevron"
+                    transition="transform 0.2s"
+                    color={competition.accentColour}
+                  />
+                </Flex>
+                <Text fontSize="sm" color="gray.500">
+                  Share Your Thoughts
+                </Text>
+              </Link>
+            </Box>
+          )}
         </VStack>
 
         {/* Documents Section */}

@@ -74,10 +74,13 @@ function FeedbackItem({ feedback, isAdmin, onDelete }: FeedbackItemProps) {
     },
   });
 
+  // ((auth.uid())::text IN ( SELECT USER AS "user"
+  //   FROM admin))
+
   const handleDelete = () => {
-    if (confirm("Are you sure you want to delete this feedback?")) {
-      deleteFeedback.mutate();
-    }
+    // if (confirm("Are you sure you want to delete this feedback?")) {
+    deleteFeedback.mutate();
+    // }
   };
 
   const competition = useCompetition();
@@ -127,9 +130,9 @@ function FeedbackItem({ feedback, isAdmin, onDelete }: FeedbackItemProps) {
       <Box p={4}>
         <Text whiteSpace="pre-wrap">{feedback.body}</Text>
         {feedback.response && (
-          <Box mt={4} p={3} bg="gray.50" borderRadius="md">
+          <Box mt={4} p={3} bg="gray.100" borderRadius="md">
             <Text fontWeight="bold" fontSize="sm" color="gray.700">
-              Response:
+              Developer Response
             </Text>
             <Text mt={1}>{feedback.response}</Text>
           </Box>
