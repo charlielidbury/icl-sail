@@ -103,7 +103,7 @@ function TeamComparison({
       <Heading size="xl" textAlign="center" mt={2}>
         Team Comparison
       </Heading>
-      {!stats ? (
+      {false ? (
         <Skeleton height="80px" variant="shine" />
       ) : (
         <Box mb={4} p={3} borderWidth="1px" borderRadius="md" bg="white">
