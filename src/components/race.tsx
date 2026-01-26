@@ -42,7 +42,7 @@ function highlightText(text: string, search: string) {
           </Box>
         ) : (
           <span key={i}>{part}</span>
-        )
+        ),
       )}
     </>
   );
@@ -78,10 +78,10 @@ function RaceCard({
   const rightTeamName = race.rteam.name || "";
   const leftSubStr =
     race.lresult?.join(", ") ||
-    `in ${race.flight.lname} (${race.flight.lnumbers.join(",")})`;
+    `${race.flight.name} ${race.flight.lname} (${race.flight.lnumbers.join(",\u00A0")})`;
   const rightSubStr =
     race.rresult?.join(", ") ||
-    `in ${race.flight.rname} (${race.flight.rnumbers.join(",")})`;
+    `${race.flight.name} ${race.flight.rname} (${race.flight.rnumbers.join(",\u00A0")})`;
 
   // Compute scores if available.
   const leftScore = race.lresult !== null ? sumResult(race.lresult) : null;

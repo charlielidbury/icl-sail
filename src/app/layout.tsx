@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Bath Robe",
-  description: "Bath Robe Live Race Results",
+  title: "Brunel Badger",
+  description: "Brunel Badger Live Race Results",
 };
 
 export default async function RootLayout({
@@ -26,7 +26,10 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable}`}
+        suppressHydrationWarning
+      >
         <JotaiProvider>
           <Provider>{children}</Provider>
         </JotaiProvider>

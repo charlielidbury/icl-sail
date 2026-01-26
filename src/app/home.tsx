@@ -85,6 +85,23 @@ const documents: Record<
       href: "/bathrobe/qualifying_schedule.pdf",
     },
   ],
+  badger: [
+    {
+      title: "Qualifying Schedule",
+      description: "Qualifying schedule in typical table format",
+      href: "/badger/schedule.pdf",
+    },
+    {
+      title: "Sailing Instructions",
+      description: "Tournament format, rules",
+      href: "/badger/instructions.pdf",
+    },
+    {
+      title: "Notice of Race",
+      description: "Information for competitors",
+      href: "/badger/nor.pdf",
+    },
+  ],
 };
 
 // export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -111,10 +128,12 @@ function Info() {
     competition.id === "icicle"
       ? ["IMPERIAL", "ICICLE"]
       : competition.id === "topgun"
-      ? ["OXFORD", "TOPGUN"]
-      : competition.id === "bathrobe"
-      ? ["BATH", "ROBE"]
-      : []; // never
+        ? ["OXFORD", "TOPGUN"]
+        : competition.id === "bathrobe"
+          ? ["BATH", "ROBE"]
+          : competition.id === "badger"
+            ? ["BRUNEL", "BADGER"]
+            : []; // never
 
   const textSize = competition.id === "bathrobe" ? "7xl" : "5xl";
 

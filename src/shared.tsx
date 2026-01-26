@@ -96,7 +96,7 @@ export function useAuth(): { session: Session | null; isAdmin: boolean } {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) =>
-      setSession(session)
+      setSession(session),
     );
     return () => subscription.unsubscribe();
   }, []);
@@ -150,7 +150,7 @@ const racesDataAtom = atomWithQuery((get) => ({
           lresult,
           rresult,
           rteam:team!rteam ( id, name )
-        `
+        `,
       )
       .order("number", { ascending: true })
       .eq("competition", competition.id);
@@ -239,7 +239,7 @@ export const racesAtom = atomWithQuery((get) => ({
         for (let i = currentRaceIndex + 1; i < races.length; i++) {
           // races[i].estfinishtime = dayjs();
           const time = dayjs().add(
-            averageTimeBetweenRacesMs * (i - currentRaceIndex - goToStand)
+            averageTimeBetweenRacesMs * (i - currentRaceIndex - goToStand),
           );
           races[i].estfinishtime = time;
         }
@@ -336,7 +336,7 @@ export const leaderboardAtom = atom((get) => {
 
     // each criteria returns a number, sorts by HIGHEST number first
     const initialCriteria: ((
-      _: LeaderboardTeam[]
+      _: LeaderboardTeam[],
     ) => (_: LeaderboardTeam) => number)[] = [
       // (0) by win %
       (_) => (t) => t.win_rate,
@@ -404,7 +404,7 @@ export const leaderboardAtom = atom((get) => {
     // Orders according to various criteria
     const orderTeams = (
       teams: LeaderboardTeam[],
-      criteria: ((_: LeaderboardTeam[]) => (_: LeaderboardTeam) => number)[]
+      criteria: ((_: LeaderboardTeam[]) => (_: LeaderboardTeam) => number)[],
     ): LeaderboardTeam[] => {
       if (teams.length <= 1) {
         return teams;
@@ -413,7 +413,7 @@ export const leaderboardAtom = atom((get) => {
       if (criteria.length === 0) {
         console.error(
           "Unbreakable tie, using coin toss",
-          teams.map((t) => t.team.name)
+          teams.map((t) => t.team.name),
         );
         return teams;
       }
@@ -449,7 +449,7 @@ export const leaderboardAtom = atom((get) => {
   return sortedLeaderboard;
 });
 
-export type CompetitionId = "topgun" | "icicle" | "bathrobe";
+export type CompetitionId = "topgun" | "icicle" | "bathrobe" | "badger";
 
 export type CompetitionBasic = {
   id: CompetitionId;
@@ -481,20 +481,28 @@ export const allCompetitions: Record<CompetitionId, CompetitionBasic> = {
     logo: "/bathrobe/logo.png",
     name: "Bath Robe",
   },
+  badger: {
+    id: "badger",
+    host: "badger.isail.events",
+    accentColour: "#004a79",
+    logo: "/badger/small-logo.jpg",
+    name: "Badger",
+  },
 };
 
 export const competitionHosts = new Map([
-  ["localhost", allCompetitions.bathrobe],
+  ["localhost", allCompetitions.badger],
   ["topgun.isail.events", allCompetitions.topgun],
   ["imperialicicle.com", allCompetitions.icicle],
   ["bathrobe.isail.events", allCompetitions.bathrobe],
+  ["badger.brunelsailing.co.uk", allCompetitions.badger],
 ]);
 
 export const hostnameAtom = atom<string | undefined>(undefined);
 
 export const competitionBasicAtom = atom<CompetitionBasic>(
   (get) =>
-    competitionHosts.get(get(hostnameAtom) ?? "") ?? allCompetitions.icicle
+    competitionHosts.get(get(hostnameAtom) ?? "") ?? allCompetitions.icicle,
 );
 
 export function useCompetition() {
@@ -584,14 +592,14 @@ export function SharedLogic() {
                   "invalidating",
                   queryKey,
                   "due to a change in",
-                  table
+                  table,
                 );
 
                 await queryClient.invalidateQueries({ queryKey });
-              })
+              }),
             );
             loading = false;
-          }
+          },
         )
         .subscribe();
     });

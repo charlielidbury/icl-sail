@@ -17,8 +17,8 @@ import {
   PopoverRoot,
   PopoverTrigger,
   Select,
+  createListCollection,
 } from "@chakra-ui/react";
-import { ListCollection } from "@zag-js/collection";
 import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
 import {
   TbMenu2,
@@ -224,6 +224,7 @@ function NavBar({ isAdmin }: NavBarProps) {
                   <Auth
                     supabaseClient={supabase}
                     appearance={{ theme: ThemeSupa }}
+                    providers={[]}
                   />
                 </DialogBody>
                 <DialogFooter />
@@ -298,7 +299,6 @@ const DesktopNav = ({ navItems }: DesktopNavProps) => {
                 _hover={{ textDecoration: "none" }}
               >
                 <Flex
-                  as="a"
                   py={2}
                   px={3}
                   fontSize={"sm"}
@@ -395,7 +395,6 @@ const DesktopSubNav = ({ label, href, subLabel }: DesktopSubNavProps) => {
   return (
     <Link href={href} _hover={{ textDecoration: "none" }}>
       <Flex
-        as="a"
         role={"group"}
         p={3}
         rounded={"md"}
@@ -449,7 +448,7 @@ const CompetitionSelector = ({ isMobile = false }) => {
     }
   };
 
-  const competitionItems = new ListCollection({
+  const competitionItems = createListCollection({
     items: Object.values(allCompetitions).map((comp) => ({
       label: comp.name,
       value: comp.id,
