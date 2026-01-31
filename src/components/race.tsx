@@ -74,8 +74,8 @@ function RaceCard({
   const shadow = active ? "lg" : "md";
 
   // Extract team names and result strings.
-  const leftTeamName = race.lteam.name || "";
-  const rightTeamName = race.rteam.name || "";
+  const leftTeamName = race.lteam?.name || "";
+  const rightTeamName = race.rteam?.name || "";
   const leftSubStr =
     race.lresult?.join(", ") ||
     `${race.flight.name} ${race.flight.lname} (${race.flight.lnumbers.join(",\u00A0")})`;

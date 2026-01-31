@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import supabase from "./supabase";
 import { Session } from "@supabase/supabase-js";
 import { QueryClient, QueryKey, useQueryClient } from "@tanstack/react-query";
-import { atom, useAtom, useAtomValue } from "jotai";
+import { atom, useAtomValue } from "jotai";
 import { atomWithQuery } from "jotai-tanstack-query";
 
 export interface Flight {
@@ -29,8 +29,8 @@ export type RaceResult = {
   estfinishtime: Dayjs | null;
   league: string;
   flight: Flight;
-  lteam: Team;
-  rteam: Team;
+  lteam: Team | null;
+  rteam: Team | null;
 } & ( // Captures the fact that if the finishtime is set, then the result is set.
   | {
       finishtime: null;
@@ -68,6 +68,7 @@ export type Competition = {
   racing_paused: boolean;
   id: string;
   feedback: boolean;
+  finals_markdown: string | null;
 };
 
 export function getLeagueName(league: string): string {
@@ -297,6 +298,10 @@ export const leaderboardAtom = atom((get) => {
     if (race.finishtime === null) {
       continue;
     }
+    // Skip placeholder races without teams
+    if (race.lteam === null || race.rteam === null) {
+      continue;
+    }
 
     // Group races by league
     let races = racesByLeague.get(race.league);
@@ -358,8 +363,8 @@ export const leaderboardAtom = atom((get) => {
           if (r.league !== league) continue;
           if (r.finishtime === null) continue;
 
-          const lStats = miniStats.get(r.lteam.id);
-          const rStats = miniStats.get(r.rteam.id);
+          const lStats = r.lteam ? miniStats.get(r.lteam.id) : undefined;
+          const rStats = r.rteam ? miniStats.get(r.rteam.id) : undefined;
           if (lStats !== undefined && rStats !== undefined) {
             rs += 1;
             const lpts = r.lresult.reduce((a, b) => a + b);

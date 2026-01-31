@@ -255,11 +255,13 @@ export default function RaceDialog({ race, active }: RaceDialogProps) {
         {isAdmin && <RaceEdit race={race} active={active} />}
 
         {/* Head-to-Head Header */}
-        <TeamComparison
-          league={race.league}
-          leftTeamId={race.lteam.id}
-          rightTeamId={race.rteam.id}
-        />
+        {race.lteam && race.rteam && (
+          <TeamComparison
+            league={race.league}
+            leftTeamId={race.lteam.id}
+            rightTeamId={race.rteam.id}
+          />
+        )}
       </Box>
     </Box>
   );

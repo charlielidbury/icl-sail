@@ -24,6 +24,7 @@ import { useColorMode } from "@/components/ui/color-mode";
 import { useAtomValue } from "jotai";
 import dynamic from "next/dynamic";
 import { useHydrateAtoms } from "jotai/utils";
+import { queryClientAtom } from "jotai-tanstack-query";
 
 function SettingsPage() {
   const { isAdmin } = useAuth();
@@ -179,7 +180,10 @@ function SettingsPage() {
 }
 
 export default function Page({ hostname }: { hostname: string | undefined }) {
-  useHydrateAtoms([[hostnameAtom, hostname]]);
+  useHydrateAtoms([
+    [hostnameAtom, hostname],
+    [queryClientAtom, queryClient],
+  ]);
   return (
     <QueryClientProvider client={queryClient}>
       <SharedLogic />

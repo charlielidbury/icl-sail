@@ -12,6 +12,8 @@ import {
   Button,
   ButtonGroup,
   Link,
+  Textarea,
+  IconButton,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
@@ -26,10 +28,181 @@ import {
   useCompetition,
   hostnameAtom,
 } from "@/shared";
-import { QueryClientProvider, useQuery } from "@tanstack/react-query";
+import {
+  QueryClientProvider,
+  useQuery,
+  useMutation,
+} from "@tanstack/react-query";
+import ReactMarkdown from "react-markdown";
+import supabase from "@/supabase";
+import { TbEdit, TbCheck, TbX } from "react-icons/tb";
 import { useAtom, useAtomValue } from "jotai";
 import dynamic from "next/dynamic";
 import { useHydrateAtoms } from "jotai/utils";
+import { queryClientAtom } from "jotai-tanstack-query";
+
+function FinalsMarkdown() {
+  const { isAdmin } = useAuth();
+  const competition = useCompetition();
+  const { data: settings, refetch } = useAtomValue(competitionAtom);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState("");
+
+  useEffect(() => {
+    if (settings?.finals_markdown !== undefined) {
+      setEditContent(settings.finals_markdown || "");
+    }
+  }, [settings?.finals_markdown]);
+
+  const saveMarkdown = useMutation({
+    mutationFn: async (newMarkdown: string) => {
+      const { error } = await supabase
+        .from("competition")
+        .update({ finals_markdown: newMarkdown || null })
+        .eq("id", competition.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      refetch();
+      setIsEditing(false);
+    },
+    onError: (error) => {
+      alert(`Error saving: ${error.message}`);
+    },
+  });
+
+  const handleSave = () => {
+    saveMarkdown.mutate(editContent);
+  };
+
+  const handleCancel = () => {
+    setEditContent(settings?.finals_markdown || "");
+    setIsEditing(false);
+  };
+
+  if (!settings) {
+    return (
+      <Stack>
+        <Skeleton height="200px" />
+      </Stack>
+    );
+  }
+
+  if (isEditing && isAdmin) {
+    return (
+      <Box>
+        <Flex justify="flex-end" mb={2} gap={2}>
+          <IconButton
+            aria-label="Save"
+            size="sm"
+            colorPalette="green"
+            onClick={handleSave}
+            loading={saveMarkdown.isPending}
+          >
+            <TbCheck />
+          </IconButton>
+          <IconButton
+            aria-label="Cancel"
+            size="sm"
+            colorPalette="red"
+            variant="outline"
+            onClick={handleCancel}
+            disabled={saveMarkdown.isPending}
+          >
+            <TbX />
+          </IconButton>
+        </Flex>
+        <Textarea
+          value={editContent}
+          onChange={(e) => setEditContent(e.target.value)}
+          minH="300px"
+          resize="vertical"
+          fontFamily="mono"
+          fontSize="sm"
+          placeholder="Enter markdown content for finals results..."
+        />
+      </Box>
+    );
+  }
+
+  const markdownContent = settings.finals_markdown;
+
+  return (
+    <Box position="relative">
+      {isAdmin && (
+        <Box position="absolute" top={0} right={0}>
+          <IconButton
+            aria-label="Edit"
+            size="sm"
+            variant="ghost"
+            onClick={() => setIsEditing(true)}
+          >
+            <TbEdit />
+          </IconButton>
+        </Box>
+      )}
+
+      {markdownContent ? (
+        <Box
+          className="markdown-content"
+          css={{
+            "& h1": {
+              fontSize: "2xl",
+              fontWeight: "bold",
+              marginTop: "1rem",
+              marginBottom: "0.5rem",
+            },
+            "& h2": {
+              fontSize: "xl",
+              fontWeight: "bold",
+              marginTop: "0.75rem",
+              marginBottom: "0.5rem",
+            },
+            "& h3": {
+              fontSize: "lg",
+              fontWeight: "600",
+              marginTop: "0.5rem",
+              marginBottom: "0.25rem",
+            },
+            "& p": { marginBottom: "0.5rem" },
+            "& ul, & ol": { paddingLeft: "1.5rem", marginBottom: "0.5rem" },
+            "& li": { marginBottom: "0.25rem" },
+            "& strong": { fontWeight: "bold" },
+            "& em": { fontStyle: "italic" },
+            "& code": {
+              background: "#f0f0f0",
+              padding: "0 0.25rem",
+              borderRadius: "0.25rem",
+              fontFamily: "monospace",
+            },
+            "& pre": {
+              background: "#f0f0f0",
+              padding: "0.75rem",
+              borderRadius: "0.5rem",
+              overflow: "auto",
+              marginBottom: "0.5rem",
+            },
+            "& blockquote": {
+              borderLeft: "4px solid #ccc",
+              paddingLeft: "1rem",
+              fontStyle: "italic",
+            },
+          }}
+        >
+          <ReactMarkdown>{markdownContent}</ReactMarkdown>
+        </Box>
+      ) : (
+        <Text textAlign="center" fontSize="lg" color="gray.600">
+          {isAdmin
+            ? "No finals content yet. Click the edit button to add results."
+            : "Finals results will be posted here."}
+        </Text>
+      )}
+    </Box>
+  );
+}
 
 function LeaderboardRow({
   row,
@@ -175,7 +348,6 @@ function Page() {
 
   // Styling values.
   const pageBg = useColorModeValue("gray.50", "gray.800");
-  const { data: settings } = useAtomValue(competitionAtom);
 
   return (
     <Box minH="100vh" bg="gray.50">
@@ -237,7 +409,7 @@ function Page() {
                   fontSize="xs"
                   fontWeight="bold"
                 >
-                  2. KNOCKOUTS
+                  2. FINALS
                 </Button>
               </ButtonGroup>
             </Flex>
@@ -259,61 +431,7 @@ function Page() {
                   </Stack>
                 </>
               ) : selectedLeague === "finals" ? (
-                <>
-                  {/* Semi-finals */}
-                  <Heading as="h1" size="xl" mt={4} color="black">
-                    Semi-finals
-                  </Heading>
-                  <Text
-                    fontSize="sm"
-                    color="gray.600"
-                    mb={4}
-                    fontStyle="italic"
-                  >
-                    First to two wins between qualis 1st and qualis 4th
-                  </Text>
-                  <Stack gap={4}>
-                    <Leaderboard league="finals/q1vsq4" />
-                  </Stack>
-                  <Text
-                    fontSize="sm"
-                    color="gray.600"
-                    mb={4}
-                    fontStyle="italic"
-                  >
-                    First to two wins between qualis 2nd and qualis 3rd
-                  </Text>
-                  <Stack gap={4}>
-                    <Leaderboard league="finals/q2vsq3" />
-                  </Stack>
-
-                  {/* Finals */}
-                  <Heading as="h1" size="xl" mt={4} color="black">
-                    Finals
-                  </Heading>
-                  <Text
-                    fontSize="sm"
-                    color="gray.600"
-                    mb={4}
-                    fontStyle="italic"
-                  >
-                    First to three wins between semi-final winners
-                  </Text>
-                  <Stack gap={4}>
-                    <Leaderboard league="finals/winners" />
-                  </Stack>
-                  <Text
-                    fontSize="sm"
-                    color="gray.600"
-                    mb={4}
-                    fontStyle="italic"
-                  >
-                    First to three wins between semi-final losers
-                  </Text>
-                  <Stack gap={4}>
-                    <Leaderboard league="finals/losers" />
-                  </Stack>
-                </>
+                <FinalsMarkdown />
               ) : (
                 <></>
               )}
@@ -330,7 +448,10 @@ export default function LeaderboardPage({
 }: {
   hostname: string | undefined;
 }) {
-  useHydrateAtoms([[hostnameAtom, hostname]]);
+  useHydrateAtoms([
+    [hostnameAtom, hostname],
+    [queryClientAtom, queryClient],
+  ]);
   return (
     <QueryClientProvider client={queryClient}>
       <SharedLogic />

@@ -44,6 +44,7 @@ import { useSearchParams } from "next/navigation";
 import { useAtom, useAtomValue } from "jotai";
 import dynamic from "next/dynamic";
 import { useHydrateAtoms } from "jotai/utils";
+import { queryClientAtom } from "jotai-tanstack-query";
 
 // Memoize your Race component to avoid unnecessary re-renders
 const MemoizedRace = memo(Race);
@@ -122,7 +123,7 @@ function Page() {
       if (!cleanSearch) return true;
 
       // Normal search on team names and race number
-      const raceName = `${race.number} ${race.lteam.name} ${race.rteam.name}`;
+      const raceName = `${race.number} ${race.lteam?.name ?? ""} ${race.rteam?.name ?? ""}`;
       return raceName.toLowerCase().includes(cleanSearch);
     });
   }, [races, debouncedSearch]);
@@ -289,10 +290,10 @@ function Page() {
                     aboveRace &&
                     aboveRace.number === race.number + races.data!.numFlights
                   ) {
-                    if (aboveRace.lteam.id === race.lteam.id) {
+                    if (aboveRace.lteam?.id === race.lteam?.id && race.lteam) {
                       stayingTeam = race.lteam.name;
                     }
-                    if (aboveRace.rteam.id === race.rteam.id) {
+                    if (aboveRace.rteam?.id === race.rteam?.id && race.rteam) {
                       stayingTeam = race.rteam.name;
                     }
                   }
@@ -394,7 +395,10 @@ function Page() {
 }
 
 export default function Home({ hostname }: { hostname: string | undefined }) {
-  useHydrateAtoms([[hostnameAtom, hostname]]);
+  useHydrateAtoms([
+    [hostnameAtom, hostname],
+    [queryClientAtom, queryClient],
+  ]);
   return (
     <QueryClientProvider client={queryClient}>
       <SharedLogic />

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "gen": "npx supabase gen types --project-id \"uwticnzhykdnfbisrdrx\" --schema public > ./src/database.types.ts"
+    "gen": "pnpx supabase gen types --project-id \"uwticnzhykdnfbisrdrx\" --schema public > ./src/database.types.ts"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",
@@ -27,6 +27,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
+    "react-markdown": "^10.1.0",
     "react-virtuoso": "^4.12.5",
     "supabase": "^2.12.1",
     "zag-js": "^1.0.0"

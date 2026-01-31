@@ -34,6 +34,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { TbTrash } from "react-icons/tb";
 import dynamic from "next/dynamic";
 import { useHydrateAtoms } from "jotai/utils";
+import { queryClientAtom } from "jotai-tanstack-query";
 
 // Initialize dayjs plugins
 dayjs.extend(relativeTime);
@@ -315,7 +316,10 @@ function FeedbackPage() {
 }
 
 export default function Page({ hostname }: { hostname: string | undefined }) {
-  useHydrateAtoms([[hostnameAtom, hostname]]);
+  useHydrateAtoms([
+    [hostnameAtom, hostname],
+    [queryClientAtom, queryClient],
+  ]);
   return (
     <QueryClientProvider client={queryClient}>
       <SharedLogic />
