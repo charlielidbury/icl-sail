@@ -112,7 +112,7 @@ function Info() {
   const { isAdmin } = useAuth();
   const competition = useAtomValue(competitionBasicAtom);
   const { data: competitionData } = useAtomValue(competitionAtom);
-  const feedbackEnabled = competitionData?.feedback ?? true;
+  const feedbackEnabled = true;
 
   // Ensure light mode.
   const { setColorMode } = useColorMode();

@@ -128,10 +128,8 @@ function NavBar({ isAdmin }: NavBarProps) {
 
   // Build nav items array and add Settings if isAdmin is true.
   const navItems: Array<NavItem> = [...BASE_NAV_ITEMS];
-  // Add Feedback link if feedback is enabled
-  if (settings?.feedback) {
-    navItems.push({ label: "Feedback", href: "/feedback" });
-  }
+  // Always show Feedback link
+  navItems.push({ label: "Feedback", href: "/feedback" });
   if (isAdmin) {
     navItems.push({ label: "Controls", href: "/controls" });
   }

@@ -196,13 +196,6 @@ function FeedbackPage() {
 
   const competition = useCompetition();
 
-  // Redirect if feedback is disabled
-  useEffect(() => {
-    if (settings && !settings.feedback) {
-      window.location.href = "/";
-    }
-  }, [settings]);
-
   // Mutation to submit feedback
   const submitFeedback = useMutation({
     mutationFn: async (body: string) => {
@@ -234,10 +227,6 @@ function FeedbackPage() {
 
     submitFeedback.mutate(feedbackText);
   };
-
-  if (!settings?.feedback) {
-    return null;
-  }
 
   return (
     <Box minH="100vh" bg="gray.50">
