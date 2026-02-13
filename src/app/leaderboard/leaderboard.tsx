@@ -34,6 +34,7 @@ import {
   useMutation,
 } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import supabase from "@/supabase";
 import { TbEdit, TbCheck, TbX } from "react-icons/tb";
 import { useAtom, useAtomValue } from "jotai";
@@ -189,9 +190,23 @@ function FinalsMarkdown() {
               paddingLeft: "1rem",
               fontStyle: "italic",
             },
+            "& table": {
+              width: "100%",
+              borderCollapse: "collapse",
+              marginBottom: "0.5rem",
+            },
+            "& th, & td": {
+              border: "1px solid #ccc",
+              padding: "0.4rem 0.75rem",
+              textAlign: "left",
+            },
+            "& th": {
+              fontWeight: "bold",
+              background: "#f5f5f5",
+            },
           }}
         >
-          <ReactMarkdown>{markdownContent}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdownContent}</ReactMarkdown>
         </Box>
       ) : (
         <Text textAlign="center" fontSize="lg" color="gray.600">
