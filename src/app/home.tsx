@@ -88,6 +88,11 @@ const documents: Record<
   ],
   icicle2026: [
     {
+      title: "Qualifying Schedule",
+      description: "Qualifying schedule in typical table format",
+      href: "/icicle2026/19_schedule.pdf",
+    },
+    {
       title: "Notice of Race",
       description: "Information for competitors",
       href: "/icicle2026/Icicle_nor_2026.pdf",
