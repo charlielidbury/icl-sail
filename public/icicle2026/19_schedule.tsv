@@ -1,0 +1,172 @@
+Race	Imperial Blue(1, 2, 3)	White(4, 5, 6)	Imperial Pink(7, 8, 9)	Black(10, 11, 12)	RHS Green Hull(7, 8, 9)	RHS Black Hull(10, 11, 12)
+1	St Andrews Pink	Oxford Blue				
+2			Oxford Pink	Oxford Orange		
+3					Durham Purple	Durham Black
+4	St Andrews Pink	Durham Red				
+5			Oxford Pink	Dirty Durham		
+6					Durham Purple	Cambridge Blue
+7	Southampton Green	Durham Red				
+8			Southampton Red	Dirty Durham		
+9					Southampton Blue	Cambridge Blue
+10	Southampton Green	Brunel Backshots				
+11			Southampton Red	Manchester Purple		
+12					Southampton Blue	UCL Purple
+13	CLART	Brunel Backshots				
+14			East Fife Polytechnic	Manchester Purple		
+15					Northern RoyalT	UCL Purple
+16	CLART	TeamQM Badgers				
+17			East Fife Polytechnic	Oxford Blue		
+18					Northern RoyalT	Oxford Orange
+19	Durham Black	TeamQM Badgers				
+20			Southampton Green	Oxford Blue		
+21					St Andrews Pink	Oxford Orange
+22	Durham Black	Southampton Red				
+23			Southampton Green	Southampton Blue		
+24					St Andrews Pink	Brunel Backshots
+25	UCL Purple	Southampton Red				
+26			Manchester Purple	Southampton Blue		
+27					East Fife Polytechnic	Brunel Backshots
+28	UCL Purple	CLART				
+29			Manchester Purple	Northern RoyalT		
+30					East Fife Polytechnic	TeamQM Badgers
+31	Oxford Pink	CLART				
+32			Durham Purple	Northern RoyalT		
+33					Durham Red	TeamQM Badgers
+34	Oxford Pink	Cambridge Blue				
+35			Durham Purple	Dirty Durham		
+36					Durham Red	Oxford Blue
+37	Oxford Orange	Cambridge Blue				
+38			Durham Black	Dirty Durham		
+39					Southampton Red	Oxford Blue
+40	Oxford Orange	Southampton Green				
+41			Durham Black	St Andrews Pink		
+42					Southampton Red	Southampton Blue
+43	Manchester Purple	Southampton Green				
+44			UCL Purple	St Andrews Pink		
+45					Brunel Backshots	Southampton Blue
+46	Manchester Purple	CLART				
+47			UCL Purple	East Fife Polytechnic		
+48					Brunel Backshots	Northern RoyalT
+49	Durham Purple	CLART				
+50			Oxford Pink	East Fife Polytechnic		
+51					Dirty Durham	Northern RoyalT
+52	Durham Purple	TeamQM Badgers				
+53			Oxford Pink	Durham Red		
+54					Dirty Durham	Cambridge Blue
+55	Oxford Blue	TeamQM Badgers				
+56			Oxford Orange	Durham Red		
+57					Durham Black	Cambridge Blue
+58	Oxford Blue	Southampton Blue				
+59			Oxford Orange	Southampton Red		
+60					Durham Black	Southampton Green
+61	St Andrews Pink	Southampton Blue				
+62			Brunel Backshots	Southampton Red		
+63					UCL Purple	Southampton Green
+64	St Andrews Pink	Manchester Purple				
+65			Brunel Backshots	TeamQM Badgers		
+66					UCL Purple	Oxford Pink
+67	Durham Purple	Manchester Purple				
+68			Dirty Durham	TeamQM Badgers		
+69					Northern RoyalT	Oxford Pink
+70	Durham Purple	East Fife Polytechnic				
+71			Dirty Durham	CLART		
+72					Northern RoyalT	Durham Red
+73	Cambridge Blue	East Fife Polytechnic				
+74			Oxford Orange	CLART		
+75					Durham Black	Durham Red
+76	Cambridge Blue	Oxford Blue				
+77			Oxford Orange	Southampton Blue		
+78					Durham Black	Brunel Backshots
+79	Manchester Purple	Oxford Blue				
+80			CLART	Southampton Blue		
+81					UCL Purple	Brunel Backshots
+82	Manchester Purple	TeamQM Badgers				
+83			CLART	St Andrews Pink		
+84					UCL Purple	Durham Purple
+85	Southampton Green	TeamQM Badgers				
+86			East Fife Polytechnic	St Andrews Pink		
+87					Southampton Red	Durham Purple
+88	Southampton Green	Cambridge Blue				
+89			East Fife Polytechnic	Durham Red		
+90					Southampton Red	Oxford Pink
+91	Northern RoyalT	Cambridge Blue				
+92			Dirty Durham	Durham Red		
+93					Oxford Blue	Oxford Pink
+94	Northern RoyalT	Durham Black				
+95			Dirty Durham	Oxford Orange		
+96					Oxford Blue	Brunel Backshots
+97	Southampton Blue	Durham Black				
+98			Manchester Purple	Oxford Orange		
+99					Oxford Pink	Brunel Backshots
+100	Southampton Blue	East Fife Polytechnic				
+101			Manchester Purple	UCL Purple		
+102					Oxford Pink	St Andrews Pink
+103	Southampton Red	East Fife Polytechnic				
+104			TeamQM Badgers	UCL Purple		
+105					Northern RoyalT	St Andrews Pink
+106	Southampton Red	Durham Red				
+107			TeamQM Badgers	Cambridge Blue		
+108					Northern RoyalT	Southampton Green
+109	Durham Purple	Durham Red				
+110			CLART	Cambridge Blue		
+111					Dirty Durham	Southampton Green
+112	Durham Purple	Oxford Orange				
+113			CLART	Durham Black		
+114					Dirty Durham	Oxford Blue
+115	Brunel Backshots	Oxford Orange				
+116			Manchester Purple	Durham Black		
+117					UCL Purple	Oxford Blue
+118	Brunel Backshots	Durham Purple				
+119			Manchester Purple	Oxford Pink		
+120					UCL Purple	Durham Red
+121	St Andrews Pink	Durham Purple				
+122			Southampton Green	Oxford Pink		
+123					Southampton Blue	Durham Red
+124	St Andrews Pink	Cambridge Blue				
+125			Southampton Green	CLART		
+126					Southampton Blue	Dirty Durham
+127	Southampton Red	Cambridge Blue				
+128			Northern RoyalT	CLART		
+129					East Fife Polytechnic	Dirty Durham
+130	Southampton Red	TeamQM Badgers				
+131			Northern RoyalT	Oxford Blue		
+132					East Fife Polytechnic	Durham Black
+133	Oxford Orange	TeamQM Badgers				
+134			CLART	Oxford Blue		
+135					UCL Purple	Durham Black
+136	Oxford Orange	East Fife Polytechnic				
+137			CLART	Southampton Red		
+138					UCL Purple	Dirty Durham
+139	Southampton Green	East Fife Polytechnic				
+140			St Andrews Pink	Southampton Red		
+141					Brunel Backshots	Dirty Durham
+142	Southampton Green	Durham Purple				
+143			St Andrews Pink	TeamQM Badgers		
+144					Brunel Backshots	Manchester Purple
+145	Oxford Pink	Durham Purple				
+146			Southampton Blue	TeamQM Badgers		
+147					Durham Red	Manchester Purple
+148	Oxford Pink	Durham Black				
+149			Southampton Blue	Northern RoyalT		
+150					Durham Red	Cambridge Blue
+151	Oxford Blue	Durham Black				
+152			Southampton Red	Northern RoyalT		
+153					Brunel Backshots	Cambridge Blue
+154	Oxford Blue	Oxford Orange				
+155			Southampton Red	Southampton Green		
+156					Brunel Backshots	Durham Red
+157	Durham Black	Oxford Orange				
+158			St Andrews Pink	Southampton Green		
+159					CLART	Durham Red
+160	Durham Purple	Oxford Blue				
+161			St Andrews Pink	Dirty Durham		
+162					CLART	East Fife Polytechnic
+163	Durham Purple	Southampton Blue				
+164			Manchester Purple	Dirty Durham		
+165					Northern RoyalT	East Fife Polytechnic
+166	UCL Purple	Cambridge Blue				
+167			Oxford Pink	Southampton Blue		
+168					Northern RoyalT	TeamQM Badgers
+169	UCL Purple	Oxford Orange				
+170			Manchester Purple	Cambridge Blue		
+171					Oxford Pink	TeamQM Badgers
