@@ -65,7 +65,7 @@ export default function RaceEdit({
   const handleChange = (
     teamIndex: number,
     boatIndex: number,
-    value: number | null
+    value: number | null,
   ) => {
     setTeamResults((prev) => {
       const newResults = [teamResults[0].slice(), teamResults[1].slice()];
@@ -76,7 +76,7 @@ export default function RaceEdit({
 
   const modifyResult = async (
     team1Results: number[] | null,
-    team2Results: number[] | null
+    team2Results: number[] | null,
   ) => {
     // Make sure both teams have results or neither do.
     if ((team1Results === null) !== (team2Results === null)) {

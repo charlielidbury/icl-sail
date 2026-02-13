@@ -8,7 +8,6 @@ import {
   Button,
   Stack,
   Icon,
-  Link,
   Image,
   useBreakpointValue,
   useDisclosure,
@@ -19,6 +18,7 @@ import {
   Select,
   createListCollection,
 } from "@chakra-ui/react";
+import Link from "next/link";
 import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
 import {
   TbMenu2,
@@ -49,12 +49,13 @@ import { MadeWithLove } from "@/components/ui/made-with-love";
 import {
   queryClient,
   competitionAtom,
+  competitionBasicAtom,
   useCompetition,
   allCompetitions,
   CompetitionId,
 } from "@/shared";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import {
   SelectRoot,
   SelectTrigger,
@@ -296,7 +297,7 @@ const DesktopNav = ({ navItems }: DesktopNavProps) => {
             <PopoverTrigger>
               <Link
                 href={navItem.href ?? "#"}
-                _hover={{ textDecoration: "none" }}
+                style={{ textDecoration: "none" }}
               >
                 <Flex
                   py={2}
@@ -393,7 +394,7 @@ const DesktopSubNav = ({ label, href, subLabel }: DesktopSubNavProps) => {
   }
 
   return (
-    <Link href={href} _hover={{ textDecoration: "none" }}>
+    <Link href={href ?? "#"} style={{ textDecoration: "none" }}>
       <Flex
         role={"group"}
         p={3}
@@ -435,6 +436,7 @@ const DesktopSubNav = ({ label, href, subLabel }: DesktopSubNavProps) => {
 
 const CompetitionSelector = ({ isMobile = false }) => {
   const currentCompetition = useCompetition();
+  const setCompetition = useSetAtom(competitionBasicAtom);
   if (currentCompetition === null) {
     return <></>;
   }
@@ -443,7 +445,7 @@ const CompetitionSelector = ({ isMobile = false }) => {
     if (compId in allCompetitions) {
       const selectedComp = allCompetitions[compId as CompetitionId];
       if (selectedComp) {
-        window.location.href = `https://${selectedComp.host}`;
+        setCompetition(selectedComp);
       }
     }
   };
@@ -533,7 +535,7 @@ const MobileNavItem = ({ label, children, href }: NavItem) => {
     <Stack gap={0}>
       <Link
         href={href ?? "#"}
-        _hover={{ textDecoration: "none" }}
+        style={{ textDecoration: "none" }}
         onClick={children ? onToggle : undefined}
       >
         <Flex
@@ -616,8 +618,8 @@ const MobileNavItem = ({ label, children, href }: NavItem) => {
               children.map((child) => (
                 <Link
                   key={child.label}
-                  href={child.href}
-                  _hover={{ textDecoration: "none" }}
+                  href={child.href ?? "#"}
+                  style={{ textDecoration: "none" }}
                 >
                   <Flex
                     py={2}

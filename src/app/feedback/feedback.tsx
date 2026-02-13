@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   Box,
   Stack,
@@ -295,9 +296,9 @@ function FeedbackPage() {
             textAlign="center"
           >
             If you can see this message, you can turn off feedback via{" "}
-            <a href="/controls" style={{ textDecoration: "underline" }}>
+            <Link href="/controls" style={{ textDecoration: "underline" }}>
               controls
-            </a>
+            </Link>
             . Please do so if things get out of hand.
           </Text>
 

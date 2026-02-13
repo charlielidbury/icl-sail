@@ -122,11 +122,12 @@ export function useAuth(): { session: Session | null; isAdmin: boolean } {
   return { session, isAdmin };
 }
 
-const racesDataAtom = atomWithQuery((get) => ({
-  queryKey: ["races_data"],
+const racesDataAtom = atomWithQuery((get) => {
+  const competition = get(competitionBasicAtom)!;
+  return {
+  queryKey: ["races_data", competition.id],
   enabled: get(competitionBasicAtom) !== null,
   queryFn: async () => {
-    const competition = get(competitionBasicAtom)!;
 
     // Get races
     const { data: racesData, error: racesError } = await supabase
@@ -160,10 +161,11 @@ const racesDataAtom = atomWithQuery((get) => ({
 
     return racesData;
   },
-}));
+};
+});
 
 export const racesAtom = atomWithQuery((get) => ({
-  queryKey: ["races"],
+  queryKey: ["races", get(competitionBasicAtom)!.id],
   enabled: get(racesDataAtom).isFetched && get(competitionAtom).isFetched,
   error: get(racesDataAtom).error || get(competitionAtom).error,
   queryFn: async () => {
@@ -454,7 +456,12 @@ export const leaderboardAtom = atom((get) => {
   return sortedLeaderboard;
 });
 
-export type CompetitionId = "topgun" | "icicle" | "bathrobe" | "badger";
+export type CompetitionId =
+  | "topgun"
+  | "icicle"
+  | "icicle2026"
+  | "bathrobe"
+  | "badger";
 
 export type CompetitionBasic = {
   id: CompetitionId;
@@ -474,10 +481,17 @@ export const allCompetitions: Record<CompetitionId, CompetitionBasic> = {
   },
   icicle: {
     id: "icicle",
+    host: "2025.imperialicicle.com",
+    accentColour: "#004a79",
+    logo: "/icicle/logo_transparent.png",
+    name: "Imperial Icicle 2025",
+  },
+  icicle2026: {
+    id: "icicle2026",
     host: "imperialicicle.com",
     accentColour: "#004a79",
     logo: "/icicle/logo_transparent.png",
-    name: "Imperial Icicle",
+    name: "Imperial Icicle 2026",
   },
   bathrobe: {
     id: "bathrobe",
@@ -495,19 +509,27 @@ export const allCompetitions: Record<CompetitionId, CompetitionBasic> = {
   },
 };
 
-export const competitionHosts = new Map([
-  ["localhost", allCompetitions.badger],
-  ["topgun.isail.events", allCompetitions.topgun],
-  ["imperialicicle.com", allCompetitions.icicle],
-  ["bathrobe.isail.events", allCompetitions.bathrobe],
-  ["badger.brunelsailing.co.uk", allCompetitions.badger],
-]);
+export const competitionHosts: Record<string, CompetitionBasic> = {
+  localhost: allCompetitions.icicle2026,
+  "topgun.isail.events": allCompetitions.topgun,
+  "imperialicicle.com": allCompetitions.icicle2026,
+  "2025.imperialicicle.com": allCompetitions.icicle,
+  "bathrobe.isail.events": allCompetitions.bathrobe,
+  "badger.brunelsailing.co.uk": allCompetitions.badger,
+};
 
 export const hostnameAtom = atom<string | undefined>(undefined);
 
-export const competitionBasicAtom = atom<CompetitionBasic>(
+const competitionOverrideAtom = atom<CompetitionBasic | null>(null);
+
+export const competitionBasicAtom = atom(
   (get) =>
-    competitionHosts.get(get(hostnameAtom) ?? "") ?? allCompetitions.icicle,
+    get(competitionOverrideAtom) ??
+    competitionHosts[get(hostnameAtom) ?? ""] ??
+    allCompetitions.icicle2026,
+  (_get: any, set: any, competition: CompetitionBasic) => {
+    set(competitionOverrideAtom, competition);
+  },
 );
 
 export function useCompetition() {
@@ -531,11 +553,12 @@ export function useCompetition() {
   // return competition;
 }
 
-export const competitionAtom = atomWithQuery<Competition>((get) => ({
-  queryKey: ["competition"],
+export const competitionAtom = atomWithQuery<Competition>((get) => {
+  const competition = get(competitionBasicAtom)!;
+  return {
+  queryKey: ["competition", competition.id],
   // enabled: get(competitionBasicAtom) !== null,
   queryFn: async () => {
-    const competition = get(competitionBasicAtom)!;
 
     const settings = await supabase
       .from("competition")
@@ -550,7 +573,8 @@ export const competitionAtom = atomWithQuery<Competition>((get) => ({
     let x: Competition = settings.data;
     return x;
   },
-}));
+};
+});
 
 export const queryClient = new QueryClient({
   defaultOptions: {

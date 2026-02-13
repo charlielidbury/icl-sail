@@ -5,12 +5,13 @@ import {
   Text,
   VStack,
   Heading,
-  Link,
+  Link as ChakraLink,
   Container,
   SimpleGrid,
   Icon,
   Flex,
 } from "@chakra-ui/react";
+import NextLink from "next/link";
 import NavBar from "@/components/navbar";
 import {
   competitionBasicAtom,
@@ -85,6 +86,18 @@ const documents: Record<
       href: "/bathrobe/qualifying_schedule.pdf",
     },
   ],
+  icicle2026: [
+    {
+      title: "Notice of Race",
+      description: "Information for competitors",
+      href: "/icicle2026/Icicle_nor_2026.pdf",
+    },
+    {
+      title: "Sailing Instructions",
+      description: "Tournament format, rules",
+      href: "/icicle2026/icicle_sis_2026.pdf",
+    },
+  ],
   badger: [
     {
       title: "Qualifying Schedule",
@@ -125,7 +138,7 @@ function Info() {
   }
 
   const [topLine, bottomLine] =
-    competition.id === "icicle"
+    competition.id === "icicle" || competition.id === "icicle2026"
       ? ["IMPERIAL", "ICICLE"]
       : competition.id === "topgun"
         ? ["OXFORD", "TOPGUN"]
@@ -186,88 +199,8 @@ function Info() {
 
           {/* Quick Links */}
           <SimpleGrid columns={2} gap={4} w="full" maxW="400px" pt={1}>
-            <Link
-              href="/races"
-              p={3}
-              bg="white"
-              rounded="lg"
-              shadow="md"
-              display="flex"
-              flexDir="column"
-              alignItems="center"
-              gap={1}
-              _hover={{
-                transform: "translateY(-2px)",
-                shadow: "lg",
-                color: competition.accentColour,
-                "& svg.chevron": { transform: "translateX(2px)" },
-              }}
-              transition="all 0.2s"
-              color="gray.700"
-            >
-              <Flex align="center" gap={1.5}>
-                <Icon
-                  as={TbClockFilled}
-                  boxSize={4}
-                  color={competition.accentColour}
-                />
-                <Text fontWeight="medium">Races</Text>
-                <Icon
-                  as={TbChevronRight}
-                  boxSize={4}
-                  className="chevron"
-                  transition="transform 0.2s"
-                  color={competition.accentColour}
-                />
-              </Flex>
-              <Text fontSize="sm" color="gray.500">
-                Schedule and results
-              </Text>
-            </Link>
-            <Link
-              href="/leaderboard"
-              p={3}
-              bg="white"
-              rounded="lg"
-              shadow="md"
-              display="flex"
-              flexDir="column"
-              alignItems="center"
-              gap={1}
-              _hover={{
-                transform: "translateY(-2px)",
-                shadow: "lg",
-                color: competition.accentColour,
-                "& svg.chevron": { transform: "translateX(2px)" },
-              }}
-              transition="all 0.2s"
-              color="gray.700"
-            >
-              <Flex align="center" gap={1.5}>
-                <Icon
-                  as={TbTrophyFilled}
-                  boxSize={4}
-                  color={competition.accentColour}
-                />
-                <Text fontWeight="medium">Leaderboard</Text>
-                <Icon
-                  as={TbChevronRight}
-                  boxSize={4}
-                  className="chevron"
-                  transition="transform 0.2s"
-                  color={competition.accentColour}
-                />
-              </Flex>
-              <Text fontSize="sm" color="gray.500">
-                View rankings
-              </Text>
-            </Link>
-          </SimpleGrid>
-
-          {feedbackEnabled && (
-            <Box w="full" maxW="400px" mt={4}>
-              <Link
-                href="/feedback"
+            <NextLink href="/races" style={{ textDecoration: "none" }}>
+              <Box
                 p={3}
                 bg="white"
                 rounded="lg"
@@ -287,11 +220,11 @@ function Info() {
               >
                 <Flex align="center" gap={1.5}>
                   <Icon
-                    as={TbMessageFilled}
+                    as={TbClockFilled}
                     boxSize={4}
                     color={competition.accentColour}
                   />
-                  <Text fontWeight="medium">Website Feedback</Text>
+                  <Text fontWeight="medium">Races</Text>
                   <Icon
                     as={TbChevronRight}
                     boxSize={4}
@@ -301,9 +234,92 @@ function Info() {
                   />
                 </Flex>
                 <Text fontSize="sm" color="gray.500">
-                  Bug reports and feature requests
+                  Schedule and results
                 </Text>
-              </Link>
+              </Box>
+            </NextLink>
+            <NextLink href="/leaderboard" style={{ textDecoration: "none" }}>
+              <Box
+                p={3}
+                bg="white"
+                rounded="lg"
+                shadow="md"
+                display="flex"
+                flexDir="column"
+                alignItems="center"
+                gap={1}
+                _hover={{
+                  transform: "translateY(-2px)",
+                  shadow: "lg",
+                  color: competition.accentColour,
+                  "& svg.chevron": { transform: "translateX(2px)" },
+                }}
+                transition="all 0.2s"
+                color="gray.700"
+              >
+                <Flex align="center" gap={1.5}>
+                  <Icon
+                    as={TbTrophyFilled}
+                    boxSize={4}
+                    color={competition.accentColour}
+                  />
+                  <Text fontWeight="medium">Leaderboard</Text>
+                  <Icon
+                    as={TbChevronRight}
+                    boxSize={4}
+                    className="chevron"
+                    transition="transform 0.2s"
+                    color={competition.accentColour}
+                  />
+                </Flex>
+                <Text fontSize="sm" color="gray.500">
+                  View rankings
+                </Text>
+              </Box>
+            </NextLink>
+          </SimpleGrid>
+
+          {feedbackEnabled && (
+            <Box w="full" maxW="400px" mt={4}>
+              <NextLink href="/feedback" style={{ textDecoration: "none" }}>
+                <Box
+                  p={3}
+                  bg="white"
+                  rounded="lg"
+                  shadow="md"
+                  display="flex"
+                  flexDir="column"
+                  alignItems="center"
+                  gap={1}
+                  _hover={{
+                    transform: "translateY(-2px)",
+                    shadow: "lg",
+                    color: competition.accentColour,
+                    "& svg.chevron": { transform: "translateX(2px)" },
+                  }}
+                  transition="all 0.2s"
+                  color="gray.700"
+                >
+                  <Flex align="center" gap={1.5}>
+                    <Icon
+                      as={TbMessageFilled}
+                      boxSize={4}
+                      color={competition.accentColour}
+                    />
+                    <Text fontWeight="medium">Website Feedback</Text>
+                    <Icon
+                      as={TbChevronRight}
+                      boxSize={4}
+                      className="chevron"
+                      transition="transform 0.2s"
+                      color={competition.accentColour}
+                    />
+                  </Flex>
+                  <Text fontSize="sm" color="gray.500">
+                    Bug reports and feature requests
+                  </Text>
+                </Box>
+              </NextLink>
             </Box>
           )}
         </VStack>
@@ -316,7 +332,7 @@ function Info() {
           <SimpleGrid columns={[1, null, 2]} gap={4} maxW="900px" mx="auto">
             {competition &&
               documents[competition.id].map((doc) => (
-                <Link
+                <ChakraLink
                   key={doc.href}
                   href={doc.href}
                   p={4}
@@ -347,7 +363,7 @@ function Info() {
                       {doc.description}
                     </Text>
                   </VStack>
-                </Link>
+                </ChakraLink>
               ))}
           </SimpleGrid>
         </Box>
@@ -360,9 +376,9 @@ function Info() {
           <Text textAlign="center" color="gray.600" maxW="600px" mx="auto">
             If you would like to use this software for your university's team
             racing competitions, leave me an email at{" "}
-            <Link href="mailto:personal@charlielidbury.com">
+            <ChakraLink href="mailto:personal@charlielidbury.com">
               personal@charlielidbury.com
-            </Link>
+            </ChakraLink>
             .
           </Text>
         </Box>
