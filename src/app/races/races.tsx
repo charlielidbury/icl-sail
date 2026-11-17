@@ -30,6 +30,7 @@ import {
   competitionAtom,
   useCompetition,
   hostnameAtom,
+  RaceResult,
 } from "@/shared";
 import {
   TbChevronsDown,
@@ -127,6 +128,33 @@ function Page() {
       return raceName.toLowerCase().includes(cleanSearch);
     });
   }, [races, debouncedSearch]);
+
+  // For each race, the teams that keep their boats for their next race on the
+  // same flight (same team on the same side). Uses the full schedule, so it
+  // doesn't depend on how flights are interleaved or what the search shows.
+  const stayingTeams = useMemo(() => {
+    const staying = new Map<string, { names: string[]; next: number }>();
+    const nextOnFlight = new Map<string, RaceResult>();
+    const allRaces = races.data?.races ?? [];
+    for (let i = allRaces.length - 1; i >= 0; i--) {
+      const race = allRaces[i];
+      const next = nextOnFlight.get(race.flight.id);
+      if (next) {
+        const names = [];
+        if (race.lteam && next.lteam?.id === race.lteam.id) {
+          names.push(race.lteam.name);
+        }
+        if (race.rteam && next.rteam?.id === race.rteam.id) {
+          names.push(race.rteam.name);
+        }
+        if (names.length > 0) {
+          staying.set(race.id, { names, next: next.number });
+        }
+      }
+      nextOnFlight.set(race.flight.id, race);
+    }
+    return staying;
+  }, [races.data]);
 
   // Get clean search for race cards
   const cleanSearchForCards = useMemo(() => {
@@ -259,13 +287,16 @@ function Page() {
             {races.error.message}
           </Text>
         ) : races.isFetched && settings ? (
-          filteredRaces.length > 0 && currentRace ? (
+          filteredRaces.length > 0 ? (
             <>
               <Virtuoso
                 overscan={1000}
-                initialTopMostItemIndex={filteredRaces.findIndex(
-                  (r) => r.number === currentRace
-                )}
+                initialTopMostItemIndex={
+                  // With no current race (every race finished), show the end
+                  currentRace != null
+                    ? filteredRaces.findIndex((r) => r.number === currentRace)
+                    : { index: "LAST", align: "end" }
+                }
                 ref={virtuosoRef}
                 data={filteredRaces}
                 style={{ height: "100%", width: "100%" }}
@@ -274,29 +305,24 @@ function Page() {
                   // Determine if the race is active or in stand based on currentRace & settings.
                   const isActive = race.number === currentRace;
                   const isStand =
-                    currentRace !== null &&
+                    currentRace != null &&
+                    race.finishtime === null &&
                     goToStandOffset !== null &&
                     race.number > currentRace &&
                     race.number - currentRace <= goToStandOffset;
 
-                  const gapAbove =
-                    index !== 0 &&
-                    filteredRaces[index - 1].number !== race.number - 1;
+                  // Races are hidden between this one and the next (searching)
+                  const gapBelow =
+                    index < filteredRaces.length - 1 &&
+                    filteredRaces[index + 1].number !== race.number + 1;
 
-                  // Check if any team stays in boats from previous race
-                  let stayingTeam = null;
-                  let aboveRace = filteredRaces[index + 1];
-                  if (
-                    aboveRace &&
-                    aboveRace.number === race.number + races.data!.numFlights
-                  ) {
-                    if (aboveRace.lteam?.id === race.lteam?.id && race.lteam) {
-                      stayingTeam = race.lteam.name;
-                    }
-                    if (aboveRace.rteam?.id === race.rteam?.id && race.rteam) {
-                      stayingTeam = race.rteam.name;
-                    }
-                  }
+                  // Teams that stay in their boats for their next race
+                  const staying = stayingTeams.get(race.id);
+                  const stayingTeam = staying
+                    ? `${staying.names.join(" and ")} ${
+                        staying.names.length > 1 ? "stay" : "stays"
+                      } on for race ${staying.next}`
+                    : null;
 
                   return (
                     <Box key={race.id}>
@@ -309,19 +335,6 @@ function Page() {
                         }
                         search={cleanSearchForCards}
                       />
-
-                      {/* dot dot dot */}
-                      {gapAbove && !stayingTeam && (
-                        <Text
-                          display="flex"
-                          justifyContent="center"
-                          color="gray.500"
-                          opacity={0.5}
-                          pb={2}
-                        >
-                          <TbDotsVertical />
-                        </Text>
-                      )}
 
                       {/* Team stays in boats message */}
                       {stayingTeam && (
@@ -339,9 +352,23 @@ function Page() {
                             fontWeight="bold"
                             fontStyle="italic"
                           >
-                            {stayingTeam.toUpperCase()} STAYS ON
+                            {stayingTeam.toUpperCase()}
                           </Text>
                         </Box>
+                      )}
+
+                      {/* dot dot dot */}
+                      {gapBelow && (
+                        <Text
+                          display="flex"
+                          justifyContent="center"
+                          color="gray.500"
+                          opacity={0.5}
+                          pt={stayingTeam ? 3 : 0}
+                          pb={2}
+                        >
+                          <TbDotsVertical />
+                        </Text>
                       )}
                     </Box>
                   );
@@ -366,7 +393,7 @@ function Page() {
       </Box>
 
       {/* Jump button if current race is off-screen */}
-      {!isCurrentRaceVisible && (
+      {currentRace != null && !isCurrentRaceVisible && (
         <Box
           position="fixed"
           bottom="20px"
