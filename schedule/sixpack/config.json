@@ -1,0 +1,37 @@
+{
+  "competition": "sixpack",
+  "league": "quali",
+  "schedule": "14x2.csv",
+  "flights": [
+    {
+      "id": "f5d660fd-91c7-4f37-a6a3-a339d92437f9",
+      "columns": [
+        "Flight 1a",
+        "Flight 1b"
+      ]
+    },
+    {
+      "id": "597598a4-b7b1-4413-b389-98e2184a509b",
+      "columns": [
+        "Flight 2a",
+        "Flight 2b"
+      ]
+    }
+  ],
+  "teams": {
+    "Team 1": "Clapham Common",
+    "Team 2": "Bristol Blue",
+    "Team 3": "Bristol White",
+    "Team 4": "Imperial White",
+    "Team 5": "Imperial Red",
+    "Team 6": "Kobra Hurricane",
+    "Team 7": "Brunel Blue",
+    "Team 8": "Plymouth Blue",
+    "Team 9": "Plymouth Pink",
+    "Team 10": "Plymouth Black",
+    "Team 11": "Bath Lemon Red",
+    "Team 12": "Reading Red",
+    "Team 13": "Reading Purple",
+    "Team 14": "RazCLART"
+  }
+}

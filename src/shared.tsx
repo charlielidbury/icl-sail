@@ -461,7 +461,8 @@ export type CompetitionId =
   | "icicle"
   | "icicle2026"
   | "bathrobe"
-  | "badger";
+  | "badger"
+  | "sixpack";
 
 export type CompetitionBasic = {
   id: CompetitionId;
@@ -507,6 +508,13 @@ export const allCompetitions: Record<CompetitionId, CompetitionBasic> = {
     logo: "/badger/small-logo.jpg",
     name: "Badger",
   },
+  sixpack: {
+    id: "sixpack",
+    host: "sixpack.isail.site",
+    accentColour: "#004a79",
+    logo: "",
+    name: "Sixpack",
+  },
 };
 
 export const competitionHosts: Record<string, CompetitionBasic> = {
@@ -516,6 +524,7 @@ export const competitionHosts: Record<string, CompetitionBasic> = {
   "2025.imperialicicle.com": allCompetitions.icicle,
   "bathrobe.isail.events": allCompetitions.bathrobe,
   "badger.brunelsailing.co.uk": allCompetitions.badger,
+  "sixpack.isail.site": allCompetitions.sixpack,
 };
 
 export const hostnameAtom = atom<string | undefined>(undefined);

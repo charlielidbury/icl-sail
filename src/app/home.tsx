@@ -120,6 +120,18 @@ const documents: Record<
       href: "/badger/nor.pdf",
     },
   ],
+  sixpack: [
+    {
+      title: "Notice of Race",
+      description: "Information for competitors",
+      href: "/sixpack/nor.pdf",
+    },
+    {
+      title: "Sailing Instructions",
+      description: "Tournament format, rules",
+      href: "/sixpack/instructions.pdf",
+    },
+  ],
 };
 
 // export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -151,7 +163,9 @@ function Info() {
           ? ["BATH", "ROBE"]
           : competition.id === "badger"
             ? ["BRUNEL", "BADGER"]
-            : []; // never
+            : competition.id === "sixpack"
+              ? ["SIX", "PACK"]
+              : []; // never
 
   const textSize = competition.id === "bathrobe" ? "7xl" : "5xl";
 

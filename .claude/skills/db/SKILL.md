@@ -11,21 +11,30 @@ Execute SQL queries against the icl-sail Supabase database.
 
 ## Connection
 
-The database connection URL is stored in `.env` as `DATABASE_URL`. Load it before running queries:
+Queries go through the Supabase CLI (in the nix dev shell), which runs SQL via the
+Management API, so no database password is needed:
 
 ```bash
-source .env && psql "$DATABASE_URL" -c "YOUR_QUERY"
+supabase db query --linked -o table "YOUR_QUERY"
+supabase db query --linked -o table -f path/to/file.sql
 ```
+
+- Needs `supabase login` and a one-off `supabase link --project-ref uwticnzhykdnfbisrdrx`
+  (the link lives in the gitignored `supabase/` directory).
+- With several statements in one call, only the last statement's result is printed.
+- psql meta-commands like `\dt` don't work; query `information_schema` instead.
+- Wrap multi-statement changes in `BEGIN; ... COMMIT;`. To dry-run a change, end the
+  file with a verifying `SELECT` and `ROLLBACK;` instead.
 
 ## Available Tables
 
 - `competition` - Competition configurations (id, name, host, announcements, flags)
-- `team` - Team information (~51 rows)
-- `race` - Race results (~309 rows)
-- `admin` - Admin users (~21 rows)
-- `flight` - Flight information (~9 rows)
-- `halfflight` - Half flight data (~13 rows)
-- `feedback` - User feedback (~1 row)
+- `team` - Teams, shared across all competitions (`name` is unique)
+- `race` - Races and results, per competition
+- `admin` - (competition, auth user id) pairs that can edit results
+- `flight` - Flights, shared across all competitions
+- `halfflight` - Legacy, unused by the app
+- `feedback` - User feedback, shared across all competitions
 
 ## Instructions
 
@@ -40,17 +49,17 @@ When the user provides $ARGUMENTS:
 
 **List all tables:**
 ```bash
-source .env && psql "$DATABASE_URL" -c "\dt public.*"
+supabase db query --linked -o table "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
 ```
 
 **Query with nice formatting:**
 ```bash
-source .env && psql "$DATABASE_URL" -c "SELECT * FROM competition;"
+supabase db query --linked -o table "SELECT * FROM competition"
 ```
 
 **Describe a table:**
 ```bash
-source .env && psql "$DATABASE_URL" -c "\d+ public.competition"
+supabase db query --linked -o table "SELECT column_name, data_type, is_nullable, column_default FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'competition'"
 ```
 
 ## Safety
