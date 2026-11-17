@@ -202,17 +202,23 @@ export const racesAtom = atomWithQuery((get) => ({
       };
     });
 
-    // Determine current race (first race with no result)
-    let currentRace: number | null = null;
+    // Determine the current race: the first unfinished race after the last
+    // finished one. Unfinished races before that are treated as skipped or
+    // postponed, and races appended after a finished stage become current.
+    // If the schedule ends in finished races while earlier races are still
+    // unfinished, those trailing results were entered early (e.g. the last
+    // race by mistake), so look for the current race before them instead.
+    // When every race is finished there is no current race.
+    let end = races.length;
+    while (end > 0 && races[end - 1].finishtime !== null) {
+      end--;
+    }
     let currentRaceIndex: number | null = null;
-    for (let i = races.length - 1; i >= 0; i--) {
-      // If the first team in this race has a result, it means the race is done.
-      if (races[i].finishtime !== null) {
-        break;
-      }
-      currentRace = races[i].number;
+    for (let i = end - 1; i >= 0 && races[i].finishtime === null; i--) {
       currentRaceIndex = i;
     }
+    const currentRace: number | null =
+      currentRaceIndex === null ? null : races[currentRaceIndex].number;
 
     // Calculate average time between races
     if (currentRaceIndex !== null && currentRaceIndex !== races.length - 1) {
@@ -240,7 +246,8 @@ export const racesAtom = atomWithQuery((get) => ({
 
         // Add estimates to races array
         for (let i = currentRaceIndex + 1; i < races.length; i++) {
-          // races[i].estfinishtime = dayjs();
+          // Races entered early already have a finish time
+          if (races[i].finishtime !== null) continue;
           const time = dayjs().add(
             averageTimeBetweenRacesMs * (i - currentRaceIndex - goToStand),
           );
