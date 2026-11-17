@@ -17,11 +17,10 @@ import {
   Group,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import supabase from "@/supabase";
 import { leaderboardAtom, RaceResult, useAuth } from "../shared";
-import RaceEdit from "./race-edit";
+import RaceEdit, { saveRace } from "./race-edit";
 import { TbChevronLeft } from "react-icons/tb";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 
 // Define a type for a leaderboard row.
@@ -165,16 +164,19 @@ function TeamComparison({
 
 function DroneVideo({ race }: { race: RaceResult }) {
   const { isAdmin } = useAuth();
+  const queryClient = useQueryClient();
   const [newVideoURL, setNewVideoURL] = useState<string | null>(race.video);
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [videoError, setVideoError] = useState<string | null>(null);
 
-  function updateVideo() {
+  async function updateVideo() {
     setIsEditing(true);
-    supabase
-      .from("race")
-      .update({ video: newVideoURL })
-      .eq("id", race.id)
-      .then(() => setIsEditing(false));
+    const error = await saveRace(race.id, { video: newVideoURL });
+    setVideoError(error);
+    if (error === null) {
+      queryClient.invalidateQueries({ queryKey: ["races_data"] });
+    }
+    setIsEditing(false);
   }
 
   return (
@@ -223,6 +225,11 @@ function DroneVideo({ race }: { race: RaceResult }) {
             {race.video ? "Save" : "Add"}
           </Button>
         </Flex>
+      )}
+      {isAdmin && videoError && (
+        <Text fontSize="sm" color="red.600" fontWeight="medium" role="alert">
+          {videoError}
+        </Text>
       )}
     </>
   );
