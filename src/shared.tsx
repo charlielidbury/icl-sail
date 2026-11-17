@@ -511,8 +511,8 @@ export const allCompetitions: Record<CompetitionId, CompetitionBasic> = {
   sixpack: {
     id: "sixpack",
     host: "sixpack.isail.site",
-    accentColour: "#004a79",
-    logo: "",
+    accentColour: "#542079",
+    logo: "/sixpack/logo_transparent.png",
     name: "Sixpack",
   },
 };
