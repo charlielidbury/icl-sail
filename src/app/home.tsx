@@ -122,6 +122,11 @@ const documents: Record<
   ],
   sixpack: [
     {
+      title: "Qualifying Schedule",
+      description: "Qualifying schedule in typical table format",
+      href: "/sixpack/schedule.pdf",
+    },
+    {
       title: "Notice of Race",
       description: "Information for competitors",
       href: "/sixpack/nor.pdf",

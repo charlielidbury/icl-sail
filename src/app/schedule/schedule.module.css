@@ -1,0 +1,87 @@
+/* Laid out like the PDF from scripts/schedule.typ, and printable as-is. */
+
+.sheet {
+  background: #fff;
+  color: #111;
+  border-radius: 8px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: #fff;
+  color: #111;
+}
+
+.table th,
+.table td {
+  border: 1px solid #d4d4d4;
+  padding: 4px 8px;
+  text-align: center;
+  white-space: nowrap;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.table tbody tr:nth-child(even) td {
+  background: #f3f3f3;
+}
+
+.table thead tr:last-child th {
+  border-bottom: 2px solid #464646;
+}
+
+.raceHeader {
+  text-align: right !important;
+  vertical-align: bottom;
+}
+
+.flightHeader {
+  background: #e4e4e4;
+  font-weight: 700;
+}
+
+.halfHeader {
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.halfHeader span {
+  display: block;
+  font-weight: 400;
+  font-size: 0.85em;
+}
+
+.raceNumber {
+  text-align: right !important;
+  font-weight: 700;
+}
+
+.flightStart {
+  border-left: 2px solid #464646 !important;
+}
+
+@media print {
+  .noPrint {
+    display: none !important;
+  }
+
+  .sheet {
+    border-radius: 0;
+  }
+
+  .table {
+    font-size: 8.5pt;
+  }
+
+  .table th,
+  .table td {
+    padding: 2.5pt 3pt;
+    white-space: normal;
+  }
+
+  .table tr {
+    break-inside: avoid;
+  }
+}

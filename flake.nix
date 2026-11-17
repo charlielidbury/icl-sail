@@ -31,8 +31,11 @@
               pkgs.git
               pkgs.supabase-cli
               vercel
+              pkgs.typst
               (pkgs.python3.withPackages (ps: [ ps.pillow ]))
             ];
+            # Schedule PDFs (scripts/schedule.typ) use the site's font.
+            TYPST_FONT_PATHS = "${pkgs.geist-font}/share/fonts";
           };
         }
       );

@@ -1,0 +1,81 @@
+{
+  "_comment": "Sail colours for half-flight names: the first of these words in a name picks its colour. Used by scripts/schedule-pdf.ts and src/app/schedule.",
+  "colours": {
+    "red": {
+      "fill": "#d7263d",
+      "text": "#ffffff"
+    },
+    "maroon": {
+      "fill": "#7a1f2b",
+      "text": "#ffffff"
+    },
+    "orange": {
+      "fill": "#f4842a",
+      "text": "#111111"
+    },
+    "yellow": {
+      "fill": "#ffd43b",
+      "text": "#111111"
+    },
+    "lemon": {
+      "fill": "#fff27a",
+      "text": "#111111"
+    },
+    "gold": {
+      "fill": "#d9a520",
+      "text": "#111111"
+    },
+    "green": {
+      "fill": "#2f8f3e",
+      "text": "#ffffff"
+    },
+    "teal": {
+      "fill": "#14857f",
+      "text": "#ffffff"
+    },
+    "blue": {
+      "fill": "#2251cc",
+      "text": "#ffffff"
+    },
+    "navy": {
+      "fill": "#1d2b5e",
+      "text": "#ffffff"
+    },
+    "purple": {
+      "fill": "#6b2d93",
+      "text": "#ffffff"
+    },
+    "pink": {
+      "fill": "#f37ab5",
+      "text": "#111111"
+    },
+    "brown": {
+      "fill": "#7b4a26",
+      "text": "#ffffff"
+    },
+    "black": {
+      "fill": "#1c1c1c",
+      "text": "#ffffff"
+    },
+    "grey": {
+      "fill": "#a3a8ae",
+      "text": "#111111"
+    },
+    "gray": {
+      "fill": "#a3a8ae",
+      "text": "#111111"
+    },
+    "silver": {
+      "fill": "#c9ced3",
+      "text": "#111111"
+    },
+    "white": {
+      "fill": "#ffffff",
+      "text": "#111111"
+    }
+  },
+  "unknown": {
+    "fill": "#e4e7eb",
+    "text": "#111111"
+  }
+}
