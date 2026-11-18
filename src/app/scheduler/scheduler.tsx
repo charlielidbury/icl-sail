@@ -2,7 +2,7 @@
 
 // Public schedule generator: enter teams and flights, make a team-racing round
 // robin in the browser (the scheduler runs in a Web Worker), then download it
-// as a CSV or print it. Standalone: no competition, no Supabase.
+// as a CSV or open it as a PDF. Standalone: no competition, no Supabase.
 import {
   Alert,
   Box,
@@ -493,7 +493,7 @@ export default function Scheduler() {
           </Flex>
           <Text fontSize="sm" color="fg.muted" mt={1}>
             Make a team racing round robin for any number of teams and flights. It runs in your
-            browser; download it as a CSV or print it.
+            browser; download it as a CSV or open it as a PDF.
           </Text>
         </Container>
       </Box>

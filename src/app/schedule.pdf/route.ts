@@ -15,10 +15,14 @@ import { messageResponse, pdfResponse } from "@/schedule-pdf/response";
 
 export const runtime = "nodejs";
 
-const CACHE = "public, s-maxage=60, stale-while-revalidate=300";
+// Shared caches key on the URL, so only cache publicly when the address names
+// the competition. On hosts where it comes from the cookie (Vercel preview
+// URLs), the same URL serves different competitions to different visitors.
+const PUBLIC_CACHE = "public, s-maxage=60, stale-while-revalidate=300";
+const PRIVATE_CACHE = "private, no-store";
 
 export async function GET(request: Request) {
-  const { competition } = await requestCompetition();
+  const { competition, fromHost } = await requestCompetition();
   if (competition === null) {
     return messageResponse(
       404,
@@ -72,7 +76,7 @@ export async function GET(request: Request) {
     races: rows,
   });
   const pdf = renderSchedulePdf(doc);
-  return pdfResponse(pdf, `${competition.id} schedule`, CACHE, {
+  return pdfResponse(pdf, `${competition.id} schedule`, fromHost ? PUBLIC_CACHE : PRIVATE_CACHE, {
     db: loaded - start,
     pdf: performance.now() - loaded,
   });
