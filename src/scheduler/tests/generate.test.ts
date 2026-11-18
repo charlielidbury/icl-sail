@@ -6,7 +6,7 @@ import { describe, test } from "node:test";
 import { analyse } from "../analyse.ts";
 import { generate, generateWithStats, type Progress } from "../generate.ts";
 import { staggerSearch } from "../heuristic.ts";
-import type { Schedule } from "../types.ts";
+import type { GenerateOptions, Schedule } from "../types.ts";
 
 // The original's size matrix: 1 flight 4-9 teams, 2: 10-15, 3: 15-20, 4: 20-26.
 const MATRIX: [number, number][] = [
@@ -76,14 +76,47 @@ describe("generate", () => {
       assert.deepEqual(Object.keys(rep.stintLengths), ["1"]);
     }
     // impossible: consecutive races need four different teams
-    assert.throws(() => generate({ nTeams: 4, nFlights: 1, maxStint: 1 }), /No complete schedule/);
+    assert.throws(() => generate({ nTeams: 4, nFlights: 1, maxStint: 1 }), /at least 5 teams/);
   });
 
-  test("progress: messages with a rising fraction in 0..1", () => {
+  test("the /scheduler page's input ranges", () => {
+    assertValid(generate({ nTeams: 12, nFlights: 2, seed: 2 ** 31 - 1 }), 12, 2);
+    assertValid(generate({ nTeams: 12, nFlights: 2, maxStint: 10 }), 12, 2, 10);
+    assertValid(generate({ nTeams: 3, nFlights: 1 }), 3, 1);
+  });
+
+  test("impossible sizes fail at once with a reason", () => {
+    const fails = (o: GenerateOptions, re: RegExp) => {
+      const t0 = performance.now();
+      assert.throws(() => generate(o), re);
+      assert.ok(performance.now() - t0 < 50);
+    };
+    fails({ nTeams: 8, nFlights: 4 }, /4 flights need at least 9 teams/);
+    fails({ nTeams: 5, nFlights: 2 }, /5 teams on 2 flights can't make a round robin/);
+    fails({ nTeams: 21, nFlights: 10, maxStint: 3 }, /can't make a round robin/);
+    fails({ nTeams: 22, nFlights: 10, maxStint: 1 }, /With a max stint of 1, 10 flights need at least 23 teams/);
+  });
+
+  test("never runs noticeably past timeLimitMs", () => {
+    for (const timeLimitMs of [300, 1500]) {
+      const t0 = performance.now();
+      try {
+        assertValid(generate({ nTeams: 60, nFlights: 10, timeLimitMs }), 60, 10);
+      } catch (e) {
+        assert.match((e as Error).message, /within the time limit/);
+      }
+      assert.ok(performance.now() - t0 < timeLimitMs + 200, `${timeLimitMs}ms limit`);
+    }
+  });
+
+  test("progress: at most 10 a second, with a rising fraction in 0..1", () => {
     const seen: Progress[] = [];
-    generate({ nTeams: 14, nFlights: 2 }, (p) => seen.push(p));
+    const t0 = performance.now();
+    generate({ nTeams: 16, nFlights: 3 }, (p) => seen.push(p));
     assert.ok(seen.length >= 2);
-    assert.match(seen[0].message, /^Searching \(0\/91 races\)$/);
+    assert.ok(seen.length <= 1 + (performance.now() - t0) / 100);
+    assert.equal(seen[0].message, "Searching (0/120 races)");
+    assert.ok(seen.every((p) => /^(Searching|Completing) \(\d+\/120 races\)$/.test(p.message)));
     assert.ok(seen.some((p) => p.message.startsWith("Completing")));
     const fractions = seen.map((p) => p.fraction!);
     assert.ok(fractions.every((x, i) => x >= 0 && x <= 1 && (i === 0 || x >= fractions[i - 1])));
