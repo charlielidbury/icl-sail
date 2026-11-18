@@ -18,7 +18,7 @@ ICL-Sail is a live race results and leaderboard system for university team racin
 ### Multi-tenancy by Hostname
 Competitions are listed in `src/competitions.ts` (a plain module, usable on the server). Each one is served at `<id>.isail.site` (a wildcard domain on Vercel), at `<id>.localhost:<port>` in development, and optionally at custom domains listed in `customDomains`. There is no default competition: where the address doesn't name one (`isail.site`, `www`, plain `localhost`), pages show the landing page (`src/app/landing.tsx`) so the visitor can pick. Vercel preview URLs can't name a competition, so there the choice is kept in the `competition` cookie. Each competition has its own accent color, logo, and database records.
 
-Adding a competition: add it to `allCompetitions` in `src/competitions.ts`, add its `competition` row (and `admin` rows) in the database, and run `vercel domains add <id>.isail.site icl-sail`. The DNS wildcard already points every subdomain at Vercel, but HTTPS certificates are only issued per added domain while `isail.site` uses Namecheap's nameservers.
+Adding a competition: add it to `allCompetitions` in `src/competitions.ts` and add its `competition` row (and `admin` rows) in the database. `isail.site`'s DNS is on Vercel (nameservers `ns1/ns2.vercel-dns.com`) with a wildcard certificate, so `<id>.isail.site` works with HTTPS straight away. A custom domain also needs adding to `customDomains`, to the Vercel project (`vercel domains add <domain> icl-sail`), and pointing at Vercel in its own DNS.
 
 ### State Management
 - **Jotai** for global state with atoms defined in `src/shared.tsx`
