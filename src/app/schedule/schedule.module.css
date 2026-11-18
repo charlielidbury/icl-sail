@@ -9,6 +9,7 @@
 .table {
   width: 100%;
   border-collapse: collapse;
+  border: 1px solid #8c8c8c;
   font-size: 13px;
   background: #fff;
   color: #111;
@@ -16,7 +17,6 @@
 
 .table th,
 .table td {
-  border: 1px solid #d4d4d4;
   padding: 4px 8px;
   text-align: center;
   white-space: nowrap;
@@ -24,8 +24,30 @@
   -webkit-print-color-adjust: exact;
 }
 
-.table tbody tr:nth-child(even) td {
-  background: #f3f3f3;
+/* The header keeps a full grid; the body only has rules between flights and
+   above each rotation (.cycleStart). */
+.table th {
+  border: 1px solid #c8c8c8;
+}
+
+.table td {
+  border: none;
+}
+
+/* Race numbers and the cells with teams in them are shaded; the other
+   flights' cells stay white, so each race reads as one grey band. */
+.raceNumber,
+.team {
+  background: #dedede;
+}
+
+/* A hairline gap between a race's two team names. */
+.secondHalf {
+  border-left: 1px solid #fff !important;
+}
+
+.cycleStart td {
+  border-top: 1px solid #8c8c8c !important;
 }
 
 .table thead tr:last-child th {
@@ -35,6 +57,7 @@
 .raceHeader {
   text-align: right !important;
   vertical-align: bottom;
+  background: #dedede;
 }
 
 .flightHeader {

@@ -10,7 +10,10 @@ allowed-tools: Bash, Read, Edit
 Renders a race schedule to `public/<competition>/schedule.pdf` with Typst.
 `scripts/schedule-pdf.ts` gathers the races and `scripts/schedule.typ` lays them out:
 a title, then one table per league with a column pair per flight, each half's
-header coloured like its sails. An optional "Races by team" index (`--teams`) lists
+header coloured like its sails. As in the old hand-made schedules
+(public/icicle/qualifying_schedule.pdf), only the race numbers and the cells with
+teams in them are grey, the other flights' cells stay white, and a rule boxes each
+rotation of the flights. `/schedule` (below) uses the same shading. An optional "Races by team" index (`--teams`) lists
 each team's race numbers, coloured by the boats it sails in. Four or more flights switch
 to landscape.
 

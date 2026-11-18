@@ -9,8 +9,12 @@
 #let (font-size, row-inset) = if nflights <= 2 { (9pt, 3.4pt) } else if nflights == 3 { (8pt, 3pt) } else { (7.5pt, 2.6pt) }
 
 #let rule = 0.5pt + luma(200)
+#let cycle-rule = 0.6pt + luma(140)
 #let strong-rule = 1.1pt + luma(70)
 #let stripe = luma(243)
+// Race numbers and the cells with teams in them are shaded; the other flights'
+// cells stay white, so each race reads as one grey band.
+#let shade = luma(222)
 
 #set document(title: data.title + " " + data.subtitle)
 #set page(
@@ -59,14 +63,20 @@
   if width <= size.width { body } else { scale(size.width / width * 100%, reflow: true, body) }
 })
 
+// A rule above each race where the flights come round again (when its flight
+// is not after the previous race's), boxing every rotation.
+#let cycle-starts(races) = range(races.len()).filter(k => (
+  k == 0 or races.at(k).flight <= races.at(k - 1).flight
+))
+
 #let schedule-table(races) = table(
   columns: (11mm,) + (1fr,) * (2 * nflights),
   align: (x, y) => if x == 0 { right + horizon } else { center + horizon },
   inset: (x: 3pt, y: row-inset),
-  stroke: rule,
-  fill: (x, y) => if y >= 2 and calc.odd(y) { stripe },
+  // The header keeps a full grid; body lines are added below.
+  stroke: (x, y) => if y < 2 { rule } else { none },
   table.header(
-    table.cell(rowspan: 2, align: right + bottom, text(weight: "bold")[Race]),
+    table.cell(rowspan: 2, align: right + bottom, fill: shade, text(weight: "bold")[Race]),
     ..data.flights.map(f => table.cell(
       colspan: 2,
       fill: luma(228),
@@ -75,12 +85,20 @@
     ..data.flights.map(f => f.halves.map(half-header)).flatten(),
   ),
   table.hline(y: 2, stroke: strong-rule),
+  ..cycle-starts(races).slice(1).map(k => table.hline(y: 2 + k, stroke: cycle-rule)),
+  table.hline(y: 2 + races.len(), stroke: cycle-rule),
+  table.vline(x: 0, start: 2, stroke: cycle-rule),
+  table.vline(x: 2 * nflights + 1, start: 2, stroke: cycle-rule),
   ..range(nflights).map(i => table.vline(x: 1 + 2 * i, stroke: strong-rule)),
+  // A hairline gap between a race's two team names.
+  ..range(nflights).map(i => table.vline(x: 2 + 2 * i, start: 2, stroke: 1pt + white)),
   ..races
     .map(r => (
-      text(weight: "bold", str(r.number)),
+      table.cell(fill: shade, text(weight: "bold", str(r.number))),
       ..range(nflights)
-        .map(i => if r.flight == i { (fit(r.left), fit(r.right)) } else { ([], []) })
+        .map(i => if r.flight == i {
+          (table.cell(fill: shade, fit(r.left)), table.cell(fill: shade, fit(r.right)))
+        } else { ([], []) })
         .flatten(),
     ))
     .flatten(),

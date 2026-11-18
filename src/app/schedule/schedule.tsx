@@ -81,22 +81,32 @@ function ScheduleTable({
         </tr>
       </thead>
       <tbody>
-        {races.map((r) => (
-          <tr key={r.id}>
-            <td className={styles.raceNumber}>{r.number}</td>
-            {flights.flatMap((f) => {
-              const here = f.id === r.flight.id;
-              return [
-                <td key={`${f.id}-l`} className={styles.flightStart}>
-                  {here ? (r.lteam?.name ?? "TBD") : null}
-                </td>,
-                <td key={`${f.id}-r`}>
-                  {here ? (r.rteam?.name ?? "TBD") : null}
-                </td>,
-              ];
-            })}
-          </tr>
-        ))}
+        {races.map((r, k) => {
+          // A rule above each race where the flights come round again,
+          // boxing every rotation like the PDF.
+          const flight = flights.findIndex((f) => f.id === r.flight.id);
+          const cycleStart =
+            k === 0 ||
+            flight <= flights.findIndex((f) => f.id === races[k - 1].flight.id);
+          return (
+            <tr key={r.id} className={cycleStart ? styles.cycleStart : undefined}>
+              <td className={styles.raceNumber}>{r.number}</td>
+              {flights.flatMap((f, i) => {
+                // Only the cells with teams in them are shaded.
+                const here = i === flight;
+                const team = here ? styles.team : "";
+                return [
+                  <td key={`${f.id}-l`} className={`${styles.flightStart} ${team}`}>
+                    {here ? (r.lteam?.name ?? "TBD") : null}
+                  </td>,
+                  <td key={`${f.id}-r`} className={`${styles.secondHalf} ${team}`}>
+                    {here ? (r.rteam?.name ?? "TBD") : null}
+                  </td>,
+                ];
+              })}
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );
