@@ -5,6 +5,7 @@ import { Provider } from "@/components/ui/provider";
 import { Provider as JotaiProvider } from "jotai";
 import { headers } from "next/headers";
 import { competitionHosts } from "@/shared";
+import { isLandingHost } from "@/landing-hosts";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,6 +19,12 @@ const geistMono = Geist_Mono({
 
 export async function generateMetadata(): Promise<Metadata> {
   const hostname = (await headers()).get("host")?.split(":")[0] ?? "";
+  if (isLandingHost(hostname)) {
+    return {
+      title: "iSail",
+      description: "Live race results for university team racing",
+    };
+  }
   const name = competitionHosts[hostname]?.name ?? "I-Sail";
   return {
     title: name,
