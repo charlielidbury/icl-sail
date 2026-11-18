@@ -1,5 +1,6 @@
 // Renders a competition's race schedule to a printable PDF with Typst
-// (template: scripts/schedule.typ).
+// (template: scripts/schedule.typ, data: src/schedule-pdf/document.ts; the
+// /scheduler page compiles the same template in the browser).
 //
 // Usage:
 //   node scripts/schedule-pdf.ts <competition> [options]      races from Supabase
@@ -21,7 +22,10 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { parseArgs } from "node:util";
 import { readSchedule } from "./schedule-csv.ts";
-import sailColours from "../src/sail-colours.json" with { type: "json" };
+import {
+  buildScheduleDocument,
+  halfColour,
+} from "../src/schedule-pdf/document.ts";
 
 type Flight = {
   id: string;
@@ -57,13 +61,13 @@ const leagues = opts.league.split(",").map((l) => l.trim());
 // --- Data -------------------------------------------------------------------
 
 // The competition's accent colour, as the site uses it: its `accentColour` in
-// `allCompetitions` (src/shared.tsx).
+// `allCompetitions` (src/competitions.ts).
 function accentColour(id: string): string {
-  const shared = fs.readFileSync(
-    new URL("../src/shared.tsx", import.meta.url),
+  const competitions = fs.readFileSync(
+    new URL("../src/competitions.ts", import.meta.url),
     "utf-8",
   );
-  const block = shared.match(new RegExp(`\\bid: "${id}",[^}]*`))?.[0];
+  const block = competitions.match(new RegExp(`\\bid: "${id}",[^}]*`))?.[0];
   return block?.match(/accentColour: "(#[0-9a-fA-F]{6})"/)?.[1] ?? "#004a79";
 }
 
@@ -195,18 +199,6 @@ if (source.races.length === 0) {
 
 // --- Layout data --------------------------------------------------------------
 
-// Header colour for a half, from the first colour word in its name, e.g.
-// "Pink Stripe" or "Blue Tip". The palette lives in src/sail-colours.json.
-const COLOURS: Record<string, { fill: string; text: string }> =
-  sailColours.colours;
-const UNKNOWN_COLOUR = sailColours.unknown;
-
-function halfColour(name: string) {
-  const words = name.toLowerCase().match(/[a-z]+/g) ?? [];
-  const word = words.find((w) => w in COLOURS);
-  return word ? COLOURS[word] : UNKNOWN_COLOUR;
-}
-
 const LEAGUE_NAMES: Record<string, string> = {
   quali: "Qualifying",
   "semis/gold": "Gold Semi-Final",
@@ -232,8 +224,11 @@ const flights = flightOrder.map((id) => {
   };
 });
 
-const sections = leagues
-  .map((league) => ({
+const data = buildScheduleDocument({
+  title: opts.title ?? source.name ?? competition,
+  accent: accentColour(competition),
+  flights,
+  sections: leagues.map((league) => ({
     title: leagueName(league),
     races: source.races
       .filter((r) => r.league === league)
@@ -243,54 +238,10 @@ const sections = leagues
         left: r.lteam,
         right: r.rteam,
       })),
-  }))
-  .filter((s) => s.races.length > 0);
-
-// Each team's races, coloured by the half (boats) they sail in.
-const teamRaces = new Map<
-  string,
-  { number: number; fill: string; text: string }[]
->();
-for (const s of sections) {
-  for (const r of s.races) {
-    const halves = flights[r.flight].halves;
-    for (const [team, half] of [
-      [r.left, halves[0]],
-      [r.right, halves[1]],
-    ] as const) {
-      if (team === "TBD") continue;
-      const list = teamRaces.get(team) ?? [];
-      list.push({ number: r.number, fill: half.fill, text: half.text });
-      teamRaces.set(team, list);
-    }
-  }
-}
-const teams = [...teamRaces.entries()]
-  .sort(([a], [b]) => a.localeCompare(b))
-  .map(([name, races]) => ({ name, races }));
-
-const raceCount = sections.reduce((n, s) => n + s.races.length, 0);
-const data = {
-  title: opts.title ?? source.name ?? competition,
-  subtitle:
-    sections.length === 1
-      ? `${sections[0].title} Schedule`
-      : "Race Schedule",
-  summary: [
-    `${raceCount} races`,
-    `${teams.length} teams`,
-    `${flights.length} ${flights.length === 1 ? "flight" : "flights"}`,
-  ].join(" · "),
-  accent: accentColour(competition),
-  generated: new Date().toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }),
-  flights,
-  sections,
-  teams: opts.teams ? teams : [],
-};
+  })),
+  teams: opts.teams,
+});
+const raceCount = data.sections.reduce((n, s) => n + s.races.length, 0);
 
 if (opts.json) {
   console.log(JSON.stringify(data, null, 2));

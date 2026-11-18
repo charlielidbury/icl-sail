@@ -1,5 +1,8 @@
 // Printable race schedule. Rendered by scripts/schedule-pdf.ts, which passes
-// the data as JSON with `--input data=...`; run it with `--json` to see the shape.
+// the data as JSON with `--input data=...` (run it with `--json` to see the
+// shape), and in the browser by src/schedule-pdf/compile.ts (/scheduler). The
+// data is built by src/schedule-pdf/document.ts. `summary` may have several
+// lines.
 
 #let data = json(bytes(sys.inputs.data))
 #let accent = rgb(data.accent)
@@ -47,13 +50,17 @@
 )
 #v(3mm)
 
-// A half-flight's header cell, coloured like its sails.
+// A half-flight's header cell, coloured like its sails, with its sail numbers
+// underneath if there are any.
 #let half-header(h) = table.cell(
   fill: rgb(h.fill),
-  text(fill: rgb(h.text))[
-    #text(weight: "semibold", h.name) \
-    #text(size: 0.85em, h.numbers.map(str).join(", "))
-  ],
+  text(fill: rgb(h.text), {
+    text(weight: "semibold", h.name)
+    if h.numbers.len() > 0 {
+      linebreak()
+      text(size: 0.85em, h.numbers.map(str).join(", "))
+    }
+  }),
 )
 
 // Shrinks a team name to fit its cell instead of wrapping it.

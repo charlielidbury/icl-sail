@@ -8,7 +8,8 @@ allowed-tools: Bash, Read, Edit
 # Schedule PDF Skill
 
 Renders a race schedule to `public/<competition>/schedule.pdf` with Typst.
-`scripts/schedule-pdf.ts` gathers the races and `scripts/schedule.typ` lays them out:
+`scripts/schedule-pdf.ts` gathers the races, `src/schedule-pdf/document.ts` turns them
+into the template's data, and `scripts/schedule.typ` lays them out:
 a title, then one table per league with a column pair per flight, each half's
 header coloured like its sails. As in the old hand-made schedules
 (public/icicle/qualifying_schedule.pdf), only the race numbers and the cells with
@@ -16,6 +17,12 @@ teams in them are grey, the other flights' cells stay white, and a rule boxes ea
 rotation of the flights. `/schedule` (below) uses the same shading. An optional "Races by team" index (`--teams`) lists
 each team's race numbers, coloured by the boats it sails in. Four or more flights switch
 to landscape.
+
+The `/scheduler` page (the public schedule generator) makes the same PDF in the
+browser: `src/schedule-pdf/compile.ts` runs this template with typst.ts (Typst as
+WebAssembly, loaded on the first "Open PDF" click) and the Geist font from the `geist`
+package. So a change to `scripts/schedule.typ` or `document.ts` affects both; check
+both still work.
 
 The site also has a live version at `/schedule` (src/app/schedule/), with the same
 table built from the current races in every league and a "Print or save as PDF"

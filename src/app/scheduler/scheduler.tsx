@@ -27,7 +27,7 @@ import {
   TbChevronDown,
   TbDownload,
   TbPlayerStopFilled,
-  TbPrinter,
+  TbFileTypePdf,
   TbSailboat,
   TbSelector,
 } from "react-icons/tb";
@@ -58,6 +58,7 @@ import {
   slug,
   testedNote,
 } from "./lib";
+import { openSchedulePdf, schedulerDocument } from "./pdf";
 import { Quality } from "./quality";
 import { type BoatLabel, ScheduleTable } from "./schedule-table";
 import styles from "./scheduler.module.css";
@@ -131,6 +132,10 @@ type Run =
       startedAt: number;
       timeLimitMs: number;
     };
+
+type PdfState =
+  | { status: "idle" | "preparing" | "downloaded" }
+  | { status: "error"; message: string };
 
 const keyOf = (s: Settings) => JSON.stringify(s);
 
@@ -329,6 +334,7 @@ export default function Scheduler() {
   const [run, setRun] = useState<Run>({ status: "idle" });
   const [result, setResult] = useState<Result | null>(null);
   const [now, setNow] = useState(0);
+  const [pdf, setPdf] = useState<PdfState>({ status: "idle" });
   const running = run.status === "running";
 
   const workerRef = useRef<Worker | null>(null);
@@ -408,6 +414,7 @@ export default function Scheduler() {
     const startedAt = Date.now();
     setNow(startedAt);
     setRun({ status: "running", message: "Starting…", startedAt, timeLimitMs: s.timeLimitMs });
+    setPdf({ status: "idle" });
     const req: WorkerRequest = { type: "generate", id, ...s };
     (workerRef.current ?? startWorker()).postMessage(req);
   };
@@ -429,6 +436,11 @@ export default function Scheduler() {
       ? result.labels
       : labelsFor(form, v.names, v.settings);
 
+  // Downloads are named after the event, e.g. "test-regatta-12x2.csv".
+  const fileBase = result
+    ? `${slug(labels?.title ?? "") || "schedule"}-${result.schedule.nTeams}x${result.schedule.nFlights}`
+    : "schedule";
+
   const downloadCsv = () => {
     if (!result || !labels) return;
     const csv = scheduleCsv(
@@ -439,12 +451,23 @@ export default function Scheduler() {
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
     a.href = url;
-    const { nTeams, nFlights } = result.schedule;
-    a.download = `${slug(labels.title) || "schedule"}-${nTeams}x${nFlights}.csv`;
+    a.download = `${fileBase}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  // A real PDF (the same Typst layout as the competition schedules), shown in
+  // the browser's PDF viewer in a new tab. Must open the tab synchronously.
+  const showPdf = () => {
+    if (!result || !labels || pdf.status === "preparing") return;
+    setPdf({ status: "preparing" });
+    openSchedulePdf(schedulerDocument(result.schedule, result.report, labels), `${fileBase}.pdf`)
+      .then((outcome) => setPdf({ status: outcome === "downloaded" ? "downloaded" : "idle" }))
+      .catch((e) =>
+        setPdf({ status: "error", message: e instanceof Error ? e.message : String(e) }),
+      );
   };
 
   const shownFlights = v.nFlights ?? Math.min(MAX_FLIGHTS, Math.max(1, parseInt(form.flights) || 1));
@@ -791,11 +814,32 @@ export default function Scheduler() {
                 <Button size="sm" variant="outline" onClick={downloadCsv}>
                   <TbDownload /> Download CSV
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => window.print()}>
-                  <TbPrinter /> Print / Save as PDF
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={showPdf}
+                  loading={pdf.status === "preparing"}
+                  loadingText="Preparing PDF…"
+                >
+                  <TbFileTypePdf /> Open PDF
                 </Button>
               </Flex>
             </Flex>
+
+            {pdf.status === "error" && (
+              <Alert.Root status="error" size="sm" mb={4} className={styles.noPrint}>
+                <Alert.Indicator />
+                <Alert.Content>
+                  <Alert.Title>Couldn&apos;t make the PDF</Alert.Title>
+                  <Alert.Description whiteSpace="pre-wrap">{pdf.message}</Alert.Description>
+                </Alert.Content>
+              </Alert.Root>
+            )}
+            {pdf.status === "downloaded" && (
+              <Text fontSize="sm" color="fg.muted" mb={4} className={styles.noPrint}>
+                Your browser didn&apos;t open a new tab, so the PDF was downloaded instead.
+              </Text>
+            )}
 
             <Box className={styles.noPrint} mb={4}>
               <Quality report={result.report} elapsedMs={result.elapsedMs} />
