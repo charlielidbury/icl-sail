@@ -18,15 +18,19 @@ rotation of the flights. `/schedule` (below) uses the same shading. An optional 
 each team's race numbers, coloured by the boats it sails in. Four or more flights switch
 to landscape.
 
-The `/scheduler` page (the public schedule generator) makes the same PDF in the
-browser: `src/schedule-pdf/compile.ts` runs this template with typst.ts (Typst as
-WebAssembly, loaded on the first "Open PDF" click) and the Geist font from the `geist`
-package. So a change to `scripts/schedule.typ` or `document.ts` affects both; check
-both still work.
+The site renders the same template on the server (`src/schedule-pdf/render.ts`,
+typst.ts's native Node compiler, Geist from `src/schedule-pdf/fonts/`):
+- `<competition>.isail.site/schedule.pdf` is always the current schedule from the
+  database (qualifying by default, `?league=` for others). Prefer linking to it over a
+  generated file: Sixpack's "Qualifying Schedule" document does.
+- `/scheduler` (the public schedule generator) posts its schedule to `/scheduler/pdf`.
+
+So a change to `scripts/schedule.typ` or `src/schedule-pdf/document.ts` affects the CLI
+and both routes; check them all.
 
 The site also has a live version at `/schedule` (src/app/schedule/), with the same
-table built from the current races in every league and a "Print or save as PDF"
-button. Point people there when the schedule may still change; generate a PDF when a
+table built from the current races in every league and an "Open PDF" button (it opens
+`/schedule.pdf` for those leagues). Point people there when the schedule may still change; generate a PDF when a
 fixed document is wanted (notice boards, emails, the home page's documents list).
 
 ## Commands

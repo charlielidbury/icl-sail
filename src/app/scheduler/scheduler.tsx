@@ -48,6 +48,8 @@ import {
   defaultBoatName,
   duplicates,
   genericTeamNames,
+  maxFlights,
+  minTeams,
   parseIntIn,
   parseSeconds,
   parseTeamNames,
@@ -58,7 +60,7 @@ import {
   slug,
   testedNote,
 } from "./lib";
-import { openSchedulePdf, schedulerDocument } from "./pdf";
+import { schedulerDocument } from "./pdf";
 import { Quality } from "./quality";
 import { type BoatLabel, ScheduleTable } from "./schedule-table";
 import styles from "./scheduler.module.css";
@@ -133,10 +135,6 @@ type Run =
       timeLimitMs: number;
     };
 
-type PdfState =
-  | { status: "idle" | "preparing" | "downloaded" }
-  | { status: "error"; message: string };
-
 const keyOf = (s: Settings) => JSON.stringify(s);
 
 /** A boat name is "automatic" (and gets renamed when a colour is picked) if
@@ -176,17 +174,23 @@ function check(form: Form) {
     if (dups.length) teamError = `Each team needs a different name: ${dups.join(", ")}.`;
   }
 
-  const nFlights = parseIntIn(form.flights, 1, MAX_FLIGHTS);
-  let flightError: string | null = null;
-  if (nFlights === null) flightError = `Enter a whole number from 1 to ${MAX_FLIGHTS}.`;
-  else if (nTeams >= 3 && 2 * nFlights >= nTeams) {
-    const most = Math.floor((nTeams - 1) / 2);
-    flightError = `Flights must be fewer than half the teams: ${nTeams} teams can use at most ${plural(most, "flight")}.`;
-  }
-
   const seed = parseIntIn(form.seed, 0, 2 ** 31 - 1);
   const timeLimit = parseSeconds(form.timeLimit, MAX_TIME_LIMIT_S);
   const maxStint = parseIntIn(form.maxStint, 1, MAX_STINT);
+
+  const nFlights = parseIntIn(form.flights, 1, MAX_FLIGHTS);
+  let flightError: string | null = null;
+  if (nFlights === null) flightError = `Enter a whole number from 1 to ${MAX_FLIGHTS}.`;
+  else if (nTeams >= 3 && nTeams < minTeams(nFlights, maxStint ?? 2)) {
+    const stint = maxStint ?? 2;
+    const most = maxFlights(nTeams, stint);
+    flightError =
+      `${stint === 1 ? "With a max stint of 1, " : ""}${plural(nFlights, "flight")} ` +
+      `${nFlights === 1 ? "needs" : "need"} at least ${minTeams(nFlights, stint)} teams, so ` +
+      (most > 0
+        ? `${nTeams} teams can use at most ${plural(most, "flight")}.`
+        : `${nTeams} teams aren't enough.`);
+  }
 
   const settings: Settings | null =
     nTeams >= 3 && !teamError && nFlights && !flightError && seed !== null && timeLimit && maxStint
@@ -334,7 +338,6 @@ export default function Scheduler() {
   const [run, setRun] = useState<Run>({ status: "idle" });
   const [result, setResult] = useState<Result | null>(null);
   const [now, setNow] = useState(0);
-  const [pdf, setPdf] = useState<PdfState>({ status: "idle" });
   const running = run.status === "running";
 
   const workerRef = useRef<Worker | null>(null);
@@ -342,6 +345,7 @@ export default function Scheduler() {
   const nextId = useRef(0);
   const pending = useRef<{ key: string; labels: Labels } | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const pdfData = useRef<HTMLInputElement>(null);
 
   const startWorker = useCallback(() => {
     const w = createWorker();
@@ -414,7 +418,6 @@ export default function Scheduler() {
     const startedAt = Date.now();
     setNow(startedAt);
     setRun({ status: "running", message: "Starting…", startedAt, timeLimitMs: s.timeLimitMs });
-    setPdf({ status: "idle" });
     const req: WorkerRequest = { type: "generate", id, ...s };
     (workerRef.current ?? startWorker()).postMessage(req);
   };
@@ -458,16 +461,14 @@ export default function Scheduler() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
-  // A real PDF (the same Typst layout as the competition schedules), shown in
-  // the browser's PDF viewer in a new tab. Must open the tab synchronously.
-  const showPdf = () => {
-    if (!result || !labels || pdf.status === "preparing") return;
-    setPdf({ status: "preparing" });
-    openSchedulePdf(schedulerDocument(result.schedule, result.report, labels), `${fileBase}.pdf`)
-      .then((outcome) => setPdf({ status: outcome === "downloaded" ? "downloaded" : "idle" }))
-      .catch((e) =>
-        setPdf({ status: "error", message: e instanceof Error ? e.message : String(e) }),
-      );
+  // The PDF (the same Typst layout as the competition schedules) is made on
+  // the server: the form posts the template data and the PDF opens in a new
+  // tab, in the browser's own viewer. The data is filled in as it submits.
+  const fillPdfData = () => {
+    if (!result || !labels || !pdfData.current) return;
+    pdfData.current.value = JSON.stringify(
+      schedulerDocument(result.schedule, result.report, labels),
+    );
   };
 
   const shownFlights = v.nFlights ?? Math.min(MAX_FLIGHTS, Math.max(1, parseInt(form.flights) || 1));
@@ -814,32 +815,19 @@ export default function Scheduler() {
                 <Button size="sm" variant="outline" onClick={downloadCsv}>
                   <TbDownload /> Download CSV
                 </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={showPdf}
-                  loading={pdf.status === "preparing"}
-                  loadingText="Preparing PDF…"
+                <form
+                  method="post"
+                  action="/scheduler/pdf"
+                  target="_blank"
+                  onSubmit={fillPdfData}
                 >
-                  <TbFileTypePdf /> Open PDF
-                </Button>
+                  <input ref={pdfData} type="hidden" name="data" />
+                  <Button type="submit" size="sm" variant="outline">
+                    <TbFileTypePdf /> Open PDF
+                  </Button>
+                </form>
               </Flex>
             </Flex>
-
-            {pdf.status === "error" && (
-              <Alert.Root status="error" size="sm" mb={4} className={styles.noPrint}>
-                <Alert.Indicator />
-                <Alert.Content>
-                  <Alert.Title>Couldn&apos;t make the PDF</Alert.Title>
-                  <Alert.Description whiteSpace="pre-wrap">{pdf.message}</Alert.Description>
-                </Alert.Content>
-              </Alert.Root>
-            )}
-            {pdf.status === "downloaded" && (
-              <Text fontSize="sm" color="fg.muted" mb={4} className={styles.noPrint}>
-                Your browser didn&apos;t open a new tab, so the PDF was downloaded instead.
-              </Text>
-            )}
 
             <Box className={styles.noPrint} mb={4}>
               <Quality report={result.report} elapsedMs={result.elapsedMs} />

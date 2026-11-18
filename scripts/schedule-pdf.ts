@@ -1,6 +1,7 @@
 // Renders a competition's race schedule to a printable PDF with Typst
-// (template: scripts/schedule.typ, data: src/schedule-pdf/document.ts; the
-// /scheduler page compiles the same template in the browser).
+// (template: scripts/schedule.typ, data: src/schedule-pdf/document.ts). The
+// site renders the same template on the server: /schedule.pdf is always the
+// current schedule (src/schedule-pdf/render.ts).
 //
 // Usage:
 //   node scripts/schedule-pdf.ts <competition> [options]      races from Supabase
@@ -22,27 +23,15 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { parseArgs } from "node:util";
 import { readSchedule } from "./schedule-csv.ts";
+import { allCompetitions, type CompetitionId } from "../src/competitions.ts";
 import {
-  buildScheduleDocument,
-  halfColour,
+  competitionDocument,
+  type FlightRow,
+  type RaceRow,
 } from "../src/schedule-pdf/document.ts";
 
-type Flight = {
-  id: string;
-  name: string;
-  lname: string;
-  lnumbers: number[];
-  rname: string;
-  rnumbers: number[];
-};
-
-type Race = {
-  number: number;
-  league: string;
-  flight: string; // flight id
-  lteam: string;
-  rteam: string;
-};
+type Flight = FlightRow;
+type Race = RaceRow;
 
 const { values: opts, positionals } = parseArgs({
   allowPositionals: true,
@@ -59,17 +48,6 @@ const { values: opts, positionals } = parseArgs({
 const leagues = opts.league.split(",").map((l) => l.trim());
 
 // --- Data -------------------------------------------------------------------
-
-// The competition's accent colour, as the site uses it: its `accentColour` in
-// `allCompetitions` (src/competitions.ts).
-function accentColour(id: string): string {
-  const competitions = fs.readFileSync(
-    new URL("../src/competitions.ts", import.meta.url),
-    "utf-8",
-  );
-  const block = competitions.match(new RegExp(`\\bid: "${id}",[^}]*`))?.[0];
-  return block?.match(/accentColour: "(#[0-9a-fA-F]{6})"/)?.[1] ?? "#004a79";
-}
 
 function query<T>(sql: string): T[] {
   try {
@@ -199,46 +177,12 @@ if (source.races.length === 0) {
 
 // --- Layout data --------------------------------------------------------------
 
-const LEAGUE_NAMES: Record<string, string> = {
-  quali: "Qualifying",
-  "semis/gold": "Gold Semi-Final",
-  "semis/silver": "Silver Semi-Final",
-};
-const leagueName = (l: string) => LEAGUE_NAMES[l] ?? l;
-
-// Flights in the order they first race.
-const flightById = new Map(source.flights.map((f) => [f.id, f]));
-const flightOrder: string[] = [];
-for (const r of source.races) {
-  if (!flightById.has(r.flight)) throw new Error(`Unknown flight ${r.flight}`);
-  if (!flightOrder.includes(r.flight)) flightOrder.push(r.flight);
-}
-const flights = flightOrder.map((id) => {
-  const f = flightById.get(id)!;
-  return {
-    name: f.name,
-    halves: [
-      { name: f.lname, numbers: f.lnumbers, ...halfColour(f.lname) },
-      { name: f.rname, numbers: f.rnumbers, ...halfColour(f.rname) },
-    ],
-  };
-});
-
-const data = buildScheduleDocument({
+const data = competitionDocument({
   title: opts.title ?? source.name ?? competition,
-  accent: accentColour(competition),
-  flights,
-  sections: leagues.map((league) => ({
-    title: leagueName(league),
-    races: source.races
-      .filter((r) => r.league === league)
-      .map((r) => ({
-        number: r.number,
-        flight: flightOrder.indexOf(r.flight),
-        left: r.lteam,
-        right: r.rteam,
-      })),
-  })),
+  accent: allCompetitions[competition as CompetitionId]?.accentColour ?? "#004a79",
+  leagues,
+  flights: source.flights,
+  races: source.races,
   teams: opts.teams,
 });
 const raceCount = data.sections.reduce((n, s) => n + s.races.length, 0);

@@ -1,8 +1,8 @@
-// A generated schedule as the printable schedule document (the same Typst
-// template as the competition schedule PDFs), and opening it as a PDF.
+// A generated schedule as the printable schedule document: the data for the
+// same Typst template as the competition schedule PDFs. The page posts it to
+// /scheduler/pdf (./pdf/route.ts), which renders it on the server.
 import type { Report, Schedule } from "@/scheduler/types";
 import { buildScheduleDocument, type ScheduleDocument } from "@/schedule-pdf/document";
-import { openPdf } from "@/schedule-pdf/open";
 import type { BoatLabel } from "./schedule-table";
 
 /** The site's default accent colour, as on most competitions. */
@@ -51,16 +51,4 @@ export function schedulerDocument(
     ],
     notes: level ? [level] : [],
   });
-}
-
-/**
- * Makes the PDF and shows it in a new tab (or downloads it). Call it directly
- * from the click handler, before anything else is awaited.
- */
-export function openSchedulePdf(doc: ScheduleDocument, filename: string) {
-  return openPdf(async () => {
-    // The compiler is only downloaded when a PDF is first asked for.
-    const { compileSchedulePdf } = await import("@/schedule-pdf/compile");
-    return compileSchedulePdf(doc);
-  }, filename);
 }

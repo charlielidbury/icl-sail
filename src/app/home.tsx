@@ -124,7 +124,8 @@ const documents: Record<
     {
       title: "Qualifying Schedule",
       description: "Qualifying schedule in typical table format",
-      href: "/sixpack/schedule.pdf",
+      // Rendered from the current races (src/app/schedule.pdf/route.ts).
+      href: "/schedule.pdf",
     },
     {
       title: "Notice of Race",

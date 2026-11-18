@@ -46,6 +46,12 @@ Adding a competition: add it to `allCompetitions` in `src/competitions.ts`, add 
 - Main page components are in `src/app/{route}/{route}.tsx` (e.g., `races.tsx`, `leaderboard.tsx`)
 - Reusable UI primitives in `src/components/ui/`
 
+### Schedule PDFs
+- `scripts/schedule.typ` (Typst) is the one layout for printable schedules. `src/schedule-pdf/document.ts` builds its data; `src/schedule-pdf/render.ts` renders it on the server with typst.ts's native Node compiler and the Geist fonts in `src/schedule-pdf/fonts/`
+- `GET /schedule.pdf` (`src/app/schedule.pdf/route.ts`): the competition's current schedule from the database, cached for a minute; `?league=quali,semis/gold` picks leagues
+- `POST /scheduler/pdf`: the `/scheduler` page's generated schedule (a form field `data` holding the template data, checked by `src/schedule-pdf/validate.ts`)
+- `scripts/schedule-pdf.ts` makes fixed PDFs with the `typst` CLI from the same template and data (see the `schedule-pdf` skill)
+
 ### Path Aliases
 `@/*` maps to `./src/*` (configured in tsconfig.json)
 

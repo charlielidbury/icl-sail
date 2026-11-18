@@ -53,6 +53,28 @@ export const plural = (n: number, word: string) => `${n} ${n === 1 ? word : word
 
 export const raceCount = (n: number) => (n * (n - 1)) / 2;
 
+/**
+ * The fewest teams that can race a round robin on `flights` flights.
+ *
+ * - On 2+ flights, 2F + 1 teams is impossible: each race on a flight would
+ *   have to keep one team in and bring in the one team sitting out, so teams
+ *   would only ever meet the same two opponents. So at least 2F + 2.
+ * - A max stint of 1 needs 2F + 3: with 2F + 2, every team would race again
+ *   exactly F + 1 races later, against the same opponent.
+ * - On one flight (with longer stints), 3 teams work.
+ */
+export function minTeams(flights: number, maxStint: number): number {
+  if (maxStint === 1) return 2 * flights + 3;
+  return flights === 1 ? 3 : 2 * flights + 2;
+}
+
+/** The most flights `teams` teams can use (0 if none). */
+export function maxFlights(teams: number, maxStint: number): number {
+  let f = 0;
+  while (minTeams(f + 1, maxStint) <= teams) f += 1;
+  return f;
+}
+
 /** Sizes the original tool is tested on: flights -> [min teams, max teams]. */
 export const TESTED: Record<number, [number, number]> = {
   1: [4, 9],

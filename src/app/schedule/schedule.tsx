@@ -1,7 +1,8 @@
 "use client";
 
-// The race schedule as a live, printable table: the same layout as the PDFs
-// from scripts/schedule-pdf.ts, but always up to date.
+// The race schedule as a live table: the same layout as the PDFs from
+// scripts/schedule-pdf.ts, but always up to date. Its PDF button opens
+// /schedule.pdf (src/app/schedule.pdf/route.ts), rendered from the same races.
 import NavBar from "@/components/navbar";
 import { Box, Button, Flex, Heading, Skeleton, Text } from "@chakra-ui/react";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -9,7 +10,7 @@ import { useAtomValue } from "jotai";
 import { useHydrateAtoms } from "jotai/utils";
 import type { CompetitionId } from "@/competitions";
 import { queryClientAtom } from "jotai-tanstack-query";
-import { TbPrinter } from "react-icons/tb";
+import { TbFileTypePdf } from "react-icons/tb";
 import {
   Flight,
   RaceResult,
@@ -135,6 +136,12 @@ function Page() {
       ? `${getLeagueName(leagues[0])} Schedule`
       : "Race Schedule";
 
+  // The PDF of the leagues shown here (it defaults to just qualifying).
+  const pdfHref =
+    leagues.length === 0 || (leagues.length === 1 && leagues[0] === "quali")
+      ? "/schedule.pdf"
+      : `/schedule.pdf?league=${encodeURIComponent(leagues.join(","))}`;
+
   return (
     <Box minH="100vh">
       <Box className={styles.noPrint} position="sticky" top="0" zIndex="100">
@@ -159,14 +166,13 @@ function Page() {
             <Text color="gray.600">{subtitle}</Text>
           </Box>
           <Flex direction="column" align="flex-end" gap={2}>
-            <Button
-              className={styles.noPrint}
-              size="sm"
-              variant="outline"
-              onClick={() => window.print()}
-            >
-              <TbPrinter /> Print or save as PDF
-            </Button>
+            {races.length > 0 && (
+              <Button className={styles.noPrint} size="sm" variant="outline" asChild>
+                <a href={pdfHref} target="_blank" rel="noopener">
+                  <TbFileTypePdf /> Open PDF
+                </a>
+              </Button>
+            )}
             {races.length > 0 && (
               <Text fontSize="sm" color="gray.600">
                 {races.length} races · {teams.size} teams · {flights.length}{" "}

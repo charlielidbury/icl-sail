@@ -1,7 +1,7 @@
 // The data that scripts/schedule.typ lays out as a printable schedule, shared
 // by the command line (scripts/schedule-pdf.ts, which runs the typst CLI) and
-// the browser (./compile.ts, which runs typst.ts). Plain TypeScript with only
-// relative imports, so Node can run it directly.
+// the server (./render.ts, for /schedule.pdf and the /scheduler page). Plain
+// TypeScript with only relative imports, so Node can run it directly.
 import sailColours from "../sail-colours.json" with { type: "json" };
 
 export type Colour = { fill: string; text: string };
@@ -109,4 +109,85 @@ export function buildScheduleDocument(input: {
     sections,
     teams: input.teams ? teams : [],
   };
+}
+
+// --- Competition schedules ------------------------------------------------------
+
+/** A flight as stored in the database. */
+export type FlightRow = {
+  id: string;
+  name: string;
+  lname: string;
+  lnumbers: number[];
+  rname: string;
+  rnumbers: number[];
+};
+
+/** A race with its team names (or placeholders, or TBD), in race order. */
+export type RaceRow = {
+  number: number;
+  league: string;
+  /** Flight id. */
+  flight: string;
+  lteam: string;
+  rteam: string;
+};
+
+const LEAGUE_NAMES: Record<string, string> = {
+  quali: "Qualifying",
+  "semis/gold": "Gold Semi-Final",
+  "semis/silver": "Silver Semi-Final",
+};
+export const leagueName = (l: string) => LEAGUE_NAMES[l] ?? l;
+
+/** The league a competition's schedule PDF shows unless told otherwise. */
+export const DEFAULT_LEAGUES = ["quali"];
+
+/**
+ * A competition's schedule: one section per league (in the given order), with
+ * flights in the order they first race. Used by scripts/schedule-pdf.ts and
+ * /schedule.pdf, so both make the same document.
+ */
+export function competitionDocument(input: {
+  title: string;
+  accent: string;
+  leagues: string[];
+  flights: FlightRow[];
+  races: RaceRow[];
+  teams?: boolean;
+  generated?: Date;
+}): ScheduleDocument {
+  const flightById = new Map(input.flights.map((f) => [f.id, f]));
+  const flightOrder: string[] = [];
+  for (const r of input.races) {
+    if (!flightById.has(r.flight)) throw new Error(`Unknown flight ${r.flight}`);
+    if (!flightOrder.includes(r.flight)) flightOrder.push(r.flight);
+  }
+  return buildScheduleDocument({
+    title: input.title,
+    accent: input.accent,
+    flights: flightOrder.map((id) => {
+      const f = flightById.get(id)!;
+      return {
+        name: f.name,
+        halves: [
+          { name: f.lname, numbers: f.lnumbers, ...halfColour(f.lname) },
+          { name: f.rname, numbers: f.rnumbers, ...halfColour(f.rname) },
+        ],
+      };
+    }),
+    sections: input.leagues.map((league) => ({
+      title: leagueName(league),
+      races: input.races
+        .filter((r) => r.league === league)
+        .map((r) => ({
+          number: r.number,
+          flight: flightOrder.indexOf(r.flight),
+          left: r.lteam,
+          right: r.rteam,
+        })),
+    })),
+    teams: input.teams,
+    generated: input.generated,
+  });
 }
