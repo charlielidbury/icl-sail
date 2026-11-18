@@ -23,8 +23,10 @@
 //
 // Differences from the Python: the tie-break order comes from a mulberry32
 // PRNG instead of Python's random.Random, so a seed gives a different (but
-// equally repeatable) schedule; and maxStint = 1 switches off staying in,
-// which the Python search does not support (it left that case to CP-SAT).
+// equally repeatable) schedule; maxStint = 1 switches off staying in,
+// which the Python search does not support (it left that case to CP-SAT);
+// and the depth-first search keeps an explicit stack instead of recursing,
+// because browser workers have too small a call stack for 60 teams.
 import type { Race } from "./types.ts";
 
 const NEG = -(10 ** 9);
@@ -265,9 +267,22 @@ export function staggerSearch(
     );
   };
 
-  const dfs = (raceNo: number): boolean => {
+  // One level of the depth-first search: the candidate races for raceNo, the
+  // next one to try, and what to restore when the one placed is undone.
+  interface Frame {
+    raceNo: number;
+    opts: Race[];
+    next: number;
+    saved: Saved | null;
+  }
+
+  /**
+   * Enter the search node for raceNo (the Python dfs() up to its loop).
+   * Returns null when the schedule is complete, else the node's frame.
+   */
+  const enter = (raceNo: number): Frame | null => {
     if (races.length > best.length) best = races.slice();
-    if (raceNo > R) return true;
+    if (raceNo > R) return null;
     nodes += 1;
     if (nodes > nodeLimit) throw new Abort();
     if ((nodes & 1023) === 0) {
@@ -305,11 +320,41 @@ export function staggerSearch(
         opts.push(...dbl);
       }
     }
+    return { raceNo, opts, next: 0, saved: null };
+  };
 
-    for (const [a, b] of opts) {
-      const saved = place(a, b, raceNo);
-      if (spreadOk() && checkpointOk(raceNo) && dfs(raceNo + 1)) return true;
-      unplace(a, b, saved);
+  /**
+   * The Python's recursive dfs(), with an explicit stack: a schedule can be
+   * over 1,000 races deep, more than a browser worker's call stack allows.
+   * For each candidate in turn: place it, and if the spread and checkpoint
+   * rules allow, search on from the next race; undo it if that fails.
+   */
+  const dfs = (raceNo: number): boolean => {
+    const root = enter(raceNo);
+    if (root === null) return true;
+    const stack: Frame[] = [root];
+    while (stack.length) {
+      const top = stack[stack.length - 1];
+      if (top.saved) {
+        // the search below the last candidate failed
+        const [a, b] = top.opts[top.next - 1];
+        unplace(a, b, top.saved);
+        top.saved = null;
+      }
+      let child: Frame | null = null;
+      while (top.next < top.opts.length) {
+        const [a, b] = top.opts[top.next++];
+        const saved = place(a, b, top.raceNo);
+        if (spreadOk() && checkpointOk(top.raceNo)) {
+          top.saved = saved;
+          child = enter(top.raceNo + 1);
+          if (child === null) return true;
+          break;
+        }
+        unplace(a, b, saved);
+      }
+      if (child) stack.push(child);
+      else stack.pop();
     }
     return false;
   };

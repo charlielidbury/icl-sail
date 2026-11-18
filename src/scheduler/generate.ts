@@ -10,13 +10,16 @@
 //
 // Time budget: the Python gives step 1 max(1 s, 15%) of time_limit, split over
 // 4 restarts, and each step 2a attempt max(1 s, 3%), leaving the rest for
-// CP-SAT. timeLimitMs maps onto the phases the same way. Both phases also
-// have node limits (60,000 and 40,000 per search), and in JavaScript those
-// are normally reached long before the time limits, so the result depends
-// only on the options, not on the speed of the machine. Python's default of
-// 120 s is kept: it costs nothing when the node limits bind first, and on a
-// slow device it keeps the search (and so the schedule) the same for longer.
-// The worst case wall time is about 15% + 6 x 3% = 33% of timeLimitMs.
+// CP-SAT. timeLimitMs maps onto the phases the same way, except that no
+// search may run past timeLimitMs overall (the 1 s minimums could, below
+// about 7 s), so generate() never takes noticeably longer than timeLimitMs.
+// Both phases also have node limits (60,000 and 40,000 per search), and in
+// JavaScript those are normally reached long before the time limits, so the
+// result depends only on the options, not on the speed of the machine.
+// Python's default of 120 s is kept: it costs nothing when the node limits
+// bind first, and on a slow device it keeps the search (and so the schedule)
+// the same for longer. Without a deadline cut, the worst case wall time is
+// about 15% + 6 x 3% = 33% of timeLimitMs.
 import type { GenerateOptions, Race, Schedule } from "./types.ts";
 import { analyse } from "./analyse.ts";
 import { staggerSearch } from "./heuristic.ts";
@@ -63,6 +66,33 @@ function checkOptions(o: GenerateOptions): Required<GenerateOptions> {
   if (!Number.isInteger(maxStint) || maxStint < 1) throw new Error("maxStint must be at least 1");
   if (!Number.isInteger(seed)) throw new Error("seed must be an integer");
   if (!(timeLimitMs > 0)) throw new Error("timeLimitMs must be positive");
+  // No team can race twice within w races in a row (w = nFlights, or
+  // nFlights + 1 if nobody may stay in), so those races need 2w different
+  // teams; with exactly 2w teams the race after them could only be a rematch.
+  const need = nFlights === 1 ? "1 flight needs" : `${nFlights} flights need`;
+  const w = maxStint >= 2 ? nFlights : nFlights + 1;
+  if (nTeams < 2 * w + 1) {
+    throw new Error(
+      maxStint >= 2
+        ? `${need} at least ${2 * w + 1} teams: ${w} races in a row (one on each flight) ` +
+            `need ${2 * w} different teams, and one more is needed to avoid rematches`
+        : `With a max stint of 1, ${need} at least ${2 * w + 1} teams: nobody can stay in, ` +
+            `so ${w} races in a row need ${2 * w} different teams, and one more is needed ` +
+            `to avoid rematches`,
+    );
+  }
+  // With exactly 2F + 1 teams and stints of at most 2 (all the search builds),
+  // every race must keep one team in and bring in the one team that sat out
+  // the previous F races. That fixes a rotation in which each team only ever
+  // meets the same two opponents, so no round robin exists for F >= 2.
+  if (maxStint >= 2 && nFlights >= 2 && nTeams === 2 * nFlights + 1) {
+    throw new Error(
+      `${nTeams} teams on ${nFlights} flights can't make a round robin: with exactly ` +
+        `${nTeams} teams, every race must keep one team in and bring in the team that sat ` +
+        `out, so teams keep meeting the same opponents. Use at least ${nTeams + 1} teams ` +
+        `or fewer flights.`,
+    );
+  }
   return { nTeams, nFlights, maxStint, seed, timeLimitMs };
 }
 
@@ -79,11 +109,21 @@ export function generateWithStats(
     stats,
   });
 
+  const deadline = performance.now() + timeLimitMs;
+  let outOfTime = false;
+  // A search's budget, cut so that it ends by the overall deadline.
+  const budget = (ms: number) => {
+    const left = deadline - performance.now();
+    if (left <= 0) outOfTime = true;
+    return Math.min(ms, left);
+  };
+
+  // At most one message per PROGRESS_INTERVAL_MS (the first is always sent).
   let lastEmit = -Infinity;
-  const emit = (message: string, fraction: number, force = false) => {
+  const emit = (message: string, fraction: number) => {
     if (!onProgress) return;
     const now = performance.now();
-    if (!force && now - lastEmit < PROGRESS_INTERVAL_MS) return;
+    if (now - lastEmit < PROGRESS_INTERVAL_MS) return;
     lastEmit = now;
     onProgress({ message, fraction: Math.min(1, Math.max(0, fraction)) });
   };
@@ -99,17 +139,19 @@ export function generateWithStats(
   if (maxStint >= 2) {
     const perRestartMs = Math.max(1000, 0.15 * timeLimitMs) / RESTARTS;
     for (let k = 0; k < RESTARTS; k++) {
+      const ms = budget(perRestartMs);
+      if (outOfTime) break;
       const base = (STAGGER_SHARE * k) / RESTARTS;
       const message = (best: number) => `Searching (${best}/${R} races)`;
-      emit(message(bestPrefix.length), base, true);
+      emit(message(bestPrefix.length), base);
       const res = staggerSearch(N, F, {
         nodeLimit: STAGGER_NODE_LIMIT,
-        timeLimitMs: perRestartMs,
+        timeLimitMs: ms,
         seed: seed + k,
         onTick: (t) =>
           emit(
             message(Math.max(bestPrefix.length, t.best)),
-            base + (STAGGER_SHARE / RESTARTS) * used(t.nodes, STAGGER_NODE_LIMIT, t.elapsedMs, perRestartMs),
+            base + (STAGGER_SHARE / RESTARTS) * used(t.nodes, STAGGER_NODE_LIMIT, t.elapsedMs, ms),
           ),
       });
       nodes += res.nodes;
@@ -135,22 +177,24 @@ export function generateWithStats(
   let hintStats: GenerateStats | null = null;
   for (const keepCp of [true, false]) {
     for (const [i, c] of cuts.entries()) {
+      const ms = budget(attemptMs);
+      if (outOfTime) break;
       const attempt = (keepCp ? 0 : cuts.length) + i;
       const base = STAGGER_SHARE + ((1 - STAGGER_SHARE) * attempt) / attempts;
       const message = (best: number) => `Completing (${best}/${R} races)`;
-      emit(message(c), base, true);
+      emit(message(c), base);
       const g = staggerSearch(N, F, {
         prefix: bestPrefix.slice(0, c),
         allowDoubles: true,
         checkpointUntil: keepCp ? undefined : c,
         nodeLimit: GREEDY_NODE_LIMIT,
-        timeLimitMs: attemptMs,
+        timeLimitMs: ms,
         seed,
         maxStint,
         onTick: (t) =>
           emit(
             message(t.best),
-            base + ((1 - STAGGER_SHARE) / attempts) * used(t.nodes, GREEDY_NODE_LIMIT, t.elapsedMs, attemptMs),
+            base + ((1 - STAGGER_SHARE) / attempts) * used(t.nodes, GREEDY_NODE_LIMIT, t.elapsedMs, ms),
           ),
       });
       nodes += g.nodes;
@@ -170,8 +214,11 @@ export function generateWithStats(
     }
   }
   if (hint === null || hintStats === null) {
+    const what = `No complete schedule found for ${N} teams on ${F} flight${F === 1 ? "" : "s"}`;
     throw new Error(
-      `No complete schedule found for ${N} teams on ${F} flights; try another seed or a longer time limit`,
+      outOfTime || performance.now() >= deadline
+        ? `${what} within the time limit; try a longer time limit`
+        : `${what}; try more teams, fewer flights or another seed`,
     );
   }
   return done(hint, { ...hintStats, nodes });
