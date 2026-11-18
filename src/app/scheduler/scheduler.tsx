@@ -62,9 +62,11 @@ import { Quality } from "./quality";
 import { type BoatLabel, ScheduleTable } from "./schedule-table";
 import styles from "./scheduler.module.css";
 
-// The scheduler worker. To use the real one, change this line to
-//   new Worker(new URL("../../scheduler/worker.ts", import.meta.url), { type: "module" })
-const createWorker = () => new Worker(new URL("./mock-worker.ts", import.meta.url), { type: "module" });
+// The scheduler worker (src/scheduler/worker.ts, the TypeScript port).
+const createWorker = () =>
+  new Worker(new URL("../../scheduler/worker.ts", import.meta.url), {
+    type: "module",
+  });
 
 const REPO = "https://github.com/Ninjamouse-1000/team_race_scheduler";
 
