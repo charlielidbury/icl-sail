@@ -7,6 +7,11 @@ import { Session } from "@supabase/supabase-js";
 import { QueryClient, QueryKey, useQueryClient } from "@tanstack/react-query";
 import { atom, useAtomValue } from "jotai";
 import { atomWithQuery } from "jotai-tanstack-query";
+import {
+  allCompetitions,
+  type CompetitionBasic,
+  type CompetitionId,
+} from "./competitions";
 
 export interface Flight {
   id: string;
@@ -463,110 +468,27 @@ export const leaderboardAtom = atom((get) => {
   return sortedLeaderboard;
 });
 
-export type CompetitionId =
-  | "topgun"
-  | "icicle"
-  | "icicle2026"
-  | "bathrobe"
-  | "badger"
-  | "sixpack";
+export {
+  allCompetitions,
+  type CompetitionBasic,
+  type CompetitionId,
+} from "./competitions";
 
-export type CompetitionBasic = {
-  id: CompetitionId;
-  host: string;
-  accentColour: string;
-  logo: string;
-  name: string;
-};
+/** The competition this page is for, decided on the server (see requestCompetition). */
+export const competitionIdAtom = atom<CompetitionId | null>(null);
 
-export const allCompetitions: Record<CompetitionId, CompetitionBasic> = {
-  topgun: {
-    id: "topgun",
-    host: "topgun.isail.events",
-    accentColour: "#004a79",
-    logo: "/topgun/logo.png",
-    name: "Oxford Top Gun",
-  },
-  icicle: {
-    id: "icicle",
-    host: "2025.imperialicicle.com",
-    accentColour: "#004a79",
-    logo: "/icicle/logo_transparent.png",
-    name: "Imperial Icicle 2025",
-  },
-  icicle2026: {
-    id: "icicle2026",
-    host: "imperialicicle.com",
-    accentColour: "#004a79",
-    logo: "/icicle/logo_transparent.png",
-    name: "Imperial Icicle 2026",
-  },
-  bathrobe: {
-    id: "bathrobe",
-    host: "bathrobe.isail.events",
-    accentColour: "#004a79",
-    logo: "/bathrobe/logo.png",
-    name: "Bath Robe",
-  },
-  badger: {
-    id: "badger",
-    host: "badger.isail.events",
-    accentColour: "#004a79",
-    logo: "/badger/small-logo.jpg",
-    name: "Badger",
-  },
-  sixpack: {
-    id: "sixpack",
-    host: "sixpack.isail.site",
-    accentColour: "#542079",
-    logo: "/sixpack/logo_transparent.png",
-    name: "Sixpack",
-  },
-};
+export const competitionBasicAtom = atom<CompetitionBasic | null>((get) => {
+  const id = get(competitionIdAtom);
+  return id === null ? null : allCompetitions[id];
+});
 
-export const competitionHosts: Record<string, CompetitionBasic> = {
-  localhost: allCompetitions.icicle2026,
-  "topgun.isail.events": allCompetitions.topgun,
-  "imperialicicle.com": allCompetitions.icicle2026,
-  "2025.imperialicicle.com": allCompetitions.icicle,
-  "bathrobe.isail.events": allCompetitions.bathrobe,
-  "badger.brunelsailing.co.uk": allCompetitions.badger,
-  "sixpack.isail.site": allCompetitions.sixpack,
-};
-
-export const hostnameAtom = atom<string | undefined>(undefined);
-
-const competitionOverrideAtom = atom<CompetitionBasic | null>(null);
-
-export const competitionBasicAtom = atom(
-  (get) =>
-    get(competitionOverrideAtom) ??
-    competitionHosts[get(hostnameAtom) ?? ""] ??
-    allCompetitions.icicle2026,
-  (_get: any, set: any, competition: CompetitionBasic) => {
-    set(competitionOverrideAtom, competition);
-  },
-);
-
-export function useCompetition() {
-  return useAtomValue(competitionBasicAtom);
-
-  // const [competition, setCompetition] = useState<CompetitionBasic | null>(null);
-
-  // useEffect(() => {
-  //   if (typeof window === "undefined") {
-  //     return; // should only happen on ssr
-  //   }
-
-  //   setCompetition(
-  //     competitionHosts.get(document.location.hostname) ??
-  //       (() => {
-  //         throw "Cannot deduce competition from hostname";
-  //       })()
-  //   );
-  // }, []);
-
-  // return competition;
+/** The current competition. Only for competition pages, which always have one. */
+export function useCompetition(): CompetitionBasic {
+  const competition = useAtomValue(competitionBasicAtom);
+  if (competition === null) {
+    throw new Error("useCompetition() used on a page without a competition");
+  }
+  return competition;
 }
 
 export const competitionAtom = atomWithQuery<Competition>((get) => {

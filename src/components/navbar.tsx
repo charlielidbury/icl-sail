@@ -49,13 +49,13 @@ import { MadeWithLove } from "@/components/ui/made-with-love";
 import {
   queryClient,
   competitionAtom,
-  competitionBasicAtom,
   useCompetition,
   allCompetitions,
   CompetitionId,
 } from "@/shared";
+import { COMPETITION_COOKIE, competitionUrl } from "@/competitions";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useAtomValue } from "jotai";
 import {
   SelectRoot,
   SelectTrigger,
@@ -436,17 +436,24 @@ const DesktopSubNav = ({ label, href, subLabel }: DesktopSubNavProps) => {
 
 const CompetitionSelector = ({ isMobile = false }) => {
   const currentCompetition = useCompetition();
-  const setCompetition = useSetAtom(competitionBasicAtom);
-  if (currentCompetition === null) {
-    return <></>;
-  }
 
+  // Go to the same page on the chosen competition's site. On hosts that can't
+  // name a competition (Vercel previews), remember the choice in a cookie.
   const handleCompetitionChange = (compId: string) => {
-    if (compId in allCompetitions) {
-      const selectedComp = allCompetitions[compId as CompetitionId];
-      if (selectedComp) {
-        setCompetition(selectedComp);
-      }
+    if (!Object.hasOwn(allCompetitions, compId)) {
+      return;
+    }
+    const competition = allCompetitions[compId as CompetitionId];
+    const url = competitionUrl(
+      competition,
+      window.location.host,
+      window.location.pathname,
+    );
+    if (url !== null) {
+      window.location.href = url;
+    } else {
+      document.cookie = `${COMPETITION_COOKIE}=${competition.id}; path=/; max-age=31536000; samesite=lax`;
+      window.location.reload();
     }
   };
 
@@ -458,7 +465,7 @@ const CompetitionSelector = ({ isMobile = false }) => {
   });
 
   // Ensure we have a valid default value
-  const defaultValue = currentCompetition && [currentCompetition.id];
+  const defaultValue = [currentCompetition.id];
 
   return (
     <Box

@@ -3,9 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Provider } from "@/components/ui/provider";
 import { Provider as JotaiProvider } from "jotai";
-import { headers } from "next/headers";
-import { competitionHosts } from "@/shared";
-import { isLandingHost } from "@/landing-hosts";
+import { requestCompetition } from "@/request-competition";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,17 +16,16 @@ const geistMono = Geist_Mono({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const hostname = (await headers()).get("host")?.split(":")[0] ?? "";
-  if (isLandingHost(hostname)) {
+  const { competition } = await requestCompetition();
+  if (competition === null) {
     return {
       title: "iSail",
       description: "Live race results for university team racing",
     };
   }
-  const name = competitionHosts[hostname]?.name ?? "I-Sail";
   return {
-    title: name,
-    description: `${name} Live Race Results`,
+    title: competition.name,
+    description: `${competition.name} Live Race Results`,
   };
 }
 

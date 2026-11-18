@@ -17,7 +17,7 @@ import {
   competitionBasicAtom,
   competitionAtom,
   CompetitionId,
-  hostnameAtom,
+  competitionIdAtom,
   useAuth,
 } from "@/shared";
 import {
@@ -415,7 +415,7 @@ function Info() {
   );
 }
 
-export default function Home({ hostname }: { hostname: string | undefined }) {
-  useHydrateAtoms([[hostnameAtom, hostname]]);
+export default function Home({ competitionId }: { competitionId: CompetitionId }) {
+  useHydrateAtoms([[competitionIdAtom, competitionId]]);
   return <Info />;
 }

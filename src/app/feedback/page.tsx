@@ -1,7 +1,11 @@
-import { headers } from "next/headers";
 import Page from "./feedback";
+import Landing from "../landing";
+import { requestCompetition } from "@/request-competition";
 
 export default async function P() {
-  const hostname = (await headers()).get("host")?.split(":")[0];
-  return <Page hostname={hostname} />;
+  const { host, competition } = await requestCompetition();
+  if (competition === null) {
+    return <Landing host={host} path="/feedback" />;
+  }
+  return <Page competitionId={competition.id} />;
 }

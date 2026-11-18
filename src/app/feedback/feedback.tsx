@@ -20,7 +20,7 @@ import {
   queryClient,
   SharedLogic,
   useAuth,
-  hostnameAtom,
+  competitionIdAtom,
   useCompetition,
 } from "@/shared";
 import {
@@ -35,6 +35,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { TbTrash } from "react-icons/tb";
 import dynamic from "next/dynamic";
 import { useHydrateAtoms } from "jotai/utils";
+import type { CompetitionId } from "@/competitions";
 import { queryClientAtom } from "jotai-tanstack-query";
 
 // Initialize dayjs plugins
@@ -316,9 +317,9 @@ function FeedbackPage() {
   );
 }
 
-export default function Page({ hostname }: { hostname: string | undefined }) {
+export default function Page({ competitionId }: { competitionId: CompetitionId }) {
   useHydrateAtoms([
-    [hostnameAtom, hostname],
+    [competitionIdAtom, competitionId],
     [queryClientAtom, queryClient],
   ]);
   return (

@@ -1,12 +1,11 @@
-import { headers } from "next/headers";
 import Home from "./home";
 import Landing from "./landing";
-import { isLandingHost } from "@/landing-hosts";
+import { requestCompetition } from "@/request-competition";
 
 export default async function Page() {
-  const hostname = (await headers()).get("host")?.split(":")[0];
-  if (isLandingHost(hostname)) {
-    return <Landing />;
+  const { host, competition } = await requestCompetition();
+  if (competition === null) {
+    return <Landing host={host} />;
   }
-  return <Home hostname={hostname} />;
+  return <Home competitionId={competition.id} />;
 }

@@ -15,25 +15,16 @@ import NextLink from "next/link";
 import type { ReactNode } from "react";
 import { TbCalendarEvent, TbChevronRight } from "react-icons/tb";
 import { MadeWithLove } from "@/components/ui/made-with-love";
-import { competitionHosts } from "@/shared";
+import {
+  allCompetitions,
+  COMPETITION_COOKIE,
+  competitionUrl,
+} from "@/competitions";
 
 const accent = "#004a79";
 
-// Competition sites to list, newest first: Sixpack is running now, Icicle
-// 2026 and Badger ran earlier in 2026. Names, logos and colours come from
-// competitionHosts. Its other domains are left off because they no longer
-// resolve: 2025.imperialicicle.com, topgun.isail.events and
-// bathrobe.isail.events.
-const listedHosts = [
-  "sixpack.isail.site",
-  "imperialicicle.com",
-  "badger.brunelsailing.co.uk",
-];
-
-const competitions = listedHosts.flatMap((host) => {
-  const competition = competitionHosts[host];
-  return competition ? [{ ...competition, host }] : [];
-});
+// Every competition, newest first.
+const competitions = Object.values(allCompetitions).reverse();
 
 const cardStyle = {
   display: "flex",
@@ -103,7 +94,18 @@ function SectionHeading({ children }: { children: ReactNode }) {
   );
 }
 
-export default function Landing() {
+/**
+ * Asks the visitor to pick a competition. Shown on the home page, and on any
+ * competition page (`path`) when the address doesn't name a competition.
+ * `host` is the Host header, so links stay on localhost in development.
+ */
+export default function Landing({
+  host,
+  path = "/",
+}: {
+  host: string | undefined;
+  path?: string;
+}) {
   return (
     <Flex minH="100vh" direction="column" bg="gray.50">
       <Container maxW="lg" px={4} pt={{ base: 12, md: 20 }} pb={8} flex={1}>
@@ -135,28 +137,45 @@ export default function Landing() {
         <Box as="section" mb={10}>
           <SectionHeading>Go to a competition</SectionHeading>
           <VStack gap={3} align="stretch">
-            {competitions.map((competition) => (
-              <ChakraLink
-                key={competition.host}
-                href={`https://${competition.host}/`}
-                {...cardStyle}
-              >
-                <CardBody
-                  media={
-                    <Image
-                      src={competition.logo}
-                      alt=""
-                      maxW="full"
-                      maxH="full"
-                      objectFit="contain"
-                    />
-                  }
-                  title={competition.name}
-                  subtitle={competition.host}
-                  chevronColour={competition.accentColour}
-                />
-              </ChakraLink>
-            ))}
+            {competitions.map((competition) => {
+              const url = competitionUrl(competition, host, path);
+              // On hosts that can't name a competition (Vercel previews),
+              // remember the choice in a cookie and reload this page.
+              const choose =
+                url === null
+                  ? () => {
+                      document.cookie = `${COMPETITION_COOKIE}=${competition.id}; path=/; max-age=31536000; samesite=lax`;
+                    }
+                  : undefined;
+              return (
+                <ChakraLink
+                  key={competition.id}
+                  href={url ?? path}
+                  onClick={choose}
+                  {...cardStyle}
+                >
+                  <CardBody
+                    media={
+                      <Image
+                        src={competition.logo}
+                        alt=""
+                        maxW="full"
+                        maxH="full"
+                        objectFit="contain"
+                      />
+                    }
+                    title={competition.name}
+                    // The site's address, without "https://" or the path
+                    subtitle={
+                      url === null
+                        ? `${competition.id}.isail.site`
+                        : new URL(url).host
+                    }
+                    chevronColour={competition.accentColour}
+                  />
+                </ChakraLink>
+              );
+            })}
           </VStack>
         </Box>
 

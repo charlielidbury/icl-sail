@@ -15,7 +15,7 @@ import {
   queryClient,
   SharedLogic,
   useAuth,
-  hostnameAtom,
+  competitionIdAtom,
 } from "@/shared";
 import { QueryClientProvider, useMutation } from "@tanstack/react-query";
 import supabase from "@/supabase";
@@ -24,6 +24,7 @@ import { useColorMode } from "@/components/ui/color-mode";
 import { useAtomValue } from "jotai";
 import dynamic from "next/dynamic";
 import { useHydrateAtoms } from "jotai/utils";
+import type { CompetitionId } from "@/competitions";
 import { queryClientAtom } from "jotai-tanstack-query";
 
 function SettingsPage() {
@@ -179,9 +180,9 @@ function SettingsPage() {
   );
 }
 
-export default function Page({ hostname }: { hostname: string | undefined }) {
+export default function Page({ competitionId }: { competitionId: CompetitionId }) {
   useHydrateAtoms([
-    [hostnameAtom, hostname],
+    [competitionIdAtom, competitionId],
     [queryClientAtom, queryClient],
   ]);
   return (

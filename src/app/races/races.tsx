@@ -29,7 +29,7 @@ import {
   racesAtom,
   competitionAtom,
   useCompetition,
-  hostnameAtom,
+  competitionIdAtom,
   RaceResult,
 } from "@/shared";
 import {
@@ -45,6 +45,7 @@ import { useSearchParams } from "next/navigation";
 import { useAtom, useAtomValue } from "jotai";
 import dynamic from "next/dynamic";
 import { useHydrateAtoms } from "jotai/utils";
+import type { CompetitionId } from "@/competitions";
 import { queryClientAtom } from "jotai-tanstack-query";
 
 // Memoize your Race component to avoid unnecessary re-renders
@@ -421,9 +422,9 @@ function Page() {
   );
 }
 
-export default function Home({ hostname }: { hostname: string | undefined }) {
+export default function Home({ competitionId }: { competitionId: CompetitionId }) {
   useHydrateAtoms([
-    [hostnameAtom, hostname],
+    [competitionIdAtom, competitionId],
     [queryClientAtom, queryClient],
   ]);
   return (

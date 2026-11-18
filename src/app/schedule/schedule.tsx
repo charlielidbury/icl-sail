@@ -7,6 +7,7 @@ import { Box, Button, Flex, Heading, Skeleton, Text } from "@chakra-ui/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 import { useHydrateAtoms } from "jotai/utils";
+import type { CompetitionId } from "@/competitions";
 import { queryClientAtom } from "jotai-tanstack-query";
 import { TbPrinter } from "react-icons/tb";
 import {
@@ -14,7 +15,7 @@ import {
   RaceResult,
   SharedLogic,
   getLeagueName,
-  hostnameAtom,
+  competitionIdAtom,
   queryClient,
   racesAtom,
   useAuth,
@@ -204,12 +205,12 @@ function Page() {
 }
 
 export default function SchedulePage({
-  hostname,
+  competitionId,
 }: {
-  hostname: string | undefined;
+  competitionId: CompetitionId;
 }) {
   useHydrateAtoms([
-    [hostnameAtom, hostname],
+    [competitionIdAtom, competitionId],
     [queryClientAtom, queryClient],
   ]);
   return (

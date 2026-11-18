@@ -26,7 +26,7 @@ import {
   leaderboardAtom,
   competitionAtom,
   useCompetition,
-  hostnameAtom,
+  competitionIdAtom,
 } from "@/shared";
 import {
   QueryClientProvider,
@@ -40,6 +40,7 @@ import { TbEdit, TbCheck, TbX } from "react-icons/tb";
 import { useAtom, useAtomValue } from "jotai";
 import dynamic from "next/dynamic";
 import { useHydrateAtoms } from "jotai/utils";
+import type { CompetitionId } from "@/competitions";
 import { queryClientAtom } from "jotai-tanstack-query";
 
 function FinalsMarkdown() {
@@ -459,12 +460,12 @@ function Page() {
 }
 
 export default function LeaderboardPage({
-  hostname,
+  competitionId,
 }: {
-  hostname: string | undefined;
+  competitionId: CompetitionId;
 }) {
   useHydrateAtoms([
-    [hostnameAtom, hostname],
+    [competitionIdAtom, competitionId],
     [queryClientAtom, queryClient],
   ]);
   return (
