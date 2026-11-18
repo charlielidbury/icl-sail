@@ -1,0 +1,143 @@
+/* The schedule table, laid out like the printed schedules (scripts/schedule.typ
+   and src/app/schedule), plus the print stylesheet. */
+
+.sheet {
+  background: #fff;
+  color: #111;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #8c8c8c;
+  font-size: 13px;
+  background: #fff;
+  color: #111;
+}
+
+.table th,
+.table td {
+  padding: 4px 8px;
+  text-align: center;
+  white-space: nowrap;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+/* The header keeps a full grid; the body only has rules between flights and
+   above each rotation of the flights (.cycleStart). */
+.table th {
+  border: 1px solid #c8c8c8;
+}
+
+.table td {
+  border: none;
+}
+
+.table thead tr:last-child th {
+  border-bottom: 2px solid #464646;
+}
+
+/* Race numbers and the cells with teams in them are shaded; the other
+   flights' cells stay white, so each race reads as one grey band. */
+.raceNumber,
+.team {
+  background: #dedede;
+}
+
+/* A hairline gap between a race's two team names. */
+.secondHalf {
+  border-left: 1px solid #fff !important;
+}
+
+.cycleStart td {
+  border-top: 1px solid #8c8c8c !important;
+}
+
+.raceHeader {
+  text-align: right !important;
+  vertical-align: bottom;
+  background: #dedede;
+}
+
+.flightHeader {
+  background: #e4e4e4;
+  font-weight: 700;
+}
+
+.halfHeader {
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.raceNumber {
+  text-align: right !important;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.flightStart {
+  border-left: 2px solid #464646 !important;
+}
+
+@media screen and (max-width: 480px) {
+  .table {
+    font-size: 12px;
+  }
+
+  .table th,
+  .table td {
+    padding: 4px 6px;
+  }
+}
+
+.printOnly {
+  display: none;
+}
+
+@media print {
+  .noPrint {
+    display: none !important;
+  }
+
+  .printOnly {
+    display: block;
+  }
+
+  .sheet {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .scroll {
+    overflow: visible !important;
+  }
+
+  .table {
+    font-size: 8.5pt;
+  }
+
+  .table th,
+  .table td {
+    padding: 2.5pt 3pt;
+    white-space: normal;
+  }
+
+  /* Repeat the header on every page. */
+  .table thead {
+    display: table-header-group;
+  }
+
+  .table tr {
+    break-inside: avoid;
+  }
+}
+
+@media print {
+  .page {
+    background: #fff !important;
+    min-height: 0 !important;
+  }
+}
