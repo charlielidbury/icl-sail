@@ -1,7 +1,7 @@
 {
   "competition": "sixpack",
   "league": "quali",
-  "schedule": "14x2.csv",
+  "schedule": "13x2.csv",
   "flights": [
     {
       "id": "f5d660fd-91c7-4f37-a6a3-a339d92437f9",
@@ -25,13 +25,12 @@
     "Team 4": "Imperial White",
     "Team 5": "Imperial Red",
     "Team 6": "Kobra Hurricane",
-    "Team 7": "Brunel Blue",
-    "Team 8": "Plymouth Blue",
-    "Team 9": "Plymouth Pink",
-    "Team 10": "Plymouth Black",
-    "Team 11": "Bath Lemon Red",
-    "Team 12": "Reading Red",
-    "Team 13": "Reading Purple",
-    "Team 14": "RazCLART"
+    "Team 7": "Plymouth Blue",
+    "Team 8": "Plymouth Pink",
+    "Team 9": "Plymouth Black",
+    "Team 10": "Bath Lemon Red",
+    "Team 11": "Reading Red",
+    "Team 12": "Reading Purple",
+    "Team 13": "RazCLART"
   }
 }
