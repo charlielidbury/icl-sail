@@ -78,31 +78,33 @@ export default function RaceEdit({
     toEntries(race.lresult),
     toEntries(race.rresult),
   ]);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+  // Validation errors only show once Submit/Update has been pressed, so a
+  // half-entered result (boats still finishing) isn't covered in red.
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+
   // Reset the boxes only when the saved result actually changes. Refetches
   // (e.g. after another race is updated) create new arrays with the same
   // values, which must not wipe what the race officer has typed.
   const savedKey = JSON.stringify([race.lresult, race.rresult]);
   useEffect(() => {
     setEntries([toEntries(race.lresult), toEntries(race.rresult)]);
+    setSubmitAttempted(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [savedKey]);
-
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
 
   const positions = useMemo(
     () => entries.map((team) => team.map(parsePosition)),
     [entries],
   );
   const isEmpty = (entry: string) => entry.trim() === "";
-  const anyFilled = entries.some((team) => team.some((e) => !isEmpty(e)));
   const anyEmpty = entries.some((team) => team.some(isEmpty));
   const anyInvalid = entries.some((team, i) =>
     team.some((e, j) => !isEmpty(e) && positions[i][j] === null),
   );
   const isValid = !anyEmpty && !anyInvalid;
-  // Don't nag about an untouched, empty form.
-  const showErrors = anyFilled;
+  const showErrors = submitAttempted;
   const validationError = !showErrors
     ? null
     : anyInvalid
@@ -150,13 +152,18 @@ export default function RaceEdit({
   const [isUpdating, setIsUpdating] = useState(false);
   const updateResults = async () => {
     if (!isValid) {
+      // Show what's missing or wrong instead of saving.
+      setSubmitAttempted(true);
       return;
     }
     setIsUpdating(true);
-    await save(
+    const ok = await save(
       positions[0] as number[],
       positions[1] as number[],
     );
+    if (ok) {
+      setSubmitAttempted(false);
+    }
     setIsUpdating(false);
   };
 
@@ -286,7 +293,6 @@ export default function RaceEdit({
             width="50%"
             onClick={() => updateResults()}
             loading={isUpdating}
-            disabled={!isValid}
             mr={0.25}
           >
             {raceComplete ? "Update" : "Submit"}
@@ -299,6 +305,7 @@ export default function RaceEdit({
               } else {
                 setSaveError(null);
                 setSaved(false);
+                setSubmitAttempted(false);
                 setEntries([
                   ["", "", ""],
                   ["", "", ""],
