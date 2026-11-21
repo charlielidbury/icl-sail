@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --test 'src/scheduler/**/*.test.ts'",
+    "test": "node --test 'src/scheduler/**/*.test.ts' 'src/*.test.ts'",
     "gen": "pnpx supabase gen types --project-id \"uwticnzhykdnfbisrdrx\" --schema public > ./src/database.types.ts"
   },
   "dependencies": {

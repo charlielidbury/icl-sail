@@ -27,6 +27,7 @@ import {
   competitionAtom,
   useCompetition,
   competitionIdAtom,
+  racesAtom,
 } from "@/shared";
 import {
   QueryClientProvider,
@@ -42,6 +43,15 @@ import dynamic from "next/dynamic";
 import { useHydrateAtoms } from "jotai/utils";
 import type { CompetitionId } from "@/competitions";
 import { queryClientAtom } from "jotai-tanstack-query";
+import {
+  GOLD_LEAGUE,
+  SILVER_LEAGUE,
+  leagueName,
+  leagueStage,
+  stageAtOrBefore,
+  type Stage,
+} from "@/leagues";
+import GroupsAdmin from "./groups-admin";
 
 function FinalsMarkdown() {
   const { isAdmin } = useAuth();
@@ -347,14 +357,140 @@ function Leaderboard({ league }: { league: string }) {
   ));
 }
 
+/**
+ * One group's standings. Teams that haven't finished a race yet come after
+ * the rest, in qualifying order.
+ */
+function GroupStandings({ league }: { league: string }) {
+  const leaderboards = useAtomValue(leaderboardAtom);
+  const races = useAtomValue(racesAtom).data?.races;
+  const cardBg = useColorModeValue("white", "gray.700");
+  const cardBorderColor = useColorModeValue("gray.200", "gray.600");
+
+  if (leaderboards === undefined || races === undefined) {
+    return <Skeleton height="200px" />;
+  }
+
+  const standings = leaderboards.get(league) ?? [];
+  const qualiOrder = (leaderboards.get("quali") ?? []).map((t) => t.team.id);
+  const waiting = new Map<string, string>();
+  for (const r of races) {
+    if (r.league !== league) continue;
+    for (const team of [r.lteam, r.rteam]) {
+      if (team && !standings.some((s) => s.team.id === team.id)) {
+        waiting.set(team.id, team.name);
+      }
+    }
+  }
+  const rank = (id: string) => {
+    const i = qualiOrder.indexOf(id);
+    return i === -1 ? Infinity : i;
+  };
+  const waitingTeams = [...waiting].sort(([a], [b]) => rank(a) - rank(b));
+
+  return (
+    <Stack gap={4}>
+      <Heading as="h2" size="md" color="black" fontWeight="bold">
+        {leagueName(league)}
+      </Heading>
+      {standings.length === 0 && waitingTeams.length === 0 ? (
+        <Text fontSize="sm" color="gray.600">
+          No {leagueName(league)} races yet.
+        </Text>
+      ) : (
+        <>
+          {standings.map((row, index) => (
+            <LeaderboardRow
+              row={row}
+              selectedLeague={league}
+              leaderboard={standings}
+              index={index}
+              key={row.team.id}
+            />
+          ))}
+          {waitingTeams.map(([id, name]) => (
+            <Link
+              key={id}
+              href={`/races?search=league:${league} ${name}`}
+              _hover={{ textDecoration: "none" }}
+              display="block"
+              width="100%"
+            >
+              <Box
+                bg={cardBg}
+                borderWidth="1px"
+                borderColor={cardBorderColor}
+                borderRadius="xl"
+                p={3}
+                boxShadow="sm"
+              >
+                <Text fontSize="lg" fontWeight="bold" color="black">
+                  {name}
+                </Text>
+                <Text fontSize="sm" color="gray.600">
+                  No results yet
+                </Text>
+              </Box>
+            </Link>
+          ))}
+        </>
+      )}
+    </Stack>
+  );
+}
+
+/** The Gold/Silver tab. Visitors only see it once the stage has started. */
+function GroupsTab() {
+  const { isAdmin } = useAuth();
+  const { data: settings } = useAtomValue(competitionAtom);
+
+  if (!settings) {
+    return <Skeleton height="200px" />;
+  }
+  const released = stageAtOrBefore("groups", settings.stage);
+  if (!released && !isAdmin) {
+    return (
+      <Text textAlign="center" fontSize="lg" color="gray.600">
+        Gold/Silver hasn&apos;t started yet.
+      </Text>
+    );
+  }
+  return (
+    <Stack gap={8}>
+      {isAdmin && <GroupsAdmin released={released} />}
+      <GroupStandings league={GOLD_LEAGUE} />
+      <GroupStandings league={SILVER_LEAGUE} />
+    </Stack>
+  );
+}
+
+const TABS: { stage: Stage; label: string }[] = [
+  { stage: "quali", label: "1. Qualifying" },
+  { stage: "groups", label: "2. Gold/Silver" },
+  { stage: "finals", label: "3. Finals" },
+];
+
 function Page() {
   // Session and admin state.
   const { isAdmin } = useAuth();
 
   const competition = useCompetition();
 
-  // League selection state.
-  const [selectedLeague, setSelectedLeague] = useState<string>("quali");
+  // Tab selection. Until one is picked, the latest released stage with
+  // something to show: the finals text, then Gold/Silver races, then
+  // qualifying.
+  const { data: settings } = useAtomValue(competitionAtom);
+  const races = useAtomValue(racesAtom).data?.races;
+  const [pickedTab, setPickedTab] = useState<Stage | null>(null);
+  const defaultTab: Stage =
+    settings?.stage === "finals" && settings.finals_markdown
+      ? "finals"
+      : settings !== undefined &&
+          stageAtOrBefore("groups", settings.stage) &&
+          races?.some((r) => leagueStage(r.league) === "groups")
+        ? "groups"
+        : "quali";
+  const selectedTab: Stage = pickedTab ?? defaultTab;
 
   // Ensure light mode.
   const { setColorMode } = useColorMode();
@@ -387,51 +523,36 @@ function Page() {
           <Box maxW="600px" mx="auto">
             <Flex w="full" justify="center" mb={6} boxShadow="lg">
               <ButtonGroup attached variant="solid" w="full">
-                <Button
-                  flex="1"
-                  bg={
-                    selectedLeague === "quali"
-                      ? competition.accentColour
-                      : "gray.300"
-                  }
-                  color={selectedLeague === "quali" ? "white" : "gray.800"}
-                  _hover={{
-                    bg:
-                      selectedLeague === "quali"
+                {TABS.map(({ stage, label }) => (
+                  <Button
+                    key={stage}
+                    flex="1"
+                    bg={
+                      selectedTab === stage
                         ? competition.accentColour
-                        : "gray.400",
-                  }}
-                  onClick={() => setSelectedLeague("quali")}
-                  fontSize="xs"
-                  fontWeight="bold"
-                >
-                  1. QUALIFYING
-                </Button>
-                <Button
-                  flex="1"
-                  bg={
-                    selectedLeague === "finals"
-                      ? competition.accentColour
-                      : "gray.300"
-                  }
-                  color={selectedLeague === "finals" ? "white" : "gray.800"}
-                  _hover={{
-                    bg:
-                      selectedLeague === "finals"
-                        ? competition.accentColour
-                        : "gray.400",
-                  }}
-                  onClick={() => setSelectedLeague("finals")}
-                  fontSize="xs"
-                  fontWeight="bold"
-                >
-                  2. FINALS
-                </Button>
+                        : "gray.300"
+                    }
+                    color={selectedTab === stage ? "white" : "gray.800"}
+                    _hover={{
+                      bg:
+                        selectedTab === stage
+                          ? competition.accentColour
+                          : "gray.400",
+                    }}
+                    onClick={() => setPickedTab(stage)}
+                    fontSize="xs"
+                    fontWeight="bold"
+                    textTransform="uppercase"
+                    px={2}
+                  >
+                    {label}
+                  </Button>
+                ))}
               </ButtonGroup>
             </Flex>
 
             <Stack gap={4}>
-              {selectedLeague === "quali" ? (
+              {selectedTab === "quali" ? (
                 // Qualis
                 <>
                   <Text
@@ -446,10 +567,10 @@ function Page() {
                     <Leaderboard league="quali" />
                   </Stack>
                 </>
-              ) : selectedLeague === "finals" ? (
-                <FinalsMarkdown />
+              ) : selectedTab === "groups" ? (
+                <GroupsTab />
               ) : (
-                <></>
+                <FinalsMarkdown />
               )}
             </Stack>
           </Box>

@@ -17,12 +17,38 @@ export type CompetitionId =
   | "icicle2026"
   | "sixpack";
 
+/**
+ * How the leaderboard's Generate button splits the qualifying standings into
+ * Gold and Silver round robins (see src/groups.ts).
+ */
+export type GroupsConfig = {
+  /** The group that gets the extra team when there's an odd number. */
+  largerGroup: "gold" | "silver";
+  /**
+   * The qualifying flight Gold races on: 0 is the flight of the
+   * lowest-numbered qualifying race, 1 the other one. Silver gets the other.
+   */
+  goldFlight: 0 | 1;
+};
+
+export const DEFAULT_GROUPS: GroupsConfig = {
+  largerGroup: "gold",
+  goldFlight: 0,
+};
+
 export type CompetitionBasic = {
   id: CompetitionId;
   accentColour: string;
   logo: string;
   name: string;
+  /** Overrides parts of DEFAULT_GROUPS. */
+  groups?: Partial<GroupsConfig>;
 };
+
+/** A competition's Gold/Silver settings, with the defaults filled in. */
+export function groupsConfig(competition: CompetitionBasic): GroupsConfig {
+  return { ...DEFAULT_GROUPS, ...competition.groups };
+}
 
 /** In the order they were held, oldest first. */
 export const allCompetitions: Record<CompetitionId, CompetitionBasic> = {
