@@ -15,7 +15,8 @@ export type CompetitionId =
   | "bathrobe"
   | "badger"
   | "icicle2026"
-  | "sixpack";
+  | "sixpack"
+  | "sandbox";
 
 /**
  * How the leaderboard's Generate button splits the qualifying standings into
@@ -39,8 +40,14 @@ export const DEFAULT_GROUPS: GroupsConfig = {
 export type CompetitionBasic = {
   id: CompetitionId;
   accentColour: string;
+  /** Shown in the navbar and on the landing page; "" for none. */
   logo: string;
   name: string;
+  /**
+   * Left off the landing page and the competition picker, e.g. for testing.
+   * Its address (<id>.isail.site, <id>.localhost) still works.
+   */
+  hidden?: boolean;
   /** Overrides parts of DEFAULT_GROUPS. */
   groups?: Partial<GroupsConfig>;
 };
@@ -88,7 +95,20 @@ export const allCompetitions: Record<CompetitionId, CompetitionBasic> = {
     logo: "/sixpack/logo_transparent.png",
     name: "Sixpack",
   },
+  // For trying things out on production data (db/2026-11-21-sandbox.sql).
+  sandbox: {
+    id: "sandbox",
+    accentColour: "#2f6f4f",
+    logo: "",
+    name: "Sandbox",
+    hidden: true,
+  },
 };
+
+/** The competitions to offer visitors: all but the hidden ones. */
+export const listedCompetitions: CompetitionBasic[] = Object.values(
+  allCompetitions,
+).filter((c) => !c.hidden);
 
 export const ISAIL_DOMAIN = "isail.site";
 

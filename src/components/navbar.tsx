@@ -457,8 +457,13 @@ const CompetitionSelector = ({ isMobile = false }) => {
     }
   };
 
+  // Hidden competitions are only offered while you're on them.
+  const choices = Object.values(allCompetitions).filter(
+    (comp) => !comp.hidden || comp.id === currentCompetition.id,
+  );
+
   const competitionItems = createListCollection({
-    items: Object.values(allCompetitions).map((comp) => ({
+    items: choices.map((comp) => ({
       label: comp.name,
       value: comp.id,
     })),
@@ -491,7 +496,7 @@ const CompetitionSelector = ({ isMobile = false }) => {
           <SelectValueText placeholder="Select competition" />
         </SelectTrigger>
         <SelectContent>
-          {Object.values(allCompetitions).map((comp) => (
+          {choices.map((comp) => (
             <SelectItem
               key={comp.id}
               item={{ value: comp.id, label: comp.name }}

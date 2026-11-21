@@ -16,15 +16,15 @@ import type { ReactNode } from "react";
 import { TbCalendarEvent, TbChevronRight } from "react-icons/tb";
 import { MadeWithLove } from "@/components/ui/made-with-love";
 import {
-  allCompetitions,
   COMPETITION_COOKIE,
   competitionUrl,
+  listedCompetitions,
 } from "@/competitions";
 
 const accent = "#004a79";
 
-// Every competition, newest first.
-const competitions = Object.values(allCompetitions).reverse();
+// Every competition but the hidden ones, newest first.
+const competitions = [...listedCompetitions].reverse();
 
 const cardStyle = {
   display: "flex",

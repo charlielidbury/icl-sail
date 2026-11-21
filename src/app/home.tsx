@@ -138,6 +138,13 @@ const documents: Record<
       href: "/sixpack/instructions.pdf",
     },
   ],
+  sandbox: [
+    {
+      title: "Qualifying Schedule",
+      description: "Qualifying schedule in typical table format",
+      href: "/schedule.pdf",
+    },
+  ],
 };
 
 // export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -171,7 +178,9 @@ function Info() {
             ? ["BRUNEL", "BADGER"]
             : competition.id === "sixpack"
               ? ["SIX", "PACK"]
-              : []; // never
+              : competition.id === "sandbox"
+                ? ["SAND", "BOX"]
+                : []; // never
 
   const textSize = competition.id === "bathrobe" ? "7xl" : "5xl";
 
