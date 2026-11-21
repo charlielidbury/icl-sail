@@ -19,10 +19,17 @@ export type CompetitionId =
   | "sandbox";
 
 /**
- * How the leaderboard's Generate button splits the qualifying standings into
- * Gold and Silver round robins (see src/groups.ts).
+ * The Gold/Silver stage (see src/leagues.ts), and how the leaderboard's
+ * Generate button splits the qualifying standings into Gold and Silver round
+ * robins (see src/groups.ts).
  */
 export type GroupsConfig = {
+  /**
+   * Whether there's a Gold/Silver stage at all. Without one, the competition
+   * goes straight from qualifying to finals: the leaderboard has no
+   * Gold/Silver tab, and /controls offers no Gold/Silver stage.
+   */
+  enabled: boolean;
   /** The group that gets the extra team when there's an odd number. */
   largerGroup: "gold" | "silver";
   /**
@@ -33,6 +40,7 @@ export type GroupsConfig = {
 };
 
 export const DEFAULT_GROUPS: GroupsConfig = {
+  enabled: true,
   largerGroup: "gold",
   goldFlight: 0,
 };
@@ -94,6 +102,8 @@ export const allCompetitions: Record<CompetitionId, CompetitionBasic> = {
     accentColour: "#542079",
     logo: "/sixpack/logo_transparent.png",
     name: "Sixpack",
+    // Straight from qualifying to knock-out semi-finals and a final.
+    groups: { enabled: false },
   },
   // For trying things out on production data (db/2026-11-21-sandbox.sql).
   sandbox: {

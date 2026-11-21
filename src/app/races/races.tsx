@@ -157,6 +157,18 @@ function Page() {
     return staying;
   }, [races.data]);
 
+  // Each race's position in the full list. Race numbers can jump (e.g. from
+  // the last qualifying race to the finals), so "how many races until this
+  // one" and "are races hidden here" count positions, not numbers.
+  const positions = useMemo(
+    () => new Map((races.data?.races ?? []).map((r, i) => [r.id, i])),
+    [races.data],
+  );
+  const currentPosition =
+    currentRace == null
+      ? null
+      : (races.data?.races.findIndex((r) => r.number === currentRace) ?? null);
+
   // Get clean search for race cards
   const cleanSearchForCards = useMemo(() => {
     return processSearchString(debouncedSearch).cleanSearch;
@@ -305,17 +317,19 @@ function Page() {
                 itemContent={(index, race) => {
                   // Determine if the race is active or in stand based on currentRace & settings.
                   const isActive = race.number === currentRace;
+                  const position = positions.get(race.id)!;
                   const isStand =
-                    currentRace != null &&
+                    currentPosition != null &&
+                    currentPosition >= 0 &&
                     race.finishtime === null &&
                     goToStandOffset !== null &&
-                    race.number > currentRace &&
-                    race.number - currentRace <= goToStandOffset;
+                    position > currentPosition &&
+                    position - currentPosition <= goToStandOffset;
 
                   // Races are hidden between this one and the next (searching)
                   const gapBelow =
                     index < filteredRaces.length - 1 &&
-                    filteredRaces[index + 1].number !== race.number + 1;
+                    positions.get(filteredRaces[index + 1].id) !== position + 1;
 
                   // Teams that stay in their boats for their next race
                   const staying = stayingTeams.get(race.id);

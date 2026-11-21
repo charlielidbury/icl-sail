@@ -11,7 +11,8 @@
 // Options:
 //   --league <a,b>   leagues to include, in race order (default: quali)
 //   --title <text>   heading (default: the competition's name in the database)
-//   --out <path>     output PDF (default: public/<competition>/schedule.pdf)
+//   --out <path>     output PDF (default: public/<competition>/schedule.pdf for
+//                    qualifying, else schedule-<leagues>.pdf beside it)
 //   --teams          add a "Races by team" index after the schedule (off by
 //                    default: it usually adds a page to what gets printed)
 //   --json           print the template data instead of writing a PDF
@@ -194,7 +195,13 @@ if (opts.json) {
 
 // --- Render ---------------------------------------------------------------------
 
-const out = opts.out ?? path.join("public", competition, "schedule.pdf");
+// Only the qualifying schedule gets the plain name, so printing other leagues
+// never overwrites it.
+const leagueSuffix =
+  leagues.length === 1 && leagues[0] === "quali"
+    ? ""
+    : "-" + leagues.join("-").replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "").toLowerCase();
+const out = opts.out ?? path.join("public", competition, `schedule${leagueSuffix}.pdf`);
 fs.mkdirSync(path.dirname(out), { recursive: true });
 execFileSync(
   "typst",

@@ -41,11 +41,13 @@ import { TbEdit, TbCheck, TbX } from "react-icons/tb";
 import { useAtom, useAtomValue } from "jotai";
 import dynamic from "next/dynamic";
 import { useHydrateAtoms } from "jotai/utils";
-import type { CompetitionId } from "@/competitions";
+import { groupsConfig, type CompetitionId } from "@/competitions";
 import { queryClientAtom } from "jotai-tanstack-query";
 import {
   GOLD_LEAGUE,
   SILVER_LEAGUE,
+  STAGE_NAMES,
+  competitionStages,
   leagueName,
   leagueStage,
   stageAtOrBefore,
@@ -464,17 +466,19 @@ function GroupsTab() {
   );
 }
 
-const TABS: { stage: Stage; label: string }[] = [
-  { stage: "quali", label: "1. Qualifying" },
-  { stage: "groups", label: "2. Gold/Silver" },
-  { stage: "finals", label: "3. Finals" },
-];
-
 function Page() {
   // Session and admin state.
   const { isAdmin } = useAuth();
 
   const competition = useCompetition();
+
+  // A tab per stage: "1. Qualifying", "2. Gold/Silver", "3. Finals", or
+  // without Gold/Silver, "1. Qualifying", "2. Finals".
+  const hasGroups = groupsConfig(competition).enabled;
+  const tabs = competitionStages(hasGroups).map((stage, i) => ({
+    stage,
+    label: `${i + 1}. ${STAGE_NAMES[stage]}`,
+  }));
 
   // Tab selection. Until one is picked, the latest released stage with
   // something to show: the finals text, then Gold/Silver races, then
@@ -485,7 +489,8 @@ function Page() {
   const defaultTab: Stage =
     settings?.stage === "finals" && settings.finals_markdown
       ? "finals"
-      : settings !== undefined &&
+      : hasGroups &&
+          settings !== undefined &&
           stageAtOrBefore("groups", settings.stage) &&
           races?.some((r) => leagueStage(r.league) === "groups")
         ? "groups"
@@ -523,7 +528,7 @@ function Page() {
           <Box maxW="600px" mx="auto">
             <Flex w="full" justify="center" mb={6} boxShadow="lg">
               <ButtonGroup attached variant="solid" w="full">
-                {TABS.map(({ stage, label }) => (
+                {tabs.map(({ stage, label }) => (
                   <Button
                     key={stage}
                     flex="1"
@@ -567,7 +572,7 @@ function Page() {
                     <Leaderboard league="quali" />
                   </Stack>
                 </>
-              ) : selectedTab === "groups" ? (
+              ) : selectedTab === "groups" && hasGroups ? (
                 <GroupsTab />
               ) : (
                 <FinalsMarkdown />

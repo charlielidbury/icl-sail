@@ -1,5 +1,6 @@
--- Competition stages, and letting admins add and remove Gold/Silver races.
--- Applied to production on 2026-11-21, in the two parts below, with
+-- Competition stages, letting admins add and remove Gold/Silver races, and
+-- unique race numbers.
+-- Applied to production on 2026-11-21, in the three parts below, with
 -- `supabase db query --linked -f <file>` (each part on its own).
 --
 -- A competition runs in stages: 'quali' (the qualifying round robin, league
@@ -69,5 +70,17 @@ CREATE POLICY "Admins can delete their competition's unraced Gold/Silver races"
         AND a."user" = (SELECT auth.uid())
     )
   );
+
+COMMIT;
+
+-- Part 3: unique race numbers. ---------------------------------------------------
+-- The site assumes a race number appears once per competition (e.g. there's
+-- only one current race), and Generate numbers new races on from the last
+-- qualifying race, so make the database refuse duplicates. There were none
+-- when this was applied.
+BEGIN;
+
+ALTER TABLE public.race
+  ADD CONSTRAINT race_competition_number_key UNIQUE (competition, number);
 
 COMMIT;

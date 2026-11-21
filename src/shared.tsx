@@ -9,6 +9,7 @@ import { atom, useAtomValue } from "jotai";
 import { atomWithQuery } from "jotai-tanstack-query";
 import {
   allCompetitions,
+  groupsConfig,
   type CompetitionBasic,
   type CompetitionId,
 } from "./competitions";
@@ -557,7 +558,7 @@ export const competitionAtom = atomWithQuery<Competition>((get) => {
 
     const x: Competition = {
       ...settings.data,
-      stage: parseStage(settings.data.stage),
+      stage: parseStage(settings.data.stage, groupsConfig(competition).enabled),
     };
     return x;
   },

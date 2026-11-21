@@ -4,6 +4,7 @@
 // league unless ?league=a,b says otherwise, and no "Races by team" page.
 // It can't tell admins from visitors, so it only ever shows the leagues the
 // competition's stage has released (see src/leagues.ts).
+import { groupsConfig } from "@/competitions";
 import { isLeagueReleased, parseStage } from "@/leagues";
 import { requestCompetition } from "@/request-competition";
 import supabase from "@/supabase";
@@ -36,7 +37,7 @@ export async function GET(request: Request) {
 
   const param = new URL(request.url).searchParams.get("league");
   const requested = param ? param.split(",").map((l) => l.trim()) : DEFAULT_LEAGUES;
-  if (requested.length > 5 || !requested.every((l) => /^[\w/-]{1,40}$/.test(l))) {
+  if (requested.length > 12 || !requested.every((l) => /^[\w/-]{1,40}$/.test(l))) {
     return messageResponse(400, "Unknown league", "The league in the address isn't one we know.");
   }
 
@@ -58,7 +59,7 @@ export async function GET(request: Request) {
     return messageResponse(503, "Couldn't load the schedule", "Please try again in a minute.");
   }
   // Leave out leagues that haven't been released yet.
-  const stage = parseStage(comp?.stage);
+  const stage = parseStage(comp?.stage, groupsConfig(competition).enabled);
   const leagues = requested.filter((l) => isLeagueReleased(l, stage));
   const races = allRaces?.filter((r) => isLeagueReleased(r.league, stage));
   if (leagues.length === 0) {

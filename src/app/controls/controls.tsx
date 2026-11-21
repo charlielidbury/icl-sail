@@ -34,7 +34,8 @@ import dynamic from "next/dynamic";
 import { useHydrateAtoms } from "jotai/utils";
 import type { CompetitionId } from "@/competitions";
 import { queryClientAtom } from "jotai-tanstack-query";
-import { STAGES, STAGE_NAMES } from "@/leagues";
+import { competitionStages, STAGE_NAMES } from "@/leagues";
+import { groupsConfig } from "@/competitions";
 
 // The settings this page edits, so saving doesn't overwrite anything else
 // (e.g. the finals text, edited on the leaderboard).
@@ -202,7 +203,7 @@ function SettingsPage() {
               helperText="Visitors only see the races and standings of stages up to this one. Admins always see everything."
             >
               <ButtonGroup attached variant="outline" size="sm" w="full">
-                {STAGES.map((stage) => (
+                {competitionStages(groupsConfig(competition).enabled).map((stage) => (
                   <Button
                     key={stage}
                     flex="1"

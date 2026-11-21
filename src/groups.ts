@@ -80,6 +80,9 @@ export function planGroups(input: {
   seed?: number;
 }): GroupsPlan {
   const { standings, config } = input;
+  if (!config.enabled) {
+    throw new Error("This competition has no Gold/Silver stage (see src/competitions.ts).");
+  }
   const races = [...input.races].sort((a, b) => a.number - b.number);
   const quali = races.filter((r) => r.league === QUALI_LEAGUE);
   const warnings: string[] = [];
@@ -184,14 +187,15 @@ export function planGroups(input: {
   const start = Math.max(...quali.map((r) => r.number)) + 1;
   ordered.forEach((r, i) => (r.number = start + i));
 
+  // Race numbers are unique in a competition (the database enforces it).
   const end = start + ordered.length - 1;
-  const clashes = races.filter(
-    (r) => !GROUP_LEAGUES.includes(r.league) && r.league !== QUALI_LEAGUE && r.number >= start && r.number <= end,
+  const clash = races.find(
+    (r) => !GROUP_LEAGUES.includes(r.league) && r.number >= start && r.number <= end,
   );
-  if (clashes.length > 0) {
-    warnings.push(
-      `Races ${start}-${end} would share numbers with ${clashes.length} other ` +
-        `${clashes.length === 1 ? "race" : "races"} (e.g. race ${clashes[0].number}, ${clashes[0].league}).`,
+  if (clash) {
+    throw new Error(
+      `The Gold/Silver races would be ${start}-${end}, but race ${clash.number} (${clash.league}) ` +
+        "already has one of those numbers. Renumber or delete the later races first.",
     );
   }
 

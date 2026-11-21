@@ -6,6 +6,8 @@
 //   finals - everything after, in any other league.
 // Visitors only see the leagues of stages up to the competition's stage, so
 // races can be scheduled before they're released. Admins see every league.
+// A competition can skip the Gold/Silver stage (`groups.enabled` in
+// src/competitions.ts), going straight from qualifying to finals.
 // This is about not showing races early, not security: the database lets
 // anyone read every race.
 //
@@ -34,9 +36,20 @@ export function leagueStage(league: string): Stage {
   return "finals";
 }
 
-/** competition.stage as a Stage; anything unexpected counts as qualifying. */
-export function parseStage(stage: string | null | undefined): Stage {
-  return (STAGES as readonly string[]).includes(stage ?? "")
+/** The stages a competition goes through, with or without Gold/Silver. */
+export function competitionStages(hasGroups: boolean): Stage[] {
+  return STAGES.filter((s) => hasGroups || s !== "groups");
+}
+
+/**
+ * competition.stage as a Stage. Anything unexpected, including "groups" for a
+ * competition without a Gold/Silver stage, counts as qualifying.
+ */
+export function parseStage(
+  stage: string | null | undefined,
+  hasGroups: boolean,
+): Stage {
+  return (competitionStages(hasGroups) as string[]).includes(stage ?? "")
     ? (stage as Stage)
     : "quali";
 }

@@ -93,7 +93,7 @@ describe("planGroups", () => {
     const plan = planGroups({
       standings: standingsOf(13),
       races: qualiOf(13),
-      config: { largerGroup: "silver", goldFlight: 1 },
+      config: { ...DEFAULT_GROUPS, largerGroup: "silver", goldFlight: 1 },
     });
     assert.equal(plan.gold.teams.length, 6);
     assert.equal(plan.silver.teams.length, 7);
@@ -139,24 +139,29 @@ describe("planGroups", () => {
     assert.deepEqual(planGroups({ standings: ok, races: qualiOf(13), config: DEFAULT_GROUPS }).warnings, []);
   });
 
-  test("warns that existing Gold/Silver races will be replaced, and about clashing numbers", () => {
+  test("warns that existing Gold/Silver races will be replaced", () => {
     const races = qualiOf(13);
     races.push(
       { number: 79, league: "semis/gold", flight: A, lteam: "t0", rteam: "t1", finished: false },
       { number: 80, league: "semis/silver", flight: B, lteam: "t7", rteam: "t8", finished: false },
       { number: 120, league: "finals/final", flight: A, lteam: null, rteam: null, finished: false },
-      { number: 100, league: "finals/semi", flight: A, lteam: null, rteam: null, finished: false },
     );
     const plan = planGroups({ standings: standingsOf(13), races, config: DEFAULT_GROUPS });
     // Still numbered on from qualifying, not from the old Gold/Silver races.
     assert.equal(plan.races[0].number, 79);
-    assert.deepEqual(plan.warnings, [
-      "The 2 existing Gold/Silver races will be deleted and replaced.",
-      "Races 79-114 would share numbers with 1 other race (e.g. race 100, finals/semi).",
-    ]);
+    assert.deepEqual(plan.warnings, ["The 2 existing Gold/Silver races will be deleted and replaced."]);
   });
 
-  test("refuses without enough teams, two flights, or a ranking for every team", () => {
+  test("refuses to reuse another race's number", () => {
+    const races = qualiOf(13);
+    races.push({ number: 100, league: "finals/semi", flight: A, lteam: null, rteam: null, finished: false });
+    assert.throws(
+      () => planGroups({ standings: standingsOf(13), races, config: DEFAULT_GROUPS }),
+      /^Error: The Gold\/Silver races would be 79-114, but race 100 \(finals\/semi\) already has one of those numbers/,
+    );
+  });
+
+  test("refuses without enough teams, two flights, a ranking for every team, or a Gold/Silver stage", () => {
     assert.throws(
       () => planGroups({ standings: standingsOf(5), races: qualiOf(5), config: DEFAULT_GROUPS }),
       /at least 6 teams/,
@@ -169,6 +174,11 @@ describe("planGroups", () => {
     assert.throws(
       () => planGroups({ standings: standingsOf(12), races: qualiOf(13), config: DEFAULT_GROUPS }),
       /1 qualifying team has no results yet/,
+    );
+    assert.throws(
+      () =>
+        planGroups({ standings: standingsOf(13), races: qualiOf(13), config: { ...DEFAULT_GROUPS, enabled: false } }),
+      /no Gold\/Silver stage/,
     );
   });
 });
