@@ -1,7 +1,7 @@
 "use client";
 
 import dayjs, { Dayjs } from "dayjs";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import supabase from "./supabase";
 import { Session } from "@supabase/supabase-js";
 import { QueryClient, QueryKey, useQueryClient } from "@tanstack/react-query";
@@ -12,6 +12,13 @@ import {
   type CompetitionBasic,
   type CompetitionId,
 } from "./competitions";
+import {
+  isLeagueReleased,
+  isLeagueVisible,
+  leagueName,
+  parseStage,
+  type Stage,
+} from "./leagues";
 
 export interface Flight {
   id: string;
@@ -33,6 +40,11 @@ export type RaceResult = {
   video: string | null;
   estfinishtime: Dayjs | null;
   league: string;
+  /**
+   * Whether visitors can see this race: its league's stage has started (see
+   * src/leagues.ts). Only admins are shown races that aren't released.
+   */
+  released: boolean;
   flight: Flight;
   lteam: Team | null;
   rteam: Team | null;
@@ -74,118 +86,153 @@ export type Competition = {
   id: string;
   feedback: boolean;
   finals_markdown: string | null;
+  /** Which leagues visitors can see (see src/leagues.ts). */
+  stage: Stage;
 };
 
+/** "Qualifying", "Gold League" etc. (see leagueName in src/leagues.ts). */
 export function getLeagueName(league: string): string {
-  switch (league.toLowerCase()) {
-    case "quali":
-      return "Qualifying";
-    case "semis/silver":
-      return "Silver Semi-Final";
-    case "semis/gold":
-      return "Gold Semi-Final";
-    default:
-      return league;
-  }
+  return leagueName(league);
 }
+
+/**
+ * The logged-in session, or null. Shared by every component, and kept up to
+ * date from the moment anything reads it.
+ */
+const sessionAtom = atom<Session | null>(null);
+sessionAtom.onMount = (setSession) => {
+  supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => setSession(session));
+  return () => subscription.unsubscribe();
+};
+
+const adminQueryAtom = atomWithQuery((get) => {
+  const competition = get(competitionBasicAtom);
+  const userId = get(sessionAtom)?.user.id ?? null;
+  return {
+    queryKey: ["admin", competition?.id ?? null, userId],
+    enabled: competition !== null && userId !== null,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("admin")
+        .select("user")
+        .eq("user", userId!)
+        .eq("competition", competition!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data !== null;
+    },
+  };
+});
+
+/** Whether the logged-in user is an admin of this competition. */
+export const isAdminAtom = atom(
+  (get) => get(sessionAtom) !== null && get(adminQueryAtom).data === true,
+);
 
 export function useAuth(): { session: Session | null; isAdmin: boolean } {
-  const [session, setSession] = useState<Session | null>(null);
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
-
-  const competition = useAtomValue(competitionBasicAtom);
-
-  useEffect(() => {
-    supabase.auth
-      .getSession()
-      .then(({ data: { session } }) => setSession(session));
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) =>
-      setSession(session),
-    );
-    return () => subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (session && session.user && competition !== null) {
-        const { data } = await supabase
-          .from("admin")
-          .select("user")
-          .eq("user", session.user.id)
-          .eq("competition", competition.id)
-          .maybeSingle();
-        setIsAdmin(!!data);
-      } else {
-        setIsAdmin(false);
-      }
-    };
-    checkAdminStatus();
-  }, [session]);
-
-  return { session, isAdmin };
+  return {
+    session: useAtomValue(sessionAtom),
+    isAdmin: useAtomValue(isAdminAtom),
+  };
 }
+
+type RaceRow = Awaited<ReturnType<typeof fetchRaces>>[number];
+
+const fetchRaces = async (competitionId: string) => {
+  const { data, error } = await supabase
+    .from("race")
+    .select(
+      `
+        id,
+        competition,
+        number,
+        video,
+        finishtime,
+        league,
+        flight (
+          id,
+          name,
+          lname,
+          lnumbers,
+          rnumbers,
+          rname
+        ),
+        lteam:team!lteam ( id, name ),
+        lresult,
+        rresult,
+        rteam:team!rteam ( id, name )
+      `,
+    )
+    .order("number", { ascending: true })
+    .eq("competition", competitionId);
+  if (error) throw error;
+  return data;
+};
 
 const racesDataAtom = atomWithQuery((get) => {
   const competition = get(competitionBasicAtom)!;
   return {
   queryKey: ["races_data", competition.id],
   enabled: get(competitionBasicAtom) !== null,
-  queryFn: async () => {
-
-    // Get races
-    const { data: racesData, error: racesError } = await supabase
-      .from("race")
-      .select(
-        `
-          id,
-          competition,
-          number,
-          video,
-          finishtime,
-          league,
-          flight (
-            id,
-            name,
-            lname,
-            lnumbers,
-            rnumbers,
-            rname
-          ),
-          lteam:team!lteam ( id, name ),
-          lresult,
-          rresult,
-          rteam:team!rteam ( id, name )
-        `,
-      )
-      .order("number", { ascending: true })
-      .eq("competition", competition.id);
-
-    if (racesError) throw racesError;
-
-    return racesData;
-  },
+  queryFn: () => fetchRaces(competition.id),
 };
 });
 
-export const racesAtom = atomWithQuery((get) => ({
-  queryKey: ["races", get(competitionBasicAtom)!.id],
-  enabled: get(racesDataAtom).isFetched && get(competitionAtom).isFetched,
-  error: get(racesDataAtom).error || get(competitionAtom).error,
-  queryFn: async () => {
-    const racesData = get(racesDataAtom).data;
-    if (racesData === undefined) {
-      return undefined;
-    }
+// The parts of the queries racesAtom uses. Each keeps its value (by
+// reference) while a refetch finds nothing new, so racesAtom only recomputes
+// when the races, the competition or your admin status actually change.
+const racesRowsAtom = atom((get) => get(racesDataAtom).data);
+const competitionDataAtom = atom((get) => get(competitionAtom).data);
+const racesErrorAtom = atom(
+  (get) => get(racesDataAtom).error ?? get(competitionAtom).error ?? null,
+);
 
-    // How many races in advance to go to stand for
-    const competition = get(competitionAtom).data;
-    const goToStand = competition?.go_to_stand ?? 4;
+export type Races = {
+  /** The races you can see, in race order. */
+  races: RaceResult[];
+  currentRace: number | null;
+  numFlights: number;
+};
 
-    // Convert from Supabase data to RaceResult
-    const flights = new Set<string>();
-    const races: RaceResult[] = racesData.map((d) => {
+/**
+ * The races you can see: visitors see the leagues released by the
+ * competition's stage, admins see them all (see src/leagues.ts). The current
+ * race and the time estimates only count those races. Shaped like a query
+ * result.
+ */
+export const racesAtom = atom<{
+  data: Races | undefined;
+  error: Error | null;
+  isFetched: boolean;
+  isLoading: boolean;
+}>((get) => {
+  const error = get(racesErrorAtom);
+  const racesData = get(racesRowsAtom);
+  const competition = get(competitionDataAtom);
+  if (racesData === undefined || competition === undefined) {
+    return { data: undefined, error, isFetched: false, isLoading: !error };
+  }
+  const data = buildRaces(racesData, competition, get(isAdminAtom));
+  return { data, error, isFetched: true, isLoading: false };
+});
+
+function buildRaces(
+  racesData: RaceRow[],
+  competition: Competition,
+  isAdmin: boolean,
+): Races {
+  // How many races in advance to go to stand for
+  const goToStand = competition.go_to_stand;
+
+  // Convert from Supabase data to RaceResult, leaving out the leagues you
+  // can't see.
+  const flights = new Set<string>();
+  const races: RaceResult[] = racesData
+    .filter((d) => isLeagueVisible(d.league, competition.stage, isAdmin))
+    .map((d) => {
       flights.add(d.flight.id);
       const result =
         d.finishtime === null
@@ -203,67 +250,67 @@ export const racesAtom = atomWithQuery((get) => ({
       return {
         ...d,
         ...result,
+        released: isLeagueReleased(d.league, competition.stage),
         estfinishtime: null as Dayjs | null,
       };
     });
 
-    // Determine the current race: the first unfinished race after the last
-    // finished one. Unfinished races before that are treated as skipped or
-    // postponed, and races appended after a finished stage become current.
-    // If the schedule ends in finished races while earlier races are still
-    // unfinished, those trailing results were entered early (e.g. the last
-    // race by mistake), so look for the current race before them instead.
-    // When every race is finished there is no current race.
-    let end = races.length;
-    while (end > 0 && races[end - 1].finishtime !== null) {
-      end--;
-    }
-    let currentRaceIndex: number | null = null;
-    for (let i = end - 1; i >= 0 && races[i].finishtime === null; i--) {
-      currentRaceIndex = i;
-    }
-    const currentRace: number | null =
-      currentRaceIndex === null ? null : races[currentRaceIndex].number;
+  // Determine the current race: the first unfinished race after the last
+  // finished one. Unfinished races before that are treated as skipped or
+  // postponed, and races appended after a finished stage become current.
+  // If the schedule ends in finished races while earlier races are still
+  // unfinished, those trailing results were entered early (e.g. the last
+  // race by mistake), so look for the current race before them instead.
+  // When every race is finished there is no current race.
+  let end = races.length;
+  while (end > 0 && races[end - 1].finishtime !== null) {
+    end--;
+  }
+  let currentRaceIndex: number | null = null;
+  for (let i = end - 1; i >= 0 && races[i].finishtime === null; i--) {
+    currentRaceIndex = i;
+  }
+  const currentRace: number | null =
+    currentRaceIndex === null ? null : races[currentRaceIndex].number;
 
-    // Calculate average time between races
-    if (currentRaceIndex !== null && currentRaceIndex !== races.length - 1) {
-      const finishTimes = [];
-      for (
-        let i = currentRaceIndex - 1;
-        finishTimes.length < 10 && i >= 0;
-        i--
-      ) {
-        if (races[i].finishtime) {
-          finishTimes.push(races[i].finishtime);
-        } else {
-          break; // if there is no finish time, cancel early
-        }
-      }
-
-      if (finishTimes.length >= 2) {
-        let totalTimeDiff = 0;
-        for (let j = 0; j < finishTimes.length - 1; j++) {
-          const timeDiff = finishTimes[j]!.diff(finishTimes[j + 1]!);
-          totalTimeDiff += timeDiff;
-        }
-        const averageTimeBetweenRacesMs =
-          totalTimeDiff / (finishTimes.length - 1);
-
-        // Add estimates to races array
-        for (let i = currentRaceIndex + 1; i < races.length; i++) {
-          // Races entered early already have a finish time
-          if (races[i].finishtime !== null) continue;
-          const time = dayjs().add(
-            averageTimeBetweenRacesMs * (i - currentRaceIndex - goToStand),
-          );
-          races[i].estfinishtime = time;
-        }
+  // Calculate average time between races
+  if (currentRaceIndex !== null && currentRaceIndex !== races.length - 1) {
+    const finishTimes = [];
+    for (
+      let i = currentRaceIndex - 1;
+      finishTimes.length < 10 && i >= 0;
+      i--
+    ) {
+      if (races[i].finishtime) {
+        finishTimes.push(races[i].finishtime);
+      } else {
+        break; // if there is no finish time, cancel early
       }
     }
 
-    return { races, currentRace, numFlights: flights.size };
-  },
-}));
+    if (finishTimes.length >= 2) {
+      let totalTimeDiff = 0;
+      for (let j = 0; j < finishTimes.length - 1; j++) {
+        const timeDiff = finishTimes[j]!.diff(finishTimes[j + 1]!);
+        totalTimeDiff += timeDiff;
+      }
+      const averageTimeBetweenRacesMs =
+        totalTimeDiff / (finishTimes.length - 1);
+
+      // Add estimates to races array
+      for (let i = currentRaceIndex + 1; i < races.length; i++) {
+        // Races entered early already have a finish time
+        if (races[i].finishtime !== null) continue;
+        const time = dayjs().add(
+          averageTimeBetweenRacesMs * (i - currentRaceIndex - goToStand),
+        );
+        races[i].estfinishtime = time;
+      }
+    }
+  }
+
+  return { races, currentRace, numFlights: flights.size };
+}
 
 export const leaderboardAtom = atom((get) => {
   const races = get(racesAtom).data?.races;
@@ -508,7 +555,10 @@ export const competitionAtom = atomWithQuery<Competition>((get) => {
       throw settings.error;
     }
 
-    let x: Competition = settings.data;
+    const x: Competition = {
+      ...settings.data,
+      stage: parseStage(settings.data.stage),
+    };
     return x;
   },
 };

@@ -155,6 +155,8 @@ function RaceCard({
             </Text>
             <Text fontSize="sm" color="gray.500" fontStyle="italic" mt={-1}>
               {getLeagueName(race.league)}
+              {/* Only admins see races that haven't been released. */}
+              {!race.released && " · not released yet"}
             </Text>
           </Box>
           {headerBadge}

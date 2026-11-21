@@ -136,7 +136,8 @@ function Page() {
       ? `${getLeagueName(leagues[0])} Schedule`
       : "Race Schedule";
 
-  // The PDF of the leagues shown here (it defaults to just qualifying).
+  // The PDF of the leagues shown here (it defaults to just qualifying, and
+  // leaves out leagues that haven't been released).
   const pdfHref =
     leagues.length === 0 || (leagues.length === 1 && leagues[0] === "quali")
       ? "/schedule.pdf"
@@ -194,6 +195,9 @@ function Page() {
               {leagues.length > 1 && (
                 <Heading as="h2" size="md" color={competition.accentColour} mb={2}>
                   {getLeagueName(league)}
+                  {/* Only admins see leagues that haven't been released. */}
+                  {races.some((r) => r.league === league && !r.released) &&
+                    " (not released yet)"}
                 </Heading>
               )}
               <Box overflowX="auto">

@@ -1,6 +1,14 @@
 "use client";
 
-import { Box, Stack, Heading, Button, Text, Input } from "@chakra-ui/react";
+import {
+  Box,
+  Stack,
+  Heading,
+  Button,
+  ButtonGroup,
+  Text,
+  Input,
+} from "@chakra-ui/react";
 import { Field } from "@/components/ui/field";
 import {
   NumberInputRoot,
@@ -26,13 +34,29 @@ import dynamic from "next/dynamic";
 import { useHydrateAtoms } from "jotai/utils";
 import type { CompetitionId } from "@/competitions";
 import { queryClientAtom } from "jotai-tanstack-query";
+import { STAGES, STAGE_NAMES } from "@/leagues";
+
+// The settings this page edits, so saving doesn't overwrite anything else
+// (e.g. the finals text, edited on the leaderboard).
+const EDITABLE = [
+  "announcement",
+  "racing_paused",
+  "feedback",
+  "go_to_stand",
+  "estimates",
+  "stage",
+] as const;
 
 function SettingsPage() {
   const { isAdmin } = useAuth();
 
   const competition = useCompetition();
 
-  const { data: remoteSettings, isLoading } = useAtomValue(competitionAtom);
+  const {
+    data: remoteSettings,
+    isLoading,
+    refetch,
+  } = useAtomValue(competitionAtom);
 
   // Force light color mode on load
   const { setColorMode } = useColorMode();
@@ -47,15 +71,32 @@ function SettingsPage() {
     }
   }, [JSON.stringify(remoteSettings)]);
 
+  // Saves the changed settings. Fails on any error, and when no row was
+  // updated (the database refuses non-admins without an error).
   const saveSettings = useMutation({
     mutationFn: async (newSettings: Competition) => {
-      if (!settings) return;
-
-      await supabase
+      const changes = Object.fromEntries(
+        EDITABLE.map((key) => [key, newSettings[key]]),
+      );
+      const { data, error } = await supabase
         .from("competition")
-        .update(newSettings)
-        .eq("id", settings.id);
+        .update(changes)
+        .eq("id", newSettings.id)
+        .select("id");
+      if (error) {
+        throw new Error(
+          /fetch|network/i.test(error.message)
+            ? "couldn't reach the server. Check your connection and try again."
+            : error.message,
+        );
+      }
+      if (!data || data.length === 0) {
+        throw new Error(
+          "the change was rejected. Make sure you're logged in as an admin of this competition.",
+        );
+      }
     },
+    onSuccess: () => refetch(),
   });
 
   if (!isAdmin) {
@@ -153,17 +194,48 @@ function SettingsPage() {
 
             <Box height="1px" bg="gray.200" my={3} />
 
+            <Heading size="lg" color="gray.700" fontWeight="bold">
+              Stage
+            </Heading>
+            <Field
+              label="Released to visitors"
+              helperText="Visitors only see the races and standings of stages up to this one. Admins always see everything."
+            >
+              <ButtonGroup attached variant="outline" size="sm" w="full">
+                {STAGES.map((stage) => (
+                  <Button
+                    key={stage}
+                    flex="1"
+                    aria-pressed={settings.stage === stage}
+                    bg={
+                      settings.stage === stage
+                        ? competition.accentColour
+                        : undefined
+                    }
+                    color={settings.stage === stage ? "white" : undefined}
+                    _hover={{
+                      bg:
+                        settings.stage === stage
+                          ? competition.accentColour
+                          : "gray.100",
+                    }}
+                    onClick={() => setSettings({ ...settings, stage })}
+                  >
+                    {STAGE_NAMES[stage]}
+                  </Button>
+                ))}
+              </ButtonGroup>
+            </Field>
+
+            <Box height="1px" bg="gray.200" my={3} />
+
             <Box>
               <Button
                 onClick={() => saveSettings.mutate(settings)}
                 loading={saveSettings.isPending}
-                disabled={
-                  settings.estimates === remoteSettings?.estimates &&
-                  settings.go_to_stand === remoteSettings?.go_to_stand &&
-                  settings.racing_paused === remoteSettings?.racing_paused &&
-                  settings.announcement === remoteSettings?.announcement &&
-                  settings.feedback === remoteSettings?.feedback
-                }
+                disabled={EDITABLE.every(
+                  (key) => settings[key] === remoteSettings?.[key],
+                )}
                 colorScheme="blue"
                 bg={competition.accentColour}
                 _hover={{ bg: `${competition.accentColour}dd` }}
@@ -172,6 +244,17 @@ function SettingsPage() {
               >
                 Save Changes
               </Button>
+              {saveSettings.isError && (
+                <Text mt={2} fontSize="sm" color="red.600" role="alert">
+                  Not saved: {saveSettings.error.message}
+                </Text>
+              )}
+              {saveSettings.isSuccess &&
+                EDITABLE.every((key) => settings[key] === remoteSettings?.[key]) && (
+                <Text mt={2} fontSize="sm" color="green.600">
+                  Saved
+                </Text>
+              )}
             </Box>
           </Stack>
         </Box>

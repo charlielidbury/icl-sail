@@ -3,6 +3,7 @@
 // the server (./render.ts, for /schedule.pdf and the /scheduler page). Plain
 // TypeScript with only relative imports, so Node can run it directly.
 import sailColours from "../sail-colours.json" with { type: "json" };
+import { leagueName } from "../leagues.ts";
 
 export type Colour = { fill: string; text: string };
 
@@ -132,13 +133,6 @@ export type RaceRow = {
   lteam: string;
   rteam: string;
 };
-
-const LEAGUE_NAMES: Record<string, string> = {
-  quali: "Qualifying",
-  "semis/gold": "Gold Semi-Final",
-  "semis/silver": "Silver Semi-Final",
-};
-export const leagueName = (l: string) => LEAGUE_NAMES[l] ?? l;
 
 /** The league a competition's schedule PDF shows unless told otherwise. */
 export const DEFAULT_LEAGUES = ["quali"];
