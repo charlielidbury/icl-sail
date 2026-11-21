@@ -16,6 +16,18 @@ const nextConfig: NextConfig = {
         "/schedule.pdf": schedulePdfFiles,
         "/scheduler/pdf": schedulePdfFiles,
     },
+    // Sixpack's home page used to link a fixed PDF here, which went stale
+    // when the schedule changed. Old links go to the live schedule instead.
+    // Temporary (307), so browsers don't remember it forever.
+    async redirects() {
+        return [
+            {
+                source: "/sixpack/schedule.pdf",
+                destination: "/schedule.pdf",
+                permanent: false,
+            },
+        ];
+    },
     //   eslint: {
     //     ignoreDuringBuilds: true,
     //   }
